@@ -61,13 +61,8 @@ describe("Integration Test for Quantum Purse", () => {
     config.SPHINCSPLUS_LOCK.codeHash = codeHash;
 
     // initialize wallet
-    wallet = QuantumPurse.getInstance();
-    const encryptedSeed = await wallet.encrypt(
-      utf8ToBytes(passwordStr),
-      seedByte
-    );
-    await wallet.dbSetMasterKey(encryptedSeed);
-    await wallet.deriveChildKey(utf8ToBytes(passwordStr));
+    wallet = await QuantumPurse.getInstance();
+    await wallet.genAccount(utf8ToBytes(passwordStr));
 
     QPAddress = wallet.getAddress();
 

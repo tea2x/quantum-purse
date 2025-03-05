@@ -4,8 +4,10 @@
   "description": "ckb quantum resistant wallet",
   "private": true,
   "scripts": {
-    "start": "webpack serve --open --config ./webpack/webpack.dev.js",
-    "build": "webpack --config ./webpack/webpack.prod.js",
+    "start": "npm run build:wasm && webpack serve --open --config ./webpack/webpack.dev.js",
+    "build:wasm": "cd key-vault && wasm-pack build --release --target web",
+    "build:webpack": "webpack --config ./webpack/webpack.prod.js",
+    "build": "npm run build:wasm && npm run build:webpack",
     "deploy": "npm run build && node ./src/deploy.js",
     "test": "npx jest"
   },
@@ -37,7 +39,6 @@
   "dependencies": {
     "@ckb-lumos/lumos": "^0.23.0",
     "@nervosnetwork/ckb-sdk-utils": "^0.109.5",
-    "@noble/hashes": "^1.7.1",
     "@noble/post-quantum": "^0.3.1",
     "@scure/bip39": "^1.5.4",
     "ckb-js-toolkit": "^0.11.1"

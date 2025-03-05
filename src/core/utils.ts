@@ -351,3 +351,25 @@ export function uint8ArrayToHexString(arr: Uint8Array): string {
     .map(byte => byte.toString(16).padStart(2, '0'))
     .join('');
 }
+
+/**
+ * Convert JS string to byte array.
+ * @example utf8ToBytes('abc') // new Uint8Array([97, 98, 99])
+ */
+export function utf8ToBytes(str: string): Uint8Array {
+  if (typeof str !== 'string') throw new Error('utf8ToBytes expected string, got ' + typeof str);
+  return new Uint8Array(new TextEncoder().encode(str)); // https://bugzil.la/1681809
+}
+
+/**
+ * Converts a utf8 byte encoded as uint8raay to the utf8.
+ * @param arr - The uint8 array to convert.
+ * @returns A hex string.
+ */
+export function bytesToUtf8(bytes: Uint8Array): string {
+  if (!(bytes instanceof Uint8Array)) {
+    throw new Error('bytesToUtf8 expected Uint8Array, got ' + typeof bytes);
+  }
+  const decoder = new TextDecoder('utf-8');
+  return decoder.decode(bytes);
+}
