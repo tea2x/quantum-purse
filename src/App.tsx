@@ -2,7 +2,7 @@ import React from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Home1 from "./pages/Home1";
-import Navigation from "./components/Navigation";
+import Layout from "./layouts/Layout";
 
 // Detect if running on Github Pages
 const isGithubPages = window.location.hostname.includes("github.io");
@@ -12,10 +12,11 @@ const basename = isGithubPages ? `/${repoName}` : "/";
 const App: React.FC = () => {
   return (
     <Router basename={basename}>
-      <Navigation />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/home1" element={<Home1 />} />
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="/home1" element={<Home1 />} />
+        </Route>
       </Routes>
     </Router>
   );

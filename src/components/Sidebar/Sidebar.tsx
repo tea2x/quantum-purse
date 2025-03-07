@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const Navigation: React.FC = () => {
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
+const Sidebar: React.FC<SidebarProps> = () => {
   return (
     <nav>
       <ul>
@@ -16,4 +17,4 @@ const Navigation: React.FC = () => {
   );
 };
 
-export default Navigation; 
+export default Sidebar;
