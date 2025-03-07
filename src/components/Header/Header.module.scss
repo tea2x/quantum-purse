@@ -1,10 +1,8 @@
 .header {
-  :global {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2rem;
-    height: 6.4rem;
-    background-color: var(--teal);
-  }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 6.4rem;
+  background-color: var(--teal);
 }

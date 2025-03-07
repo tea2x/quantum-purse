@@ -3,6 +3,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Home1 from "./pages/Home1";
 import Layout from "./layouts/Layout";
+import "./styles.css";
 
 // Detect if running on Github Pages
 const isGithubPages = window.location.hostname.includes("github.io");
