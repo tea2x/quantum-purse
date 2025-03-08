@@ -14,16 +14,13 @@ module.exports = {
   },
   devtool: "source-map",
   devServer: {
-    contentBase: "../dist",
+    static: {
+      directory: path.resolve(__dirname, "../dist"),
+    },
     port: 3003,
   },
   module: {
     rules: [
-      {
-        test: /\.(ts|tsx)$/,
-        use: "ts-loader",
-        exclude: /node_modules/,
-      },
       {
         test: /\.css$/i,
         use: ["style-loader", "css-loader"],

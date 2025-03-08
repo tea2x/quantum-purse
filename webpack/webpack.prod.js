@@ -20,6 +20,15 @@ module.exports = merge(common, {
   output: {
     publicPath: publicPath,
   },
+  module: {
+    rules: [
+      {
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        use: 'ts-loader',
+      },
+    ],
+  },
   optimization: {
     minimize: true,
     minimizer: [new TerserPlugin()],
