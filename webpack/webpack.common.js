@@ -26,8 +26,20 @@ module.exports = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        test: /\.(png|jpg|jpeg|gif)$/i,
         type: "asset/resource",
+      },
+      {
+        test: /\.svg$/i,
+        oneOf: [
+          {
+            resourceQuery: /react/, // For SVGs imported with ?react query
+            use: ['@svgr/webpack'],
+          },
+          {
+            type: "asset/resource", // For regular SVG imports
+          }
+        ],
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
