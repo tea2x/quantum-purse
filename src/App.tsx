@@ -1,9 +1,11 @@
 import React from "react";
+import { Provider as ReduxProvider } from "react-redux";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import Home from "./pages/Home";
-import Home1 from "./pages/Home1";
+import { AntdProvider } from "./components/providers/AntdProvider";
 import Layout from "./layouts/Layout";
-import "./styles.css";
+import { CommingSoon, CreateWallet, ImportWallet, Welcome } from "./pages";
+import { store } from "./store";
+import { ROUTES } from "./utils/constants";
 
 // Detect if running on Github Pages
 const isGithubPages = window.location.hostname.includes("github.io");
@@ -12,14 +14,20 @@ const basename = isGithubPages ? `/${repoName}` : "/";
 
 const App: React.FC = () => {
   return (
-    <Router basename={basename}>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="/home1" element={<Home1 />} />
-        </Route>
-      </Routes>
-    </Router>
+    <ReduxProvider store={store}>
+      <AntdProvider>
+        <Router basename={basename}>
+          <Routes>
+            <Route path={ROUTES.HOME} element={<Layout />}>
+              <Route index element={<Welcome />} />
+              <Route path={ROUTES.COMING_SOON} element={<CommingSoon />} />
+              <Route path={ROUTES.CREATE_WALLET} element={<CreateWallet />} />
+              <Route path={ROUTES.IMPORT_WALLET} element={<ImportWallet />} />
+            </Route>
+          </Routes>
+        </Router>
+      </AntdProvider>
+    </ReduxProvider>
   );
 };
 
