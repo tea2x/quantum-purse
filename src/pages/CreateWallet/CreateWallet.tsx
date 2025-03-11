@@ -6,6 +6,8 @@ import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
 import { ROUTES } from "../../utils/constants";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { Dispatch } from "../../store";
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: 0,
   setCurrentStep: () => {},
@@ -74,8 +76,15 @@ const CreateWalletContent: React.FC = () => {
 const StepCreatePassword: React.FC = () => {
   const [form] = Form.useForm();
   const { next } = useContext(CreateWalletContext);
+
+  const dispatch = useDispatch<Dispatch>();
+
   const onFinish = (values: any) => {
     console.log(values);
+    dispatch.wallet.createWallet({
+      password:
+        values.password || "my password is easy to crack. Don't use this!",
+    });
     next();
   };
 

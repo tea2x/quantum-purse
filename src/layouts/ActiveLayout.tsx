@@ -1,28 +1,27 @@
-import React, { Dispatch, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React from "react";
+import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
 import { Header, Sidebar } from "../components";
 import { RuntimeRootState } from "../store/types";
 import { ROUTES } from "../utils/constants";
+import Layout from "./Layout";
 
 type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement>;
 
-const Layout: React.FC<AuthLayoutProps> = ({ ...rest }) => {
+const ActiveLayout: React.FC<AuthLayoutProps> = ({ ...rest }) => {
   const wallet = useSelector<RuntimeRootState>((state) => state.wallet);
-  const dispatch = useDispatch<Dispatch>();
 
-  useEffect(() => {
-    dispatch.wallet.init();
-  }, [dispatch.wallet.init]);
+  if (!wallet.active) {
+    return <Navigate to={ROUTES.WELCOME} />;
+  }
 
-  console.log("Layout log wallet data: ", wallet);
   return (
-    <div {...rest}>
+    <Layout {...rest}>
       <Header />
       <Sidebar />
       <Outlet />
-    </div>
+    </Layout>
   );
 };
 
-export default Layout;
+export default ActiveLayout;
