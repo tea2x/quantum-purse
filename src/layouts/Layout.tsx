@@ -4,10 +4,15 @@ import { Navigate, Outlet } from "react-router-dom";
 import { Header, Sidebar } from "../components";
 import { RuntimeRootState } from "../store/types";
 import { ROUTES } from "../utils/constants";
-
+import styles from "./Layout.module.scss";
+import { cx } from "../utils/methods";
 type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement>;
 
-const Layout: React.FC<AuthLayoutProps> = ({ ...rest }) => {
+const Layout: React.FC<AuthLayoutProps> = ({
+  className,
+  children,
+  ...rest
+}) => {
   const wallet = useSelector<RuntimeRootState>((state) => state.wallet);
   const dispatch = useDispatch<Dispatch>();
 
@@ -17,10 +22,9 @@ const Layout: React.FC<AuthLayoutProps> = ({ ...rest }) => {
 
   console.log("Layout log wallet data: ", wallet);
   return (
-    <div {...rest}>
+    <div className={cx(styles.layout, className)} {...rest}>
       <Header />
-      <Sidebar />
-      <Outlet />
+      <div className="container">{children}</div>
     </div>
   );
 };

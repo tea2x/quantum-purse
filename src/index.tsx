@@ -3,7 +3,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
 import App from "./App";
-import { AntdProvider } from "./components/providers/AntdProvider";
+import { AntdProvider } from "./providers/AntdProvider";
+import LayoutProvider from "./providers/LayoutProvider";
 import { store } from "./store";
 import "./styles.css";
 
@@ -14,7 +15,9 @@ root.render(
   <React.StrictMode>
     <ReduxProvider store={store}>
       <AntdProvider>
-        <App />
+        <LayoutProvider>
+          <App />
+        </LayoutProvider>
       </AntdProvider>
     </ReduxProvider>
   </React.StrictMode>

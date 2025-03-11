@@ -34,46 +34,45 @@ export const wallet = createModel<RootModel>()({
   },
   effects: (dispatch) => ({
     async init(_, rootState) {
-      console.log("init");
-      try {
-        const quantum = await Quantum.getInstance();
-        const accounts = await quantum.getAllAccounts();
-        const currentAddress = await quantum.getAddress();
-        const currentBalance = await quantum.getBalance();
-        this.setAccounts(accounts);
-        this.setCurrent({
-          address: currentAddress,
-          balance: currentBalance,
-        });
-        this.setActive(true);
-      } catch (error) {
-        this.setActive(false);
-        console.error("Error initializing wallet", error);
-      }
+      // console.log("init");
+      // try {
+      //   const quantum = await Quantum.getInstance();
+      //   const accounts = await quantum.getAllAccounts();
+      //   const currentAddress = await quantum.getAddress();
+      //   const currentBalance = await quantum.getBalance();
+      //   this.setAccounts(accounts);
+      //   this.setCurrent({
+      //     address: currentAddress,
+      //     balance: currentBalance,
+      //   });
+      //   this.setActive(true);
+      // } catch (error) {
+      //   this.setActive(false);
+      //   console.error("Error initializing wallet", error);
+      // }
     },
     async createAccount(payload: { password: string }, rootState) {
-      const quantum = await Quantum.getInstance();
-      const account = await quantum.genAccount(utf8ToBytes(payload.password));
+      //   const quantum = await Quantum.getInstance();
+      //   const account = await quantum.genAccount(utf8ToBytes(payload.password));
     },
     async createWallet({ password }, rootState) {
-      const quantum = await Quantum.getInstance();
-      await quantum.init(utf8ToBytes(password));
-      await quantum.genAccount(utf8ToBytes(password));
-      const address = await quantum.getAddress();
-      const balance = await quantum.getBalance();
-      const accounts = await quantum.getAllAccounts();
-      this.setAccounts(accounts);
-      this.setCurrent({
-        address,
-        balance,
-      });
-      this.setActive(true);
+      // const quantum = await Quantum.getInstance();
+      // await quantum.init(utf8ToBytes(password));
+      // await quantum.genAccount(utf8ToBytes(password));
+      // const address = await quantum.getAddress();
+      // const balance = await quantum.getBalance();
+      // const accounts = await quantum.getAllAccounts();
+      // this.setAccounts(accounts);
+      // this.setCurrent({
+      //   address,
+      //   balance,
+      // });
+      // this.setActive(true);
     },
-
     async ejectWallet() {
-      const quantum = await Quantum.getInstance();
-      await quantum.dbClear();
-      this.reset();
+      // const quantum = await Quantum.getInstance();
+      // await quantum.dbClear();
+      // this.reset();
     },
   }),
 });

@@ -6,6 +6,9 @@
   height: 6.4rem;
   background-color: var(--teal-1);
   border-radius: 0 0 1.2rem 1.2rem;
+  max-width: 128rem;
+  margin: 0 auto;
+  box-shadow: 0 0.4rem 0.4rem rgba(0, 0, 0, 0.25);
 
   :global {
     .header-left {
@@ -29,6 +32,16 @@
           blink-caret 0.75s step-end infinite;
         margin: 0;
         letter-spacing: 0.15em;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      svg {
+        color: var(--white);
       }
     }
   }

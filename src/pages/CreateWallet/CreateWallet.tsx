@@ -1,13 +1,24 @@
 import { LoadingOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Flex, Form, Input, Steps } from "antd";
-import React, { createContext, useContext, useMemo, useState } from "react";
+import { Button, Checkbox, Flex, Form, Input, Progress, Steps } from "antd";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import QuantumPurse from "../../core/quantum_purse";
+import { utf8ToBytes } from "../../core/utils";
+import { Dispatch } from "../../store";
+import { ROUTES, PASSWORD_ENTROPY_THRESHOLDS } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
-import { ROUTES } from "../../utils/constants";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "../../store";
+
+const { WEAK, MEDIUM, STRONG, VERY_STRONG } = PASSWORD_ENTROPY_THRESHOLDS;
+
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: 0,
   setCurrentStep: () => {},
@@ -76,11 +87,78 @@ const CreateWalletContent: React.FC = () => {
 const StepCreatePassword: React.FC = () => {
   const [form] = Form.useForm();
   const { next } = useContext(CreateWalletContext);
-
+  const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
+  const [submittable, setSubmittable] = React.useState<boolean>(false);
+  const [passwordEntropy, setPasswordEntropy] = React.useState<number>(0);
+  const [passwordStrength, setPasswordStrength] = React.useState<{
+    label: string;
+    color: string;
+  }>({ label: "Too Weak", color: "#ff4d4f" });
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, values]);
+
+  const entropyValidator = (password: string) => {
+    if (!password) {
+      Promise.resolve();
+      setPasswordEntropy(0);
+      setPasswordStrength({ label: "Too Weak", color: "#ff4d4f" });
+    }
+
+    const passwordBytes = utf8ToBytes(password);
+    const entropy = QuantumPurse.calculateEntropy(passwordBytes);
+    setPasswordEntropy(entropy);
+
+    if (entropy < WEAK) {
+      setPasswordStrength({ label: "Too Weak", color: "#ff4d4f" });
+    } else if (entropy < MEDIUM) {
+      setPasswordStrength({ label: "Weak", color: "#faad14" });
+    } else if (entropy < STRONG) {
+      setPasswordStrength({ label: "Medium", color: "#1677ff" });
+    } else if (entropy < VERY_STRONG) {
+      setPasswordStrength({ label: "Strong", color: "#52c41a" });
+      return Promise.resolve();
+    } else {
+      setPasswordStrength({
+        label: "Very Strong",
+        color: "#52c41a",
+      });
+      return Promise.resolve();
+    }
+    return Promise.reject(new Error("Password is not strong enough!"));
+  };
+
+  // Calculate password entropy when password changes
+  // useEffect(() => {
+  //   if (values?.password) {
+  //     const passwordBytes = utf8ToBytes(values.password);
+  //     const entropy = QuantumPurse.calculateEntropy(passwordBytes);
+
+  //     // Set password strength indicator
+  //     if (entropy < WEAK) {
+  //       setPasswordStrength({ label: "Too Weak", color: "#ff4d4f" });
+  //     } else if (entropy < MEDIUM) {
+  //       setPasswordStrength({ label: "Weak", color: "#faad14" });
+  //     } else if (entropy < STRONG) {
+  //       setPasswordStrength({ label: "Medium", color: "#1677ff" });
+  //     } else if (entropy < VERY_STRONG) {
+  //       setPasswordStrength({ label: "Strong", color: "#52c41a" });
+  //     } else {
+  //       setPasswordStrength({ label: "Very Strong", color: "#52c41a" });
+  //     }
+  //     setPasswordEntropy(entropy);
+  //   } else {
+  //     setPasswordEntropy(0);
+  //     setPasswordStrength({ label: "Too Weak", color: "#ff4d4f" });
+  //   }
+  // }, [values?.password]);
 
   const onFinish = (values: any) => {
-    console.log(values);
     dispatch.wallet.createWallet({
       password:
         values.password || "my password is easy to crack. Don't use this!",
@@ -89,16 +167,77 @@ const StepCreatePassword: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className={styles.stepCreatePassword}>
       <h2>Create password</h2>
       <Form form={form} layout="vertical" onFinish={onFinish}>
-        <Form.Item name="password" label="Password">
-          <Input.Password />
+        <Form.Item
+          name="password"
+          label="Password"
+          rules={[
+            { required: true, message: "Please input your password!" },
+            {
+              validator: (_, value) => {
+                return entropyValidator(value);
+              },
+              message: "Password is not strong enough!",
+            },
+          ]}
+        >
+          <Input.Password size="large" />
         </Form.Item>
-        <Form.Item name="confirmPassword" label="Confirm password">
-          <Input.Password />
+
+        {values?.password && (
+          <div style={{ marginBottom: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>Password Strength:</span>
+              <span style={{ color: passwordStrength.color }}>
+                {passwordStrength.label}
+              </span>
+            </div>
+            <Progress
+              percent={(passwordEntropy / VERY_STRONG) * 100}
+              strokeColor={passwordStrength.color}
+              showInfo={false}
+              status="active"
+            />
+          </div>
+        )}
+
+        <Form.Item
+          name="confirmPassword"
+          label="Confirm password"
+          dependencies={["password"]}
+          rules={[
+            { required: true, message: "Please confirm your password!" },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue("password") === value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(new Error("The passwords do not match!"));
+              },
+            }),
+          ]}
+        >
+          <Input.Password size="large" />
         </Form.Item>
-        <Form.Item name="passwordAwareness">
+        <Form.Item
+          name="passwordAwareness"
+          valuePropName="checked"
+          rules={[
+            {
+              validator: (_, value) => {
+                console.log(value, typeof value);
+                if (value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error("You must acknowledge this statement!")
+                );
+              },
+            },
+          ]}
+        >
           <Flex align="center" gap={8}>
             <Checkbox />
             <p>
@@ -108,7 +247,7 @@ const StepCreatePassword: React.FC = () => {
           </Flex>
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" disabled={!submittable}>
             Create a new wallet
           </Button>
         </Form.Item>
