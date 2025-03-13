@@ -1,8 +1,11 @@
 import { createModel } from "@rematch/core";
 import Quantum from "../../core/quantum_purse";
-import { utf8ToBytes } from "../../core/utils";
+import { utf8ToBytes, sendTransaction } from "../../core/utils";
 import { RootModel } from "./index";
 import { IAccount, IWallet } from "./interface";
+import { transfer } from "../../core/transaction_builder";
+import { NODE_URL } from "../../core/config";
+import { message, Modal } from "antd";
 
 type StateType = IWallet;
 
@@ -102,6 +105,22 @@ export const wallet = createModel<RootModel>()({
         sphincsPlusPubKey,
         name: accountData?.name,
       });
+    },
+    async send({ from, to, amount, password }, rootState) {
+      try {
+        const tx = await transfer(from, to, amount);
+        const signedTx = await quantum.sign(tx, utf8ToBytes(password));
+        const txId = await sendTransaction(NODE_URL, signedTx);
+        console.log("Send transaction: ", txId);
+        Modal.success({
+          title: "Send transaction successfully",
+          content: "Send transaction successfully",
+          centered: true,
+          className: "global-modal",
+        });
+      } catch (error) {
+        console.error("Send transaction failed", error);
+      }
     },
     async ejectWallet() {
       await quantum.dbClear();

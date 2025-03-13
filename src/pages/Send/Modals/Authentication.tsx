@@ -1,7 +1,5 @@
 import { Button, Form, Input, Modal, ModalProps } from "antd";
 import React, { useImperativeHandle, useState } from "react";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "../../../store";
 import { TEMP_PASSWORD } from "../../../utils/constants";
 
 export interface AuthenticationRef {
@@ -9,12 +7,13 @@ export interface AuthenticationRef {
   close: () => void;
 }
 
-interface AuthenticationProps extends ModalProps {}
+interface AuthenticationProps extends ModalProps {
+  authenCallback: (password: string) => void;
+}
 const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
-  (props, ref) => {
+  ({ authenCallback, ...rest }, ref) => {
     const [form] = Form.useForm();
     const [open, setOpen] = useState(false);
-    const dispatch = useDispatch<Dispatch>();
 
     const closeHandler = () => {
       setOpen(false);
@@ -26,11 +25,11 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     }));
 
     const onFinish = (values: any) => {
-      dispatch.wallet.createAccount({ password: values.password });
+      authenCallback(values.password);
     };
 
     return (
-      <Modal open={open} {...props} onCancel={closeHandler} centered>
+      <Modal open={open} {...rest} onCancel={closeHandler} centered>
         <h2>Authentication</h2>
         <p>Please enter your password to generate a new account</p>
         <Form
@@ -43,7 +42,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Generate
+              Submit
             </Button>
           </Form.Item>
         </Form>
