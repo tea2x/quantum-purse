@@ -1,11 +1,11 @@
-import { Button, Flex } from "antd";
+import { Button } from "antd";
 import { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { CurrentAccount } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { cx } from "../../utils/methods";
 import Authentication, { AuthenticationRef } from "./Modals/Authentication";
 import styles from "./Wallet.module.scss";
-
 const Wallet: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
@@ -18,7 +18,11 @@ const Wallet: React.FC = () => {
         Add account
       </Button>
       <div>
-        <p>Current account: {wallet.current.address}</p>
+        <CurrentAccount
+          address={wallet.current.address}
+          name={wallet.current.name}
+          balance={wallet.current.balance}
+        />
       </div>
       <div>
         <ul>

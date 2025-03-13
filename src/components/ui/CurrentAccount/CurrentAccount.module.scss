@@ -1,0 +1,44 @@
+.currentAccount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  :global {
+    .name {
+      font-size: 1.2rem;
+    }
+    .balance {
+      font-size: 2rem;
+      font-weight: 400;
+      font-family: "Quantico", sans-serif;
+      color: var(--primary);
+    }
+
+    .address-utilities {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      position: relative;
+      padding: 0.4rem 1.2rem;
+      border-radius: 0.6rem;
+      background-color: #5e667418;
+
+      cursor: pointer;
+      .address {
+        font-size: 14px;
+        font-weight: 400;
+      }
+      button {
+        color: var(--gray-light);
+        border-radius: 0.6rem;
+        position: absolute;
+        left: 100%;
+        top: 0;
+      }
+
+      &:hover {
+        background-color: #5e667438;
+      }
+    }
+  }
+}

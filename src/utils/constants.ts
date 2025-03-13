@@ -28,3 +28,6 @@ export const PASSWORD_ENTROPY_THRESHOLDS = {
 };
 
 export const TEMP_PASSWORD = "akjsfhas98123)(&afj10239))(LKJL::MOQIWVNQQWOIJ";
+
+export const CKB_DECIMALS = 100000000; // 1 CKB = 10^8 Shannons
+export const CKB_UNIT = "CKB";

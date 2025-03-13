@@ -1,13 +1,19 @@
 import { Menu, MenuProps } from "antd";
-import React, { useContext } from "react";
+import React from "react";
+import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
+import { RootState } from "../../store";
 import { ROUTES } from "../../utils/constants";
 import { cx } from "../../utils/methods";
+import CurrentAccount from "../ui/CurrentAccount/CurrentAccount";
 import styles from "./Sidebar.module.scss";
-import LayoutCtx from "../../context/LayoutCtx";
 
 type MenuItem = Required<MenuProps>["items"][number];
 const items: MenuItem[] = [
+  {
+    key: ROUTES.WALLET,
+    label: <NavLink to={ROUTES.WALLET}>My Wallet</NavLink>,
+  },
   {
     key: ROUTES.SEND,
     label: <NavLink to={ROUTES.SEND}>Send</NavLink>,
@@ -15,10 +21,6 @@ const items: MenuItem[] = [
   {
     key: ROUTES.RECEIVE,
     label: <NavLink to={ROUTES.RECEIVE}>Receive</NavLink>,
-  },
-  {
-    key: ROUTES.WALLET,
-    label: <NavLink to={ROUTES.WALLET}>My Wallet</NavLink>,
   },
   {
     key: ROUTES.DAO.HOME,
@@ -54,9 +56,17 @@ const items: MenuItem[] = [
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 const Sidebar: React.FC<SidebarProps> = () => {
   const location = useLocation();
+  const wallet = useSelector((state: RootState) => state.wallet);
 
   return (
     <nav className={cx("panel", styles.sidebar)}>
+      <div className="current-account">
+        <CurrentAccount
+          address={wallet.current.address!}
+          name={wallet.current.name}
+          balance={wallet.current.balance}
+        />
+      </div>
       <Menu
         mode="inline"
         items={items}
