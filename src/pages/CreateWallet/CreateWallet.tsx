@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import QuantumPurse from "../../core/quantum_purse";
 import { utf8ToBytes } from "../../core/utils";
 import { Dispatch } from "../../store";
-import { ROUTES, PASSWORD_ENTROPY_THRESHOLDS } from "../../utils/constants";
+import { PASSWORD_ENTROPY_THRESHOLDS, ROUTES, TEMP_PASSWORD } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
@@ -105,9 +105,9 @@ const StepCreatePassword: React.FC = () => {
 
   const entropyValidator = (password: string) => {
     if (!password) {
-      Promise.resolve();
       setPasswordEntropy(0);
       setPasswordStrength({ label: "Too Weak", color: "#ff4d4f" });
+      return Promise.resolve();
     }
 
     const passwordBytes = utf8ToBytes(password);
@@ -133,31 +133,6 @@ const StepCreatePassword: React.FC = () => {
     return Promise.reject(new Error("Password is not strong enough!"));
   };
 
-  // Calculate password entropy when password changes
-  // useEffect(() => {
-  //   if (values?.password) {
-  //     const passwordBytes = utf8ToBytes(values.password);
-  //     const entropy = QuantumPurse.calculateEntropy(passwordBytes);
-
-  //     // Set password strength indicator
-  //     if (entropy < WEAK) {
-  //       setPasswordStrength({ label: "Too Weak", color: "#ff4d4f" });
-  //     } else if (entropy < MEDIUM) {
-  //       setPasswordStrength({ label: "Weak", color: "#faad14" });
-  //     } else if (entropy < STRONG) {
-  //       setPasswordStrength({ label: "Medium", color: "#1677ff" });
-  //     } else if (entropy < VERY_STRONG) {
-  //       setPasswordStrength({ label: "Strong", color: "#52c41a" });
-  //     } else {
-  //       setPasswordStrength({ label: "Very Strong", color: "#52c41a" });
-  //     }
-  //     setPasswordEntropy(entropy);
-  //   } else {
-  //     setPasswordEntropy(0);
-  //     setPasswordStrength({ label: "Too Weak", color: "#ff4d4f" });
-  //   }
-  // }, [values?.password]);
-
   const onFinish = (values: any) => {
     dispatch.wallet.createWallet({
       password:
@@ -169,7 +144,16 @@ const StepCreatePassword: React.FC = () => {
   return (
     <div className={styles.stepCreatePassword}>
       <h2>Create password</h2>
-      <Form form={form} layout="vertical" onFinish={onFinish}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={{
+          password: TEMP_PASSWORD,
+          confirmPassword: TEMP_PASSWORD,
+          passwordAwareness: true,
+        }}
+      >
         <Form.Item
           name="password"
           label="Password"
@@ -221,25 +205,27 @@ const StepCreatePassword: React.FC = () => {
         >
           <Input.Password size="large" />
         </Form.Item>
-        <Form.Item
-          name="passwordAwareness"
-          valuePropName="checked"
-          rules={[
-            {
-              validator: (_, value) => {
-                console.log(value, typeof value);
-                if (value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(
-                  new Error("You must acknowledge this statement!")
-                );
-              },
-            },
-          ]}
-        >
+        <Form.Item>
           <Flex align="center" gap={8}>
-            <Checkbox />
+            <Form.Item
+              name="passwordAwareness"
+              valuePropName="checked"
+              rules={[
+                {
+                  validator: (_, value) => {
+                    if (value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("You must acknowledge this statement!")
+                    );
+                  },
+                },
+              ]}
+              style={{ marginBottom: 0 }}
+            >
+              <Checkbox />
+            </Form.Item>
             <p>
               I understand that Quantum Purse cannot recover this password for
               me.

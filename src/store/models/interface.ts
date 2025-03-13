@@ -2,6 +2,8 @@ interface IAccount {
   name: string;
   address: string | null;
   balance: string;
+  sphincsPlusPubKey: string;
+  index: number;
 }
 
 interface IWallet {

@@ -26,3 +26,5 @@ export const PASSWORD_ENTROPY_THRESHOLDS = {
   STRONG: 256,
   VERY_STRONG: 300,
 };
+
+export const TEMP_PASSWORD = "akjsfhas98123)(&afj10239))(LKJL::MOQIWVNQQWOIJ";

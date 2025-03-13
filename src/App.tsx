@@ -2,8 +2,15 @@ import React from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import ActiveLayout from "./layouts/ActiveLayout";
 import InactiveLayout from "./layouts/InactiveLayout";
-import { CommingSoon, CreateWallet, ImportWallet, Welcome } from "./pages";
-import Wallet from "./pages/Wallet/Wallet";
+import {
+  CommingSoon,
+  CreateWallet,
+  ImportWallet,
+  Receive,
+  Send,
+  Wallet,
+  Welcome,
+} from "./pages";
 import { ROUTES } from "./utils/constants";
 
 // Detect if running on Github Pages
@@ -23,6 +30,8 @@ const App: React.FC = () => {
         </Route>
         <Route path={ROUTES.HOME} element={<ActiveLayout />}>
           <Route path={ROUTES.WALLET} element={<Wallet />} />
+          <Route path={ROUTES.SEND} element={<Send />} />
+          <Route path={ROUTES.RECEIVE} element={<Receive />} />
         </Route>
         <Route path={ROUTES.COMING_SOON} element={<CommingSoon />} />
       </Routes>
