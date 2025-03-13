@@ -16,18 +16,24 @@ const Transaction: React.FC<ExploreTransactionProps> = ({ txId }) => {
   );
 };
 
-interface ExploreAccountProps {
+interface ExploreAccountProps extends React.HTMLAttributes<HTMLAnchorElement> {
   address: string;
 }
 
-const Account: React.FC<ExploreAccountProps> = ({ address }) => {
+const Account: React.FC<ExploreAccountProps> = ({
+  children,
+  address,
+  ...rest
+}) => {
   return (
     <a
       href={`${CKB_EXPLORER_URL}/address/${address}`}
       target="_blank"
       rel="noreferrer"
+
+      {...rest}
     >
-      {address}
+      {children}
     </a>
   );
 };
