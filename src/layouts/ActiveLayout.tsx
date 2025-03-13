@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
 import { Sidebar } from "../components";
 import LayoutCtx from "../context/LayoutCtx";
-import { RuntimeRootState } from "../store/types";
+import { RootState } from "../store";
 import { ROUTES } from "../utils/constants";
 import Layout from "./Layout";
 import styles from "./Layout.module.scss";
@@ -11,7 +11,7 @@ import styles from "./Layout.module.scss";
 type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement>;
 
 const ActiveLayout: React.FC<AuthLayoutProps> = ({ ...rest }) => {
-  const wallet = useSelector<RuntimeRootState>((state) => state.wallet);
+  const wallet = useSelector((state: RootState) => state.wallet);
   const { showSidebar } = useContext(LayoutCtx);
 
   if (!wallet.active) {

@@ -1,11 +1,9 @@
-import React, { Dispatch, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Navigate, Outlet } from "react-router-dom";
-import { Header, Sidebar } from "../components";
-import { RuntimeRootState } from "../store/types";
-import { ROUTES } from "../utils/constants";
-import styles from "./Layout.module.scss";
+import { Header } from "../components";
+import { Dispatch, RootState } from "../store";
 import { cx } from "../utils/methods";
+import styles from "./Layout.module.scss";
 type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement>;
 
 const Layout: React.FC<AuthLayoutProps> = ({
@@ -13,9 +11,8 @@ const Layout: React.FC<AuthLayoutProps> = ({
   children,
   ...rest
 }) => {
-  const wallet = useSelector<RuntimeRootState>((state) => state.wallet);
+  const wallet = useSelector((state: RootState) => state.wallet);
   const dispatch = useDispatch<Dispatch>();
-
   useEffect(() => {
     dispatch.wallet.init();
   }, [dispatch.wallet.init]);

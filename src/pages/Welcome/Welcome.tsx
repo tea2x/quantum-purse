@@ -1,14 +1,14 @@
 import { Button } from "antd";
+import { useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
+import { RootState } from "../../store";
 import { ROUTES } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import styles from "./Welcome.module.scss";
-import { RuntimeRootState } from "../../store/types";
-import { useSelector } from "react-redux";
 
 const Welcome: React.FC = () => {
   const navigate = useNavigate();
-  const wallet = useSelector<RuntimeRootState>((state) => state.wallet);
+  const wallet = useSelector((state: RootState) => state.wallet);
 
   if (wallet.active) {
     return <Navigate to={ROUTES.WALLET} />;

@@ -41,7 +41,7 @@ export const wallet = createModel<RootModel>()({
     },
   },
   effects: (dispatch) => ({
-    async init(_, rootState) {
+    async init() {
       if (isInitializing) return;
       isInitializing = true;
       quantum = await Quantum.getInstance();
