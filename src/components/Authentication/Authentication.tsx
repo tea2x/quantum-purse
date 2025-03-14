@@ -2,7 +2,7 @@ import { Form, Input, Modal, ModalProps } from "antd";
 import React, { useEffect, useImperativeHandle, useState } from "react";
 import QuantumPurse from "../../core/quantum_purse";
 import { utf8ToBytes } from "../../core/utils";
-import { TEMP_PASSWORD } from "../../utils/constants";
+// import { TEMP_PASSWORD } from "../../utils/constants";
 import styles from "./Authentication.module.scss";
 
 export interface AuthenticationRef {
@@ -88,7 +88,11 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
         <Form
           form={form}
           onFinish={onFinish}
-          initialValues={{ password: TEMP_PASSWORD }}
+          initialValues={
+            {
+              // password: TEMP_PASSWORD,
+            }
+          }
           layout="vertical"
           className="form-authentication"
         >

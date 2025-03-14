@@ -13,7 +13,7 @@ import { Copy } from "../../components";
 import QuantumPurse from "../../core/quantum_purse";
 import { utf8ToBytes } from "../../core/utils";
 import { Dispatch, RootState } from "../../store";
-import { TEMP_PASSWORD } from "../../utils/constants";
+// import { TEMP_PASSWORD } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
@@ -176,11 +176,13 @@ const StepCreatePassword: React.FC = () => {
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        initialValues={{
-          password: TEMP_PASSWORD,
-          confirmPassword: TEMP_PASSWORD,
-          // passwordAwareness: true,
-        }}
+        initialValues={
+          {
+            // password: TEMP_PASSWORD,
+            // confirmPassword: TEMP_PASSWORD,
+            // passwordAwareness: true,
+          }
+        }
       >
         <Form.Item
           name="password"
