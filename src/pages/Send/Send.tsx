@@ -21,6 +21,7 @@ import { CKB_UNIT } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import { AccountItem } from "../Wallet/Wallet";
 import styles from "./Send.module.scss";
+import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
 
 const Send: React.FC = () => {
   const [form] = Form.useForm();
@@ -134,6 +135,15 @@ const Send: React.FC = () => {
             }
             rules={[
               { required: true, message: "Please enter a destination address" },
+              {
+                validator: (_, value) => {
+                  try {
+                    addressToScript(value);
+                  } catch (error) {
+                    return Promise.reject("Please input a valid address");
+                  }
+                },
+              },
             ]}
             className={cx(
               "field-to",
