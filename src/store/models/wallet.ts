@@ -179,7 +179,7 @@ export const wallet = createModel<RootModel>()({
           utf8ToBytes(password),
           fromSphincsPlusPubKey
         );
-        const txId = await sendTransaction(NODE_URL, signedTx);
+        const txId: string = await sendTransaction(NODE_URL, signedTx);
 
         if (
           from === rootState.wallet.current.address ||
