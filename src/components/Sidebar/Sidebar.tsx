@@ -64,7 +64,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
         <CurrentAccount
           address={wallet.current.address!}
           name={wallet.current.name}
-          balance={wallet.current.balance}
+          balance={wallet.current.balance!}
         />
       </div>
       <Menu

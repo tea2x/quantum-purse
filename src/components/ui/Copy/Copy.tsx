@@ -15,8 +15,8 @@ const Copy: React.FC<CopyProps> = ({ value, children, className, ...rest }) => {
       <div
         {...rest}
         className={cx(styles.copy, className)}
-        onClick={() => {
-          navigator.clipboard.writeText(value);
+        onClick={async () => {
+          await navigator.clipboard.writeText(value);
           messageApi.success("Copied to clipboard");
         }}
       >

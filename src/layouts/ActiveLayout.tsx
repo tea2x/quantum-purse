@@ -12,9 +12,12 @@ type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement>;
 
 const ActiveLayout: React.FC<AuthLayoutProps> = ({ ...rest }) => {
   const wallet = useSelector((state: RootState) => state.wallet);
+  const { wallet: loadingWallet } = useSelector(
+    (state: RootState) => state.loading.effects
+  );
   const { showSidebar } = useContext(LayoutCtx);
 
-  if (!wallet.active) {
+  if (!wallet.active && !loadingWallet) {
     return <Navigate to={ROUTES.WELCOME} />;
   }
 

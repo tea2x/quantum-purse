@@ -15,15 +15,16 @@ const CurrentAccount: React.FC<CurrentAccountProps> = ({
   className,
   ...props
 }) => {
-  
   return (
     <div className={cx(styles.currentAccount, className)} {...props}>
       <p className="name">{name}</p>
       <p className="balance">{formatBalance(balance)}</p>
-      <Copy value={address} className="address-utilities">
-        <p className="address">{shortenAddress(address)}</p>
-        <CopyOutlined className="copy-icon" />
-      </Copy>
+      {address && (
+        <Copy value={address} className="address-utilities">
+          <p className="address">{shortenAddress(address)}</p>
+          <CopyOutlined className="copy-icon" />
+        </Copy>
+      )}
     </div>
   );
 };

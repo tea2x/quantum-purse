@@ -12,14 +12,15 @@ import {
   Empty,
   Flex,
   Input,
+  Modal,
   notification,
   Spin,
   Tag,
 } from "antd";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  AccountSelect,
+  AccountDetail,
   Authentication,
   AuthenticationRef,
   Copy,
@@ -39,12 +40,8 @@ const Wallet: React.FC = () => {
     switchAccount: loadingSwitchAccount,
   } = useSelector((state: RootState) => state.loading.effects.wallet);
 
-  const { 
-    searchTerm, 
-    debouncedSearchTerm, 
-    filteredAccounts, 
-    handleSearch 
-  } = useAccountSearch(wallet.accounts);
+  const { searchTerm, debouncedSearchTerm, filteredAccounts, handleSearch } =
+    useAccountSearch(wallet.accounts);
 
   const authenticationRef = useRef<AuthenticationRef>(null);
   const [api, contextHolder] = notification.useNotification();
@@ -176,6 +173,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
   const isActive = sphincsPlusPubKey === wallet.current.sphincsPlusPubKey;
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const menuOptions = useMemo(
     () =>
       [
@@ -201,6 +199,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
               View Details
             </p>
           ),
+          onClick: () => setIsModalOpen(true),
         },
         {
           key: "explore",
@@ -253,6 +252,13 @@ export const AccountItem: React.FC<AccountItemProps> = ({
           </Dropdown>
         )}
       </Flex>
+      <Modal
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        footer={null}
+      >
+        <AccountDetail account={{ name, address, sphincsPlusPubKey }} />
+      </Modal>
     </li>
   );
 };

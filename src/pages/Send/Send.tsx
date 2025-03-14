@@ -107,11 +107,6 @@ const Send: React.FC = () => {
           layout="vertical"
           form={form}
           className={styles.sendForm}
-          initialValues={{
-            from: wallet.accounts[1].address,
-            to: wallet.accounts[0].address,
-            amount: 100,
-          }}
         >
           <Form.Item
             name="from"

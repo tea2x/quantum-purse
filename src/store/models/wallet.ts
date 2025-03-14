@@ -150,10 +150,16 @@ export const wallet = createModel<RootModel>()({
       }
     },
     async send({ from, to, amount, password }, rootState) {
-      console.log("Send: ", { from, to, amount, password });
       try {
         const tx = await transfer(from, to, amount);
-        const signedTx = await quantum.sign(tx, utf8ToBytes(password));
+        const fromSphincsPlusPubKey = rootState.wallet.accounts.find(
+          (account) => account.address === from
+        )?.sphincsPlusPubKey;
+        const signedTx = await quantum.sign(
+          tx,
+          utf8ToBytes(password),
+          fromSphincsPlusPubKey
+        );
         const txId = await sendTransaction(NODE_URL, signedTx);
 
         if (
