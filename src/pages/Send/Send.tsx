@@ -1,40 +1,103 @@
-import { Button, Flex, Form, Input, InputNumber, Select, Switch } from "antd";
-import { useRef } from "react";
+import {
+  Button,
+  Flex,
+  Form,
+  Input,
+  InputNumber,
+  notification,
+  Select,
+  Switch,
+} from "antd";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  AccountSelect,
+  Authentication,
+  AuthenticationRef,
+  Explore,
+} from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { CKB_UNIT } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import { AccountItem } from "../Wallet/Wallet";
-import { Authentication, AuthenticationRef } from "../../components";
 import styles from "./Send.module.scss";
 
 const Send: React.FC = () => {
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+  const [api, contextHolder] = notification.useNotification();
   const dispatch = useDispatch<Dispatch>();
   const authenticationRef = useRef<AuthenticationRef>(null);
   const wallet = useSelector((state: RootState) => state.wallet);
-  const options = wallet.accounts.map(
-    ({ sphincsPlusPubKey, name, address }) => ({
-      value: address,
-      key: sphincsPlusPubKey,
-      label: (
-        <div className="contact-item">
-          <AccountItem
-            address={address!}
-            name={name}
-            sphincsPlusPubKey={sphincsPlusPubKey}
-            hasTools={false}
-            copyable={false}
-          />
-        </div>
-      ),
-    })
+  const { send: loadingSend } = useSelector(
+    (state: RootState) => state.loading.effects.wallet
   );
 
-  const onFinish = ({ from, to, amount, password }: any) => {
-    dispatch.wallet.send({ from, to, amount, password });
+  const customOptionRender = (account: any) => {
+    return (
+      <AccountItem
+        address={account.data.address!}
+        name={account.data.name}
+        sphincsPlusPubKey={account.data.sphincsPlusPubKey}
+        hasTools={false}
+        copyable={false}
+      />
+    );
   };
+
+  const customLabelRender = (account: any) => {
+    console.log(account);
+    return (
+      <AccountItem
+        address={account?.address!}
+        name={account?.name}
+        sphincsPlusPubKey={account?.sphincsPlusPubKey}
+        hasTools={false}
+        copyable={false}
+        showBalance={true}
+      />
+    );
+  };
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, values]);
+
+  const onFinish = async ({ from, to, amount, password }: any) => {
+    try {
+      const txId = await dispatch.wallet.send({ from, to, amount, password });
+      form.resetFields();
+      api.success({
+        message: "Create account successfully",
+        description: (
+          <div>
+            <p>Send transaction successfully</p>
+            <p>
+              <Explore.Transaction txId={txId as string} />
+            </p>
+          </div>
+        ),
+        placement: "bottomRight",
+        duration: 0,
+      });
+    } catch (error) {
+      console.info("Send transaction failed", error);
+      api.error({
+        message: "Send transaction failed",
+        description: "Something went wrong",
+        placement: "bottomRight",
+        duration: 0,
+      });
+    } finally {
+      authenticationRef.current?.close();
+    }
+  };
+
+  console.log(values)
 
   return (
     <section className={cx(styles.wallet, "panel")}>
@@ -43,13 +106,12 @@ const Send: React.FC = () => {
         <Form
           layout="vertical"
           form={form}
-          initialValues={{
-            from: wallet.current.address,
-            isSendToMyAccount: true,
-            to: wallet.current.address,
-            amount: 120,
-          }}
           className={styles.sendForm}
+          initialValues={{
+            from: wallet.accounts[1].address,
+            to: wallet.accounts[0].address,
+            amount: 100,
+          }}
         >
           <Form.Item
             name="from"
@@ -57,11 +119,11 @@ const Send: React.FC = () => {
             rules={[{ required: true, message: "Please input an account" }]}
             className={"field-from select-my-account"}
           >
-            <Select
-              showSearch
-              filterOption={false}
-              options={options}
-              allowClear
+            <AccountSelect
+              accounts={wallet.accounts}
+              customOptionRender={customOptionRender}
+              customLabelRender={customLabelRender}
+              placeholder="Please select account from your wallet"
             />
           </Form.Item>
           <Form.Item
@@ -91,12 +153,11 @@ const Send: React.FC = () => {
             {!values?.isSendToMyAccount ? (
               <Input placeholder="Input the destination address" />
             ) : (
-              <Select
+              <AccountSelect
+                accounts={wallet.accounts}
+                customOptionRender={customOptionRender}
+                customLabelRender={customLabelRender}
                 placeholder="Please select account from your wallet"
-                showSearch
-                filterOption={false}
-                options={options}
-                allowClear
               />
             )}
           </Form.Item>
@@ -112,24 +173,36 @@ const Send: React.FC = () => {
               },
             ]}
           >
-            <InputNumber min={73} step={1} addonAfter={CKB_UNIT} controls />
+            <InputNumber
+              min={73}
+              step={1}
+              addonAfter={CKB_UNIT}
+              controls
+              placeholder="Amount of tokens"
+            />
           </Form.Item>
           <Form.Item>
-            <Button
-              type="primary"
-              onClick={() => authenticationRef.current?.open()}
-            >
-              Send
-            </Button>
+            <Flex justify="end">
+              <Button
+                type="primary"
+                onClick={() => authenticationRef.current?.open()}
+                disabled={!submittable || loadingSend}
+                loading={loadingSend}
+              >
+                Send
+              </Button>
+            </Flex>
           </Form.Item>
         </Form>
         <Authentication
           ref={authenticationRef}
+          loading={loadingSend}
           authenCallback={(password) => {
             onFinish({ ...values, password });
           }}
         />
       </div>
+      {contextHolder}
     </section>
   );
 };

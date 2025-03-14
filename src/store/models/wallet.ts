@@ -1,4 +1,4 @@
-import { createModel } from "@rematch/core";
+import { createModel, init } from "@rematch/core";
 import { Modal } from "antd";
 import { NODE_URL } from "../../core/config";
 import Quantum from "../../core/quantum_purse";
@@ -10,22 +10,19 @@ interface IAccount {
   name: string;
   address: string | null;
   sphincsPlusPubKey: string;
-}
-
-interface ICurrentAccount extends IAccount {
-  balance: string;
+  balance?: string;
 }
 
 interface IWallet {
   active: boolean;
-  current: ICurrentAccount;
+  current: IAccount;
   accounts: IAccount[];
 }
 
 type StateType = IWallet;
 
 let isInitializing = false;
-let quantum: Quantum;
+export let quantum: Quantum;
 
 const initState: StateType = {
   active: false,
@@ -44,10 +41,19 @@ export const wallet = createModel<RootModel>()({
     setActive(state: StateType, active: boolean) {
       return { ...state, active };
     },
-    setCurrent(state: StateType, current: ICurrentAccount) {
+    setCurrent(state: StateType, current: IAccount) {
       return { ...state, current };
     },
     setAccounts(state: StateType, accounts: IAccount[]) {
+      return { ...state, accounts };
+    },
+    setAccountBalance(state: StateType, { sphincsPlusPubKey, balance }) {
+      const accounts = state.accounts.map((account) => {
+        if (account.sphincsPlusPubKey === sphincsPlusPubKey) {
+          return { ...account, balance };
+        }
+        return account;
+      });
       return { ...state, accounts };
     },
     reset() {
@@ -57,14 +63,18 @@ export const wallet = createModel<RootModel>()({
   effects: (dispatch) => ({
     async loadAccounts() {
       if (!quantum) return;
-      const accounts = await quantum.getAllAccounts();
-      const accountsData = accounts.map((account, index) => ({
-        name: `Account ${index + 1}`,
-        sphincsPlusPubKey: account,
-        address: quantum.getAddress(account),
-      }));
-      this.setAccounts(accountsData);
-      return accountsData;
+      try {
+        const accounts = await quantum.getAllAccounts();
+        const accountsData = accounts.map((account, index) => ({
+          name: `Account ${index + 1}`,
+          sphincsPlusPubKey: account,
+          address: quantum.getAddress(account),
+        }));
+        this.setAccounts(accountsData);
+        return accountsData;
+      } catch (error) {
+        throw error;
+      }
     },
     async init(_, rootState) {
       if (isInitializing) return;
@@ -76,42 +86,68 @@ export const wallet = createModel<RootModel>()({
         this.setActive(true);
       } catch (error) {
         this.setActive(false);
-        console.error("Error initializing wallet", error);
+        // console.error("Error initializing wallet", error);
       } finally {
         isInitializing = false;
       }
     },
     async loadCurrentAccount(_, rootState) {
       if (!quantum.accountPointer || !rootState.wallet.accounts.length) return;
-      const accountPointer = quantum.accountPointer;
-      console.log("Load current account: ", accountPointer);
-      const accountData = rootState.wallet.accounts.find(
-        (account) => account.sphincsPlusPubKey === accountPointer
-      );
-      if (!accountData) return;
-      const currentBalance = await quantum.getBalance();
-      this.setCurrent({
-        address: quantum.getAddress(accountPointer),
-        balance: currentBalance.toString(),
-        sphincsPlusPubKey: accountData.sphincsPlusPubKey,
-        name: accountData.name,
-      });
+      try {
+        const accountPointer = quantum.accountPointer;
+        console.log("Load current account: ", accountPointer);
+        const accountData = rootState.wallet.accounts.find(
+          (account) => account.sphincsPlusPubKey === accountPointer
+        );
+        if (!accountData) return;
+        const currentBalance = await quantum.getBalance();
+        this.setCurrent({
+          address: quantum.getAddress(accountPointer),
+          balance: currentBalance.toString(),
+          sphincsPlusPubKey: accountData.sphincsPlusPubKey,
+          name: accountData.name,
+        });
+      } catch (error) {
+        throw error;
+      }
     },
     async createAccount(payload: { password: string }, rootState) {
-      console.log("Create account: ", payload);
-      await quantum.genAccount(utf8ToBytes(payload.password));
-      console.log("Create account: ", quantum.accountPointer);
-      await this.loadAccounts();
-      await this.loadCurrentAccount({});
+      try {
+        await quantum.genAccount(utf8ToBytes(payload.password));
+        const accountsData: any = await this.loadAccounts();
+        return accountsData?.at(-1);
+      } catch (error) {
+        throw error;
+      }
     },
     async createWallet({ password }, rootState) {
-      await quantum.init(utf8ToBytes(password));
-      await quantum.genAccount(utf8ToBytes(password));
-      this.loadCurrentAccount({});
+      try {
+        await quantum.init(utf8ToBytes(password));
+        await quantum.genAccount(utf8ToBytes(password));
+        this.loadCurrentAccount({});
+      } catch (error) {
+        throw error;
+      }
+    },
+    async getAccountBalance({ sphincsPlusPubKey }) {
+      try {
+        const balance = await quantum.getBalance(sphincsPlusPubKey);
+        // this.setAccountBalance({
+        //   sphincsPlusPubKey,
+        //   balance: balance.toString(),
+        // });
+        return balance.toString();
+      } catch (error) {
+        throw error;
+      }
     },
     async switchAccount({ sphincsPlusPubKey }, rootState) {
-      await quantum.setAccPointer(sphincsPlusPubKey);
-      this.loadCurrentAccount({});
+      try {
+        await quantum.setAccPointer(sphincsPlusPubKey);
+        this.loadCurrentAccount({});
+      } catch (error) {
+        throw error;
+      }
     },
     async send({ from, to, amount, password }, rootState) {
       console.log("Send: ", { from, to, amount, password });
@@ -119,20 +155,25 @@ export const wallet = createModel<RootModel>()({
         const tx = await transfer(from, to, amount);
         const signedTx = await quantum.sign(tx, utf8ToBytes(password));
         const txId = await sendTransaction(NODE_URL, signedTx);
-        console.log("Send transaction: ", txId);
-        Modal.success({
-          title: "Send transaction successfully",
-          content: "Send transaction successfully",
-          centered: true,
-          className: "global-modal",
-        });
+
+        if (
+          from === rootState.wallet.current.address ||
+          to === rootState.wallet.current.address
+        ) {
+          this.loadCurrentAccount({});
+        }
+        return txId;
       } catch (error) {
-        console.error("Send transaction failed", error);
+        throw error;
       }
     },
     async ejectWallet() {
-      await quantum.dbClear();
-      this.reset();
+      try {
+        await quantum.dbClear();
+        this.reset();
+      } catch (error) {
+        throw error;
+      }
     },
   }),
 });

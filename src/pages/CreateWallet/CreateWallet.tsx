@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import QuantumPurse from "../../core/quantum_purse";
 import { utf8ToBytes } from "../../core/utils";
 import { Dispatch } from "../../store";
-import { ROUTES, TEMP_PASSWORD } from "../../utils/constants";
+import { ROUTES } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
@@ -111,8 +111,7 @@ const StepCreatePassword: React.FC = () => {
 
   const onFinish = (values: any) => {
     dispatch.wallet.createWallet({
-      password:
-        values.password || "my password is easy to crack. Don't use this!",
+      password: values.password,
     });
     next();
   };
@@ -120,16 +119,7 @@ const StepCreatePassword: React.FC = () => {
   return (
     <div className={styles.stepCreatePassword}>
       <h2>Create password</h2>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-        initialValues={{
-          // password: TEMP_PASSWORD,
-          // confirmPassword: TEMP_PASSWORD,
-          passwordAwareness: true,
-        }}
-      >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
           name="password"
           label="Password"

@@ -11,6 +11,7 @@ export interface AuthenticationRef {
 interface AuthenticationProps extends ModalProps {
   title?: string;
   description?: string;
+  loading?: boolean;
   authenCallback: (password: string) => void;
 }
 
@@ -20,6 +21,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
       authenCallback,
       title = "Authentication",
       description = "Please enter your password to generate a new account",
+      loading,
       ...rest
     },
     ref
@@ -36,9 +38,8 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
       close: closeHandler,
     }));
 
-    const onFinish = (values: any) => {
-      authenCallback(values.password);
-      closeHandler();
+    const onFinish = async (values: any) => {
+      await authenCallback(values.password);
     };
 
     return (
@@ -49,6 +50,11 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
         centered
         onOk={form.submit}
         className={styles.authentication}
+        confirmLoading={loading}
+        cancelButtonProps={{
+          disabled: loading,
+        }}
+        closable={!loading}
       >
         <h2 className="title">{title}</h2>
         <p className="description">{description}</p>

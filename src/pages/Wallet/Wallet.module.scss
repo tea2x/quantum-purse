@@ -1,5 +1,9 @@
 .wallet {
   :global {
+
+    display: flex;
+    flex-direction: column;
+
     .account-list {
       display: flex;
       flex-direction: column;
@@ -13,6 +17,11 @@
       }
     }
   }
+}
+
+.accountList {
+  overflow: auto;
+  max-height: 100%;
 }
 
 .accountUtils {
