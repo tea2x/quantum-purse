@@ -51,6 +51,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
 
     const onFinish = async (values: any) => {
       await authenCallback(values.password);
+      form.resetFields();
     };
 
     const entropyValidator = (password: string) => {
