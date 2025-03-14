@@ -2,16 +2,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.8rem;
+  padding: 2.4rem 1.2rem;
+
   :global {
     .name {
       font-size: 1.2rem;
+      font-weight: bold;
     }
     .balance {
       font-size: 2rem;
       font-weight: 400;
       font-family: "Quantico", sans-serif;
-      color: var(--primary);
+      color: var(--teal-2);
     }
 
     .address-utilities {
@@ -22,22 +25,17 @@
       padding: 0.4rem 1.2rem;
       border-radius: 0.6rem;
       background-color: #5e667418;
-
-      cursor: pointer;
-      .address {
-        font-size: 14px;
-        font-weight: 400;
-      }
-      button {
-        color: var(--gray-light);
-        border-radius: 0.6rem;
-        position: absolute;
-        left: 100%;
-        top: 0;
-      }
+      transition: all 0.2s ease-out;
 
       &:hover {
-        background-color: #5e667438;
+        background-color: var(--teal-2);
+        color: var(--white);
+      }
+      cursor: pointer;
+      .address {
+        font-size: 1.2rem;
+        font-family: "Quantico", sans-serif;
+        font-weight: 400;
       }
     }
   }

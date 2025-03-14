@@ -14,8 +14,7 @@ export const shortenAddress = (
 
 export const formatBalance = (balance: string) => {
   const ckbValue = BigInt(balance) / BigInt(CKB_DECIMALS);
-  return (
-    !!ckbValue &&
-    `${ckbValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${CKB_UNIT}`
-  );
+  return `${ckbValue
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${CKB_UNIT}`;
 };

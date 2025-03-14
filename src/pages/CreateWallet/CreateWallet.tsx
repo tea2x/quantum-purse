@@ -1,5 +1,5 @@
 import { LoadingOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Flex, Form, Input, Progress, Steps } from "antd";
+import { Button, Checkbox, Flex, Form, Input, Steps } from "antd";
 import React, {
   createContext,
   useContext,
@@ -12,12 +12,10 @@ import { useNavigate } from "react-router-dom";
 import QuantumPurse from "../../core/quantum_purse";
 import { utf8ToBytes } from "../../core/utils";
 import { Dispatch } from "../../store";
-import { PASSWORD_ENTROPY_THRESHOLDS, ROUTES, TEMP_PASSWORD } from "../../utils/constants";
+import { ROUTES, TEMP_PASSWORD } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
-
-const { WEAK, MEDIUM, STRONG, VERY_STRONG } = PASSWORD_ENTROPY_THRESHOLDS;
 
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: 0,
@@ -90,11 +88,6 @@ const StepCreatePassword: React.FC = () => {
   const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
   const [submittable, setSubmittable] = React.useState<boolean>(false);
-  const [passwordEntropy, setPasswordEntropy] = React.useState<number>(0);
-  const [passwordStrength, setPasswordStrength] = React.useState<{
-    label: string;
-    color: string;
-  }>({ label: "Too Weak", color: "#ff4d4f" });
 
   useEffect(() => {
     form
@@ -105,32 +98,15 @@ const StepCreatePassword: React.FC = () => {
 
   const entropyValidator = (password: string) => {
     if (!password) {
-      setPasswordEntropy(0);
-      setPasswordStrength({ label: "Too Weak", color: "#ff4d4f" });
       return Promise.resolve();
     }
-
     const passwordBytes = utf8ToBytes(password);
-    const entropy = QuantumPurse.calculateEntropy(passwordBytes);
-    setPasswordEntropy(entropy);
-
-    if (entropy < WEAK) {
-      setPasswordStrength({ label: "Too Weak", color: "#ff4d4f" });
-    } else if (entropy < MEDIUM) {
-      setPasswordStrength({ label: "Weak", color: "#faad14" });
-    } else if (entropy < STRONG) {
-      setPasswordStrength({ label: "Medium", color: "#1677ff" });
-    } else if (entropy < VERY_STRONG) {
-      setPasswordStrength({ label: "Strong", color: "#52c41a" });
+    try {
+      QuantumPurse.checkPassword(passwordBytes);
       return Promise.resolve();
-    } else {
-      setPasswordStrength({
-        label: "Very Strong",
-        color: "#52c41a",
-      });
-      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(new Error(error as string));
     }
-    return Promise.reject(new Error("Password is not strong enough!"));
   };
 
   const onFinish = (values: any) => {
@@ -149,8 +125,8 @@ const StepCreatePassword: React.FC = () => {
         layout="vertical"
         onFinish={onFinish}
         initialValues={{
-          password: TEMP_PASSWORD,
-          confirmPassword: TEMP_PASSWORD,
+          // password: TEMP_PASSWORD,
+          // confirmPassword: TEMP_PASSWORD,
           passwordAwareness: true,
         }}
       >
@@ -163,29 +139,11 @@ const StepCreatePassword: React.FC = () => {
               validator: (_, value) => {
                 return entropyValidator(value);
               },
-              message: "Password is not strong enough!",
             },
           ]}
         >
           <Input.Password size="large" />
         </Form.Item>
-
-        {values?.password && (
-          <div style={{ marginBottom: "16px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Password Strength:</span>
-              <span style={{ color: passwordStrength.color }}>
-                {passwordStrength.label}
-              </span>
-            </div>
-            <Progress
-              percent={(passwordEntropy / VERY_STRONG) * 100}
-              strokeColor={passwordStrength.color}
-              showInfo={false}
-              status="active"
-            />
-          </div>
-        )}
 
         <Form.Item
           name="confirmPassword"

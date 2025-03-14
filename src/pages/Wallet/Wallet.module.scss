@@ -3,35 +3,7 @@
     .account-list {
       display: flex;
       flex-direction: column;
-      li {
-        border-radius: 1rem;
-        padding: 0.8rem 1.6rem;
-        background-color: var(--white-abs);
-        transition: background-color 0.3s ease;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
 
-        &:hover {
-          background-color: var(--white);
-        }
-        .name {
-          font-size: 1.6rem;
-          font-weight: 600;
-          line-height: 1.5;
-          color: var(--gray-03);
-        }
-        .address {
-          font-size: 1.4rem;
-          font-family: "Quantico", sans-serif;
-          color: var(--gray-02);
-        }
-        .more-btn {
-          padding: 0;
-          width: 3.2rem;
-          height: 3.2rem;
-        }
-      }
       .divider {
         margin: 0;
         border-block-start-color: var(--gray-light);
@@ -53,6 +25,53 @@
       &:hover {
         color: var(--teal-2) !important;
       }
+    }
+  }
+}
+
+.accountItem {
+  border-radius: 1rem;
+  padding: 0.6rem 1.6rem;
+  background-color: var(--white-abs);
+  transition: background-color 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  border: solid 0.1rem transparent;
+
+  &.active {
+    border-color: var(--teal-2);
+  }
+
+  &:hover {
+    background-color: var(--white);
+  }
+  :global {
+    .account-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      .name {
+        font-size: 1.4rem;
+        font-weight: 600;
+        line-height: 1.5;
+        color: var(--gray-03);
+      }
+      .address {
+        font-size: 1.4rem;
+        font-family: "Quantico", sans-serif;
+        color: var(--gray-02);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+    }
+
+    .more-btn {
+      padding: 0;
+      width: 3.2rem;
+      height: 3.2rem;
     }
   }
 }

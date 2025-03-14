@@ -1,14 +1,16 @@
 interface IAccount {
   name: string;
   address: string | null;
-  balance: string;
   sphincsPlusPubKey: string;
-  index: number;
+}
+
+interface CurrentAccount extends IAccount {
+  balance: string;
 }
 
 interface IWallet {
   active: boolean;
-  current: IAccount;
+  current: CurrentAccount;
   accounts: IAccount[];
 }
 

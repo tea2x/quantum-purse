@@ -15,9 +15,7 @@ const Send: React.FC = () => {
   const wallet = useSelector((state: RootState) => state.wallet);
   const options = wallet.accounts.map(
     ({ sphincsPlusPubKey, name, address }) => ({
-      value:
-        address ||
-        "ckt1qpfwarn3894t62vh7lczd97afscvxnt4rwn4g8d3s9uj9dad6jj2qqnujcz925q2zzwe5slw4sz9lk3em9y8lxey3wvxulk8tdjqnth4js3f0hcs",
+      value: address,
       key: sphincsPlusPubKey,
       label: (
         <div className="contact-item">

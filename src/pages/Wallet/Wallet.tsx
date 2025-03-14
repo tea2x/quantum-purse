@@ -1,20 +1,18 @@
-import { Button, Divider, Dropdown, Flex, Input } from "antd";
-import { useMemo, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { CurrentAccount, Explore } from "../../components";
-import { Dispatch, RootState } from "../../store";
-import { cx, shortenAddress } from "../../utils/methods";
-import Authentication, { AuthenticationRef } from "./Modals/Authentication";
-import styles from "./Wallet.module.scss";
-import Icon from "../../components/Icon/Icon";
 import {
-  CaretDownOutlined,
-  ExpandOutlined,
+  CopyOutlined,
   GlobalOutlined,
   MoreOutlined,
   QrcodeOutlined,
   SwapOutlined,
 } from "@ant-design/icons";
+import { Button, Divider, Dropdown, Flex, Input } from "antd";
+import { useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Copy, Explore } from "../../components";
+import { Dispatch, RootState } from "../../store";
+import { cx, shortenAddress } from "../../utils/methods";
+import Authentication, { AuthenticationRef } from "./Modals/Authentication";
+import styles from "./Wallet.module.scss";
 const Wallet: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
@@ -29,11 +27,6 @@ const Wallet: React.FC = () => {
         gap={8}
         style={{ marginBottom: 16 }}
       >
-        {/* <CurrentAccount
-          address={wallet.current.address!}
-          name={wallet.current.name}
-          balance={wallet.current.balance}
-        /> */}
         <Input.Search placeholder="Type something to search your account" />
         <Button
           type="primary"
@@ -47,8 +40,9 @@ const Wallet: React.FC = () => {
           {wallet.accounts.map(
             ({ address, name, sphincsPlusPubKey }, index) => (
               <>
-                {index > 0 && <Divider className="divider" />}
+                {index > 0 && <Divider className="divider" key={index} />}
                 <AccountItem
+                  key={sphincsPlusPubKey}
                   address={address!}
                   name={name}
                   sphincsPlusPubKey={sphincsPlusPubKey}
@@ -63,19 +57,21 @@ const Wallet: React.FC = () => {
   );
 };
 
-interface AccountItemProps {
+interface AccountItemProps extends React.HTMLAttributes<HTMLLIElement> {
   address: string;
   name: string;
   sphincsPlusPubKey: string;
 }
 
-const AccountItem: React.FC<AccountItemProps> = ({
+export const AccountItem: React.FC<AccountItemProps> = ({
   address,
   name,
   sphincsPlusPubKey,
+  ...props
 }) => {
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
+  const isActive = sphincsPlusPubKey === wallet.current.sphincsPlusPubKey;
   const menuOptions = useMemo(
     () =>
       [
@@ -90,12 +86,12 @@ const AccountItem: React.FC<AccountItemProps> = ({
           onClick: () => {
             dispatch.wallet.switchAccount({ sphincsPlusPubKey });
           },
-          hidden: sphincsPlusPubKey === wallet.current.sphincsPlusPubKey,
+          hidden: isActive,
         },
         {
           key: "view-details",
           label: (
-            <p  className="menu-item">
+            <p className="menu-item">
               <QrcodeOutlined />
               View Details
             </p>
@@ -111,17 +107,24 @@ const AccountItem: React.FC<AccountItemProps> = ({
           ),
         },
       ].filter((item) => !item.hidden),
-    []
+    [isActive, sphincsPlusPubKey, address]
   );
   return (
-    <li key={address}>
-      <div>
+    <li
+      {...props}
+      className={cx(styles.accountItem, isActive && styles.active)}
+    >
+      <div className="account-info">
         <p className="name">{name}</p>
-        <p className="address">{shortenAddress(sphincsPlusPubKey)}</p>
+        <Copy value={address}>
+          <p className="address">
+            <span>{shortenAddress(address, 10, 20)}</span>
+            <CopyOutlined />
+          </p>
+        </Copy>
       </div>
       <div>
         <Dropdown
-          // openClassName={styles.accountUtils}
           rootClassName={styles.accountUtils}
           menu={{
             items: menuOptions,

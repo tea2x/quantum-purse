@@ -1,11 +1,26 @@
 import { createModel } from "@rematch/core";
-import Quantum from "../../core/quantum_purse";
-import { utf8ToBytes, sendTransaction } from "../../core/utils";
-import { RootModel } from "./index";
-import { IAccount, IWallet } from "./interface";
-import { transfer } from "../../core/transaction_builder";
+import { Modal } from "antd";
 import { NODE_URL } from "../../core/config";
-import { message, Modal } from "antd";
+import Quantum from "../../core/quantum_purse";
+import { transfer } from "../../core/transaction_builder";
+import { sendTransaction, utf8ToBytes } from "../../core/utils";
+import { RootModel } from "./index";
+
+interface IAccount {
+  name: string;
+  address: string | null;
+  sphincsPlusPubKey: string;
+}
+
+interface ICurrentAccount extends IAccount {
+  balance: string;
+}
+
+interface IWallet {
+  active: boolean;
+  current: ICurrentAccount;
+  accounts: IAccount[];
+}
 
 type StateType = IWallet;
 
@@ -16,10 +31,9 @@ const initState: StateType = {
   active: false,
   current: {
     name: "",
-    address: null,
+    address: "",
     balance: "0",
     sphincsPlusPubKey: "",
-    index: 0,
   },
   accounts: [],
 };
@@ -30,7 +44,7 @@ export const wallet = createModel<RootModel>()({
     setActive(state: StateType, active: boolean) {
       return { ...state, active };
     },
-    setCurrent(state: StateType, current: IAccount) {
+    setCurrent(state: StateType, current: ICurrentAccount) {
       return { ...state, current };
     },
     setAccounts(state: StateType, accounts: IAccount[]) {
@@ -47,25 +61,14 @@ export const wallet = createModel<RootModel>()({
       quantum = await Quantum.getInstance();
       try {
         const accounts = await quantum.getAllAccounts();
-        console.log("Load accounts: ", accounts);
         await quantum.setAccPointer(accounts[0]);
-        const currentAddress = await quantum.getAddress();
-        console.log("Load current address: ", currentAddress);
-        const currentBalance = await quantum.getBalance();
-        console.log("Load current balance: ", currentBalance);
         this.setAccounts(
           accounts.map((account, index) => ({
             name: `Account ${index + 1}`,
             sphincsPlusPubKey: account,
+            address: quantum.getAddress(account),
           }))
         );
-        this.setCurrent({
-          name: `Account ${1}`,
-          address: currentAddress,
-          balance: currentBalance.toString(),
-          sphincsPlusPubKey: accounts[0],
-          index: 0,
-        });
         this.setActive(true);
       } catch (error) {
         this.setActive(false);
@@ -74,6 +77,21 @@ export const wallet = createModel<RootModel>()({
         isInitializing = false;
       }
     },
+    async loadCurrentAccount(_, rootState) {
+      if (!quantum.accountPointer || !rootState.wallet.accounts.length) return;
+      const accountPointer = quantum.accountPointer;
+      const accountData = rootState.wallet.accounts.find(
+        (account) => account.sphincsPlusPubKey === accountPointer
+      );
+      if (!accountData) return;
+      const currentBalance = await quantum.getBalance();
+      this.setCurrent({
+        address: quantum.getAddress(accountPointer),
+        balance: currentBalance.toString(),
+        sphincsPlusPubKey: accountData.sphincsPlusPubKey,
+        name: accountData.name,
+      });
+    },
     async createAccount(payload: { password: string }, rootState) {
       console.log("Create account: ", payload);
       await quantum.genAccount(utf8ToBytes(payload.password));
@@ -81,30 +99,11 @@ export const wallet = createModel<RootModel>()({
     async createWallet({ password }, rootState) {
       await quantum.init(utf8ToBytes(password));
       await quantum.genAccount(utf8ToBytes(password));
-      const address = await quantum.getAddress();
-      const balance = await quantum.getBalance();
-      const accounts = await quantum.getAllAccounts();
-      this.setAccounts(accounts);
-      this.setCurrent({
-        address,
-        balance,
-      });
-      this.setActive(true);
+      this.loadCurrentAccount({});
     },
     async switchAccount({ sphincsPlusPubKey }, rootState) {
-      console.log("Switch account: ", sphincsPlusPubKey);
       await quantum.setAccPointer(sphincsPlusPubKey);
-      const currentAddress = await quantum.getAddress();
-      const currentBalance = await quantum.getBalance();
-      const accountData = rootState.wallet.accounts.find(
-        (account) => account.sphincsPlusPubKey === sphincsPlusPubKey
-      );
-      this.setCurrent({
-        address: currentAddress,
-        balance: currentBalance.toString(),
-        sphincsPlusPubKey,
-        name: accountData?.name,
-      });
+      this.loadCurrentAccount({});
     },
     async send({ from, to, amount, password }, rootState) {
       try {
