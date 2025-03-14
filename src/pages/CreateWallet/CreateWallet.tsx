@@ -1,5 +1,5 @@
-import { LoadingOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Flex, Form, Input, Steps } from "antd";
+import { KeyOutlined, LoadingOutlined, LockOutlined } from "@ant-design/icons";
+import { Button, Checkbox, Flex, Form, Input, notification, Steps } from "antd";
 import React, {
   createContext,
   useContext,
@@ -7,12 +7,13 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import { Copy } from "../../components";
 import QuantumPurse from "../../core/quantum_purse";
 import { utf8ToBytes } from "../../core/utils";
-import { Dispatch } from "../../store";
-import { ROUTES } from "../../utils/constants";
+import { Dispatch, RootState } from "../../store";
+import { TEMP_PASSWORD } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
@@ -24,21 +25,44 @@ const CreateWalletContext = createContext<CreateWalletContextType>({
   prev: () => {},
   done: () => {},
   steps: [],
+  srp: "",
+  setSRP: () => {},
 });
 
 const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
+  const location = useLocation();
+  const [currentStep, setCurrentStep] = useState(location.state?.step || 0);
+  const [srp, setSRP] = useState("");
+  const [api, contextHolder] = notification.useNotification();
+  const dispatch = useDispatch<Dispatch>();
+  const { createWallet: loadingCreateWallet, exportSRP: loadingExportSRP } =
+    useSelector((state: RootState) => state.loading.effects.wallet);
   const next = () => {
     setCurrentStep(currentStep + 1);
   };
   const prev = () => {
     setCurrentStep(currentStep - 1);
   };
-  const done = () => {
-    navigate(ROUTES.HOME);
+  const done = async () => {
+    try {
+      localStorage.removeItem("wallet-step");
+      api.success({
+        message: "Create wallet successfully!",
+        description: "You can now use your wallet to send and receive tokens.",
+        duration: 0,
+      });
+      await dispatch.wallet.init({});
+      await dispatch.wallet.loadAccounts();
+      await dispatch.wallet.loadCurrentAccount({});
+    } catch (error) {
+      api.error({
+        message: "Create wallet failed!",
+        description: "Please try again.",
+        duration: 0,
+      });
+    }
   };
 
   const steps = useMemo(
@@ -47,24 +71,41 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
         key: "1",
         title: "Create password",
         description: "Create a secure password for your wallet",
-        icon: <LoadingOutlined />,
+        icon:
+          loadingCreateWallet || loadingExportSRP ? (
+            <LoadingOutlined />
+          ) : (
+            <KeyOutlined />
+          ),
         content: <StepCreatePassword />,
       },
       {
         key: "2",
         title: "Secure Secret Recovery Phrase",
         description: "Save your recovery phrase in a secure location",
-        icon: <LoadingOutlined />,
+        icon: <LockOutlined />,
         content: <StepSecureSRP />,
       },
     ],
-    []
+    [loadingCreateWallet, loadingExportSRP]
   );
+
+  console.log("currentSTep  ", currentStep);
 
   return (
     <CreateWalletContext.Provider
-      value={{ steps, currentStep, setCurrentStep, next, prev, done }}
+      value={{
+        steps,
+        currentStep,
+        setCurrentStep,
+        next,
+        prev,
+        done,
+        srp,
+        setSRP,
+      }}
     >
+      {contextHolder}
       {children}
     </CreateWalletContext.Provider>
   );
@@ -84,10 +125,12 @@ const CreateWalletContent: React.FC = () => {
 
 const StepCreatePassword: React.FC = () => {
   const [form] = Form.useForm();
-  const { next } = useContext(CreateWalletContext);
+  const { next, setSRP } = useContext(CreateWalletContext);
   const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
   const [submittable, setSubmittable] = React.useState<boolean>(false);
+  const { createWallet: loadingCreateWallet, exportSRP: loadingExportSRP } =
+    useSelector((state: RootState) => state.loading.effects.wallet);
 
   useEffect(() => {
     form
@@ -109,17 +152,36 @@ const StepCreatePassword: React.FC = () => {
     }
   };
 
-  const onFinish = (values: any) => {
-    dispatch.wallet.createWallet({
-      password: values.password,
-    });
-    next();
+  const onFinish = async (values: any) => {
+    await dispatch.wallet
+      .createWallet({
+        password: values.password,
+      })
+      .then(async () => {
+        const srp = await dispatch.wallet.exportSRP({
+          password: values.password,
+        });
+        setSRP(srp);
+      })
+      .then(() => {
+        next();
+        localStorage.setItem("wallet-step", "1");
+      });
   };
 
   return (
     <div className={styles.stepCreatePassword}>
       <h2>Create password</h2>
-      <Form form={form} layout="vertical" onFinish={onFinish}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={{
+          password: TEMP_PASSWORD,
+          confirmPassword: TEMP_PASSWORD,
+          // passwordAwareness: true,
+        }}
+      >
         <Form.Item
           name="password"
           label="Password"
@@ -181,7 +243,12 @@ const StepCreatePassword: React.FC = () => {
           </Flex>
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={!submittable}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            disabled={!submittable || loadingCreateWallet || loadingExportSRP}
+            loading={loadingCreateWallet || loadingExportSRP}
+          >
             Create a new wallet
           </Button>
         </Form.Item>
@@ -191,30 +258,32 @@ const StepCreatePassword: React.FC = () => {
 };
 
 const StepSecureSRP: React.FC = () => {
-  const { done } = useContext(CreateWalletContext);
-  const srp =
-    "lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.";
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(srp);
+  const { done, srp } = useContext(CreateWalletContext);
+
+  const onDone = () => {
+    done();
   };
+
   return (
-    <div>
+    <div className={styles.stepSecureSRP}>
       <h2>Secure Secret Recovery Phrase</h2>
       <p>
-        Your secret recovery phrase is a list of 12 words that you can use to
+        Your secret recovery phrase is a list of 24 words that you can use to
         recover your wallet.
       </p>
       <p>
-        Write down these 12 words in the order shown below, and store them in a
+        Write down these 24 words in the order shown below, and store them in a
         secure location.
       </p>
-      <p className={styles.srp}>{srp}</p>
-      <Flex>
-        <Button type="primary" onClick={copyToClipboard}>
-          Copy
-        </Button>
-        <Button onClick={done}>Done</Button>
-      </Flex>
+      <Copy value={srp}>
+        <p className={"srp"}>
+          {srp ||
+            "world hunt hazard love bulk bullet outside entire goat come aerobic program maximum idea change myth please simple idea copper toss genre calm also"}
+        </p>
+      </Copy>
+      <Button type="primary" onClick={onDone}>
+        I wrote it down !
+      </Button>
     </div>
   );
 };

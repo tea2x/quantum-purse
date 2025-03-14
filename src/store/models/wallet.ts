@@ -1,9 +1,9 @@
 import { createModel, init } from "@rematch/core";
-import { Modal } from "antd";
+import { message, Modal } from "antd";
 import { NODE_URL } from "../../core/config";
 import Quantum from "../../core/quantum_purse";
 import { transfer } from "../../core/transaction_builder";
-import { sendTransaction, utf8ToBytes } from "../../core/utils";
+import { bytesToUtf8, sendTransaction, utf8ToBytes } from "../../core/utils";
 import { RootModel } from "./index";
 
 interface IAccount {
@@ -25,7 +25,7 @@ let isInitializing = false;
 export let quantum: Quantum;
 
 const initState: StateType = {
-  active: false,
+  active: !localStorage.getItem("wallet-step"),
   current: {
     name: "",
     address: "",
@@ -78,6 +78,16 @@ export const wallet = createModel<RootModel>()({
     },
     async init(_, rootState) {
       if (isInitializing) return;
+      const step = localStorage.getItem("wallet-step");
+      if (step) {
+        throw new Error(
+          JSON.stringify({
+            code: "WALLET_NOT_READY",
+            step,
+            message: "Wallet is not ready to use",
+          })
+        );
+      }
       isInitializing = true;
       quantum = await Quantum.getInstance();
       try {
@@ -86,6 +96,7 @@ export const wallet = createModel<RootModel>()({
         this.setActive(true);
       } catch (error) {
         this.setActive(false);
+        // throw error;
         // console.error("Error initializing wallet", error);
       } finally {
         isInitializing = false;
@@ -120,11 +131,19 @@ export const wallet = createModel<RootModel>()({
         throw error;
       }
     },
-    async createWallet({ password }, rootState) {
+    async createWallet({ password }) {
       try {
         await quantum.init(utf8ToBytes(password));
         await quantum.genAccount(utf8ToBytes(password));
         this.loadCurrentAccount({});
+      } catch (error) {
+        throw error;
+      }
+    },
+    async exportSRP({ password }) {
+      try {
+        const srp = await quantum.exportSeedPhrase(utf8ToBytes(password));
+        return bytesToUtf8(srp);
       } catch (error) {
         throw error;
       }

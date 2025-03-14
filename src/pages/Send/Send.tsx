@@ -47,7 +47,6 @@ const Send: React.FC = () => {
   };
 
   const customLabelRender = (account: any) => {
-    console.log(account);
     return (
       <AccountItem
         address={account?.address!}
@@ -97,17 +96,13 @@ const Send: React.FC = () => {
     }
   };
 
-  console.log(values)
+  console.log(values);
 
   return (
     <section className={cx(styles.wallet, "panel")}>
       <h1>Send</h1>
       <div>
-        <Form
-          layout="vertical"
-          form={form}
-          className={styles.sendForm}
-        >
+        <Form layout="vertical" form={form} className={styles.sendForm}>
           <Form.Item
             name="from"
             label="From"

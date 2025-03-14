@@ -19,10 +19,6 @@ const CommingSoon: React.FC = () => {
             Back to Home
           </Button>
         </NavLink>
-        <Button type="primary" onClick={() => navigate(-1)}>
-          <RollbackOutlined />
-          Back to previous page
-        </Button>
       </div>
     </section>
   );

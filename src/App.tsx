@@ -1,5 +1,10 @@
 import React from "react";
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
 import ActiveLayout from "./layouts/ActiveLayout";
 import InactiveLayout from "./layouts/InactiveLayout";
 import {
@@ -39,6 +44,7 @@ const App: React.FC = () => {
           />
         </Route>
         <Route path={ROUTES.COMING_SOON} element={<CommingSoon />} />
+        <Route path="*" element={<Navigate to={ROUTES.HOME} />} />
       </Routes>
     </Router>
   );

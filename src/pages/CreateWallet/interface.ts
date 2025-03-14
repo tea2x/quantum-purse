@@ -10,4 +10,6 @@ export interface CreateWalletContextType {
     description: string;
     content: React.ReactNode;
   }[];
+  srp: string;
+  setSRP: (srp: string) => void;
 }
