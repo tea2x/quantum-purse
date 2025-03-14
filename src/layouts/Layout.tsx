@@ -14,7 +14,7 @@ const Layout: React.FC<AuthLayoutProps> = ({
   const wallet = useSelector((state: RootState) => state.wallet);
   const dispatch = useDispatch<Dispatch>();
   useEffect(() => {
-    dispatch.wallet.init().then(() => dispatch.wallet.loadCurrentAccount({}));
+    dispatch.wallet.init({}).then(() => dispatch.wallet.loadCurrentAccount({}));
   }, [dispatch.wallet.init]);
 
   console.log("Layout log wallet data: ", wallet);

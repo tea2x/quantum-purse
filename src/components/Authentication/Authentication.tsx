@@ -1,6 +1,7 @@
-import { Button, Form, Input, Modal, ModalProps } from "antd";
+import { Form, Input, Modal, ModalProps } from "antd";
 import React, { useImperativeHandle, useState } from "react";
-import { TEMP_PASSWORD } from "../../../utils/constants";
+import { TEMP_PASSWORD } from "../../utils/constants";
+import styles from "./Authentication.module.scss";
 
 export interface AuthenticationRef {
   open: () => void;
@@ -8,10 +9,21 @@ export interface AuthenticationRef {
 }
 
 interface AuthenticationProps extends ModalProps {
+  title?: string;
+  description?: string;
   authenCallback: (password: string) => void;
 }
+
 const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
-  ({ authenCallback, ...rest }, ref) => {
+  (
+    {
+      authenCallback,
+      title = "Authentication",
+      description = "Please enter your password to generate a new account",
+      ...rest
+    },
+    ref
+  ) => {
     const [form] = Form.useForm();
     const [open, setOpen] = useState(false);
 
@@ -26,24 +38,29 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
 
     const onFinish = (values: any) => {
       authenCallback(values.password);
+      closeHandler();
     };
 
     return (
-      <Modal open={open} {...rest} onCancel={closeHandler} centered>
-        <h2>Authentication</h2>
-        <p>Please enter your password to generate a new account</p>
+      <Modal
+        open={open}
+        {...rest}
+        onCancel={closeHandler}
+        centered
+        onOk={form.submit}
+        className={styles.authentication}
+      >
+        <h2 className="title">{title}</h2>
+        <p className="description">{description}</p>
         <Form
           form={form}
           onFinish={onFinish}
           initialValues={{ password: TEMP_PASSWORD }}
+          layout="vertical"
+          className="form-authentication"
         >
-          <Form.Item name="password" label="Password">
+          <Form.Item name="password">
             <Input.Password />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Submit
-            </Button>
           </Form.Item>
         </Form>
       </Modal>

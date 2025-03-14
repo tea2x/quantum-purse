@@ -32,7 +32,7 @@
 .accountItem {
   border-radius: 1rem;
   padding: 0.6rem 1.6rem;
-  background-color: var(--white-abs);
+  // background-color: var(--white-abs);
   transition: background-color 0.3s ease;
   display: flex;
   justify-content: space-between;
@@ -40,31 +40,44 @@
   box-sizing: border-box;
   border: solid 0.1rem transparent;
 
-  &.active {
-    border-color: var(--teal-2);
-  }
-
-  &:hover {
-    background-color: var(--white);
-  }
   :global {
     .account-info {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
       .name {
         font-size: 1.4rem;
         font-weight: 600;
         line-height: 1.5;
         color: var(--gray-03);
+
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+
+        .current {
+          padding: 0.4rem 0.8rem;
+          font-size: 1rem;
+          line-height: 1.2;
+        }
       }
       .address {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
+        line-height: 1.2;
         font-family: "Quantico", sans-serif;
         color: var(--gray-02);
         display: flex;
         align-items: center;
         gap: 0.4rem;
+        padding: 0.4rem;
+        margin-left: -0.4rem;
+        border-radius: 0.4rem;
+
+        &.copyable {
+          transition: background-color 0.3s ease;
+          &:hover {
+            background-color: var(--gray-light);
+          }
+        }
       }
     }
 

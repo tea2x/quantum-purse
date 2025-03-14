@@ -55,20 +55,24 @@ export const wallet = createModel<RootModel>()({
     },
   },
   effects: (dispatch) => ({
-    async init() {
+    async loadAccounts() {
+      if (!quantum) return;
+      const accounts = await quantum.getAllAccounts();
+      const accountsData = accounts.map((account, index) => ({
+        name: `Account ${index + 1}`,
+        sphincsPlusPubKey: account,
+        address: quantum.getAddress(account),
+      }));
+      this.setAccounts(accountsData);
+      return accountsData;
+    },
+    async init(_, rootState) {
       if (isInitializing) return;
       isInitializing = true;
       quantum = await Quantum.getInstance();
       try {
-        const accounts = await quantum.getAllAccounts();
-        await quantum.setAccPointer(accounts[0]);
-        this.setAccounts(
-          accounts.map((account, index) => ({
-            name: `Account ${index + 1}`,
-            sphincsPlusPubKey: account,
-            address: quantum.getAddress(account),
-          }))
-        );
+        const accountsData: any = await this.loadAccounts();
+        await quantum.setAccPointer(accountsData[0].sphincsPlusPubKey);
         this.setActive(true);
       } catch (error) {
         this.setActive(false);
@@ -80,6 +84,7 @@ export const wallet = createModel<RootModel>()({
     async loadCurrentAccount(_, rootState) {
       if (!quantum.accountPointer || !rootState.wallet.accounts.length) return;
       const accountPointer = quantum.accountPointer;
+      console.log("Load current account: ", accountPointer);
       const accountData = rootState.wallet.accounts.find(
         (account) => account.sphincsPlusPubKey === accountPointer
       );
@@ -95,6 +100,9 @@ export const wallet = createModel<RootModel>()({
     async createAccount(payload: { password: string }, rootState) {
       console.log("Create account: ", payload);
       await quantum.genAccount(utf8ToBytes(payload.password));
+      console.log("Create account: ", quantum.accountPointer);
+      await this.loadAccounts();
+      await this.loadCurrentAccount({});
     },
     async createWallet({ password }, rootState) {
       await quantum.init(utf8ToBytes(password));
@@ -106,6 +114,7 @@ export const wallet = createModel<RootModel>()({
       this.loadCurrentAccount({});
     },
     async send({ from, to, amount, password }, rootState) {
+      console.log("Send: ", { from, to, amount, password });
       try {
         const tx = await transfer(from, to, amount);
         const signedTx = await quantum.sign(tx, utf8ToBytes(password));
