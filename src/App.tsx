@@ -5,6 +5,7 @@ import InactiveLayout from "./layouts/InactiveLayout";
 import {
   CommingSoon,
   CreateWallet,
+  EjectWallet,
   ImportWallet,
   Receive,
   Send,
@@ -32,6 +33,10 @@ const App: React.FC = () => {
           <Route path={ROUTES.WALLET} element={<Wallet />} />
           <Route path={ROUTES.SEND} element={<Send />} />
           <Route path={ROUTES.RECEIVE} element={<Receive />} />
+          <Route
+            path={ROUTES.SETTINGS.EJECT_WALLET}
+            element={<EjectWallet />}
+          />
         </Route>
         <Route path={ROUTES.COMING_SOON} element={<CommingSoon />} />
       </Routes>

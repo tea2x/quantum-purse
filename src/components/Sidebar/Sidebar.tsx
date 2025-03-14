@@ -28,15 +28,15 @@ const items: MenuItem[] = [
     children: [
       {
         key: ROUTES.DAO.DEPOSIT,
-        label: "Deposit",
+        label: <NavLink to={ROUTES.COMING_SOON}>Deposit</NavLink>,
       },
       {
         key: ROUTES.DAO.WITHDRAW,
-        label: "Withdraw",
+        label: <NavLink to={ROUTES.COMING_SOON}>Withdraw</NavLink>,
       },
       {
         key: ROUTES.DAO.UNLOCK,
-        label: "Unlock",
+        label: <NavLink to={ROUTES.COMING_SOON}>Unlock</NavLink>,
       },
     ],
   },
@@ -47,8 +47,16 @@ const items: MenuItem[] = [
     key: ROUTES.SETTINGS.HOME,
     label: "Settings",
     children: [
-      { key: ROUTES.SETTINGS.REVEAL_SRP, label: "Reveal SRP" },
-      { key: ROUTES.SETTINGS.EJECT_WALLET, label: "Eject Wallet" },
+      {
+        key: ROUTES.SETTINGS.REVEAL_SRP,
+        label: <NavLink to={ROUTES.COMING_SOON}>Reveal SRP</NavLink>,
+      },
+      {
+        key: ROUTES.SETTINGS.EJECT_WALLET,
+        label: (
+          <NavLink to={ROUTES.SETTINGS.EJECT_WALLET}>Eject Wallet</NavLink>
+        ),
+      },
     ],
   },
 ];
