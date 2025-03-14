@@ -137,8 +137,12 @@ const Send: React.FC = () => {
               { required: true, message: "Please enter a destination address" },
               {
                 validator: (_, value) => {
+                  if (!value) {
+                    return Promise.resolve();
+                  }
                   try {
                     addressToScript(value);
+                    return Promise.resolve();
                   } catch (error) {
                     return Promise.reject("Please input a valid address");
                   }
