@@ -1,14 +1,20 @@
 import { expect } from "chai";
-import { NODE_URL } from "../core/config";
-import QuantumPurse from "../core/quantum_purse";
-import { transfer, buildDummyTx } from "../core/transaction_builder";
-import { utf8ToBytes, bytesToUtf8, sendTransaction, waitForTransactionConfirmation } from "../core/utils";
-import __wbg_init from "../../key-vault/pkg/key_vault";
+import { NODE_URL } from "../src/core/config";
+import QuantumPurse from "../src/core/quantum_purse";
+import { transfer, buildDummyTx } from "../src/core/transaction_builder";
+import {
+  utf8ToBytes,
+  bytesToUtf8,
+  sendTransaction,
+  waitForTransactionConfirmation,
+} from "../src/core/utils";
+import __wbg_init from "../key-vault/pkg/key_vault";
 
 describe("Quantum Purse Basics", () => {
   let wallet: QuantumPurse;
   let passwordStr: string = "my password is easy to crack. D0n't use this!";
-  let seedPhrase: string = /* The first account from this seed is preloaded on testnet */
+  let seedPhrase: string =
+    /* The first account from this seed is preloaded on testnet */
     "ball slush siren skirt local odor gather settle green remind orphan keep vapor comfort hen wave conduct phrase torch address hungry clerk caught vessel";
 
   before(async () => {
@@ -48,10 +54,7 @@ describe("Quantum Purse Basics", () => {
   it("Should zeroize seed phrase and password after importing a new seed phrase", async () => {
     const seedPhraseHandler = utf8ToBytes(seedPhrase);
     const passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.importSeedPhrase(
-      seedPhraseHandler,
-      passwordStrHandler
-    );
+    await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
     expect(seedPhraseHandler.every((byte) => byte === 0)).to.be.true;
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
   });
@@ -61,19 +64,14 @@ describe("Quantum Purse Basics", () => {
     await wallet.init(passwordStrHandler);
 
     passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.exportSeedPhrase(
-      passwordStrHandler
-    );
+    await wallet.exportSeedPhrase(passwordStrHandler);
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
   });
 
   it.skip("Should conduct a transaction successfully and zeroize password after", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
     const seedPhraseHandler = utf8ToBytes(seedPhrase);
-    await wallet.importSeedPhrase(
-      seedPhraseHandler,
-      passwordStrHandler
-    );
+    await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccount(passwordStrHandler);
@@ -89,5 +87,4 @@ describe("Quantum Purse Basics", () => {
     const txId = await sendTransaction(NODE_URL, signedTx);
     await waitForTransactionConfirmation(NODE_URL, txId);
   });
-
 });

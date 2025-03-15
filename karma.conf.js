@@ -2,7 +2,7 @@ module.exports = function (config) {
   config.set({
     frameworks: ["mocha"],
     files: [
-      "src/test/*.test.ts",
+      "tests/*.test.ts",
       {
         pattern: "key-vault/pkg/key_vault_bg.wasm",
         type: "wasm",
@@ -11,7 +11,7 @@ module.exports = function (config) {
       },
     ],
     preprocessors: {
-      "src/test/**/*.ts": ["webpack"],
+      "tests/**/*.ts": ["webpack"],
     },
     webpack: {
       mode: "development",

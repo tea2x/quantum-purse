@@ -9,7 +9,9 @@
     "build:webpack": "webpack --config ./webpack/webpack.prod.js",
     "build": "npm run build:wasm && npm run build:webpack",
     "deploy": "npm run build && node ./src/deploy.js",
-    "test": "npx karma start"
+    "test:rust": "cargo test",
+    "test:js": "npx karma start",
+    "test": "npm run test:rust && npm run test:js"
   },
   "author": "tea2x",
   "license": "MIT",
