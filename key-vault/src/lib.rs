@@ -99,7 +99,7 @@ const SEED_PHRASE_KEY: &str = "seed_phrase";
 const SEED_PHRASE_STORE: &str = "seed_phrase_store";
 const CHILD_KEYS_STORE: &str = "child_keys_store";
 const KDF_PATH_PREFIX: &str = "ckb/quantum-purse/sphincs-plus/";
-/// Used for both child key derivation and encryption/decryption
+/// Mainly used for encryption/decryption. Additionally used for child key derivation.
 /// TODO: Adjust scrypt parameters for security/performance
 const SCRYPT_PARAM: ScryptParam = ScryptParam {
     log_n: 14,
