@@ -110,10 +110,7 @@ export default class QuantumPurse {
    * @throws Error if no account pointer is set by default (see `getLock` for details).
    */
   public getAddress(sphincsPlusPubKey?: string): string {
-    const lock =
-      sphincsPlusPubKey !== undefined
-        ? this.getLock(sphincsPlusPubKey)
-        : this.getLock();
+    const lock = this.getLock(sphincsPlusPubKey);
     return scriptToAddress(lock, IS_MAIN_NET);
   }
 
@@ -161,6 +158,7 @@ export default class QuantumPurse {
     const accPointer =
       sphincsPlusPubKey !== undefined ? sphincsPlusPubKey : this.accountPointer;
     if (!accPointer || accPointer === "") {
+      password.fill(0);
       throw new Error("Account pointer not available!");
     }
 
@@ -184,6 +182,8 @@ export default class QuantumPurse {
       this.QR_LOCK_FLAGS +
       accPointer +
       serializedSpxSig.replace(/^0x/, "");
+
+    password.fill(0);
     return sealTransaction(tx, [fullCkbQrSig]);
   }
 
