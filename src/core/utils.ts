@@ -174,7 +174,7 @@ function get_ckb_tx_message_all_hash(tx: TransactionSkeletonType): Uint8Array {
     capacity: "0x0",
     lock: {
       code_hash:
-        "0x0000000000000000000000000000000000000000000000000000000000000000", // todo check with msg hash all
+        "0x" + "0".repeat(64),
       hash_type: "data",
       args: "0x",
     },

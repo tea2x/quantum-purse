@@ -12,5 +12,5 @@
     "strict": true,
     "allowUnreachableCode": false,
   },
-  "include": ["src", "light-client"]
+  "include": ["src", "light-client", "tests"]
 }

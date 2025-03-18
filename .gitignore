@@ -107,8 +107,9 @@ dist
 
 package-lock.json
 
-# Rust key manager build output
+# Rust key vault build output
 key-vault/pkg/
 key-vault/target/
 key-vault/Cargo.lock
 target/
+.DS_Store
