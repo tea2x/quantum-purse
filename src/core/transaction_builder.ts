@@ -313,3 +313,13 @@ export async function transfer(
 
   return txSkeleton;
 }
+
+/**
+ * Assemble a dummy CKB transaction for testing purposes.
+ *
+ * @returns A Promise that resolves to a TransactionSkeletonType object.
+ */
+export async function buildDummyTx(): Promise<TransactionSkeletonType> {
+  let txSkeleton = new TransactionSkeleton();
+  return txSkeleton;
+}
