@@ -99,9 +99,21 @@ const SEED_PHRASE_KEY: &str = "seed_phrase";
 const SEED_PHRASE_STORE: &str = "seed_phrase_store";
 const CHILD_KEYS_STORE: &str = "child_keys_store";
 const KDF_PATH_PREFIX: &str = "ckb/quantum-purse/sphincs-plus/";
-/// Mainly used for encryption/decryption. Additionally used for child key derivation.
+/// The following scrypt param is used together with a very high entropy source - a 256 bit mnemonic seephrase to serve as QuantumPurse KDF.
+/// Security level for the derived keys isn't upgraded with Scrypt, each attacker's guess simply gets longer to run.
 /// TODO: Adjust scrypt parameters for security/performance
-const SCRYPT_PARAM: ScryptParam = ScryptParam {
+const KDF_SCRYPT: ScryptParam = ScryptParam {
+    log_n: 10,
+    r: 8,
+    p: 1,
+    len: 32,
+};
+
+/// Scrypt’s original paper suggests N = 16384 (log_n = 14) for interactive logins, but that’s for low-entropy passwords.
+/// QuantumPurse uses 256 bit high-entropy passwords together with the following scrypt param to protect data in DB.
+/// Security level for the encryption/decryption keys isn't upgraded with Scrypt, each attacker's guess simply gets longer to run.
+/// TODO: Adjust scrypt parameters for security/performance
+const ENC_SCRYPT: ScryptParam = ScryptParam {
     log_n: 14,
     r: 8,
     p: 1,
@@ -297,11 +309,33 @@ async fn clear_object_store(db: &Database, store_name: &str) -> Result<(), KeyVa
 /// - `length: usize` - The number of random bytes to generate.
 ///
 /// **Returns**:
-/// - `Result<SecureVec, String>` - A vector of random bytes on success, or an error message on failure.
+/// - `Result<SecureVec, String>` - A Secure vector of random bytes on success, or an error message on failure.
 fn get_random_bytes(length: usize) -> Result<SecureVec, String> {
     let mut buffer = SecureVec::new_with_length(length);
     getrandom(&mut buffer).map_err(|e| e.to_string())?;
     Ok(buffer)
+}
+
+/// Derive scrypt key.
+///
+/// **Parameters**:
+/// - `password: &[u8]` - The password from which the scrypt key is derived.
+/// - `salt: &Vec<u8>` - Salt.
+///
+/// **Returns**:
+/// - `Result<SecureVec, String>` - Scrypt key on success, or an error message on failure.
+///
+/// Warning: Proper zeroization of passwords is the responsibility of the caller.
+fn derive_scrypt_key(
+    password: &[u8],
+    salt: &Vec<u8>,
+    param: ScryptParam,
+) -> Result<SecureVec, String> {
+    let mut scrypt_key = SecureVec::new_with_length(32);
+    let scrypt_param = Params::new(param.log_n, param.r, param.p, param.len).unwrap();
+    scrypt(password, &salt, &scrypt_param, &mut scrypt_key)
+        .map_err(|e| format!("Scrypt error: {:?}", e))?;
+    Ok(scrypt_key)
 }
 
 /// Encrypts data using AES-GCM with a password-derived key.
@@ -321,17 +355,7 @@ fn encrypt(password: &[u8], input: &[u8]) -> Result<CipherPayload, String> {
     salt.copy_from_slice(&random_bytes[0..SALT_LENGTH]);
     iv.copy_from_slice(&random_bytes[SALT_LENGTH..]);
 
-    let mut scrypt_key = SecureVec::new_with_length(32);
-    let scrypt_param = Params::new(
-        SCRYPT_PARAM.log_n,
-        SCRYPT_PARAM.r,
-        SCRYPT_PARAM.p,
-        SCRYPT_PARAM.len,
-    )
-    .unwrap();
-    scrypt(password, &salt, &scrypt_param, &mut scrypt_key)
-        .map_err(|e| format!("Scrypt error: {:?}", e))?;
-
+    let scrypt_key = derive_scrypt_key(password, &salt, ENC_SCRYPT)?;
     let aes_key: &Key<Aes256Gcm> = Key::<Aes256Gcm>::from_slice(&scrypt_key);
     let cipher = Aes256Gcm::new(aes_key);
     let nonce = Nonce::from_slice(&iv);
@@ -362,17 +386,7 @@ fn decrypt(password: &[u8], payload: CipherPayload) -> Result<SecureVec, String>
     let cipher_text =
         decode(payload.cipher_text).map_err(|e| format!("Ciphertext decode error: {:?}", e))?;
 
-    let mut scrypt_key = SecureVec::new_with_length(32);
-    let scrypt_param = Params::new(
-        SCRYPT_PARAM.log_n,
-        SCRYPT_PARAM.r,
-        SCRYPT_PARAM.p,
-        SCRYPT_PARAM.len,
-    )
-    .unwrap();
-    scrypt(password, &salt, &scrypt_param, &mut scrypt_key)
-        .map_err(|e| format!("Scrypt error: {:?}", e))?;
-
+    let scrypt_key = derive_scrypt_key(password, &salt, ENC_SCRYPT)?;
     let aes_key: &Key<Aes256Gcm> = Key::<Aes256Gcm>::from_slice(&scrypt_key);
     let cipher = Aes256Gcm::new(aes_key);
     let nonce = Nonce::from_slice(&iv);
@@ -383,6 +397,37 @@ fn decrypt(password: &[u8], payload: CipherPayload) -> Result<SecureVec, String>
     let secure_decipher = SecureVec::from_slice(&decipher);
     decipher.zeroize();
     Ok(secure_decipher)
+}
+
+/// To derive Sphincs key pair. One master mnemonic seed phrase can derive multiple child index-based sphincs+ key pairs on demand.
+///
+/// **Parameters**:
+/// - `seed: &[u8]` - The master mnemonic seed phrase from which the child sphincs+ key is derived.
+/// - `index: u32` - The index of the child sphincs+ key to be derived.
+///
+/// **Returns**:
+/// - `Result<SecureVec, String>` - Scrypt key on success, or an error message on failure.
+///
+/// Warning: Proper zeroization of the input seed is the responsibility of the caller.
+fn derive_sphincs_key(
+    seed: &[u8],
+    index: u32,
+) -> Result<
+    (
+        slh_dsa_shake_128f::PublicKey,
+        slh_dsa_shake_128f::PrivateKey,
+    ),
+    String,
+> {
+    let path = format!("{}{}", KDF_PATH_PREFIX, index);
+    let sphincs_seed = derive_scrypt_key(seed, &path.as_bytes().to_vec(), KDF_SCRYPT)?;
+    let mut rng = rand_chacha::ChaCha8Rng::from_seed(
+        (&*sphincs_seed)
+            .try_into()
+            .expect("Slice with incorrect length"),
+    );
+    let (pub_key, pri_key) = slh_dsa_shake_128f::try_keygen_with_rng(&mut rng)?;
+    Ok((pub_key, pri_key))
 }
 
 #[wasm_bindgen]
@@ -546,7 +591,7 @@ impl KeyVault {
         Ok(())
     }
 
-    /// Retrieves all SPHINCS+ public keys from the database.
+    /// Retrieves all SPHINCS+ public keys from the database in the order they get inserted.
     ///
     /// **Returns**:
     /// - `Result<Vec<String>, JsValue>` - A JavaScript Promise that resolves to an array of hex-encoded SPHINCS+ public keys on success,
@@ -646,30 +691,10 @@ impl KeyVault {
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
         let seed = decrypt(&password, payload)?;
 
-        // Key derivation with Scrypt
-        let path = format!(
-            "{}{}",
-            KDF_PATH_PREFIX,
-            Self::get_all_sphincs_pub().await?.len()
-        );
-        let mut sphincs_seed = SecureVec::new_with_length(32);
-        let scrypt_param = Params::new(
-            SCRYPT_PARAM.log_n,
-            SCRYPT_PARAM.r,
-            SCRYPT_PARAM.p,
-            SCRYPT_PARAM.len,
-        )
-        .unwrap();
-        scrypt(&seed, path.as_bytes(), &scrypt_param, &mut sphincs_seed)
-            .map_err(|e| JsValue::from_str(&format!("Scrypt error: {:?}", e)))?;
+        let index = Self::get_all_sphincs_pub().await?.len() as u32;
+        let (pub_key, pri_key) = derive_sphincs_key(&seed, index)
+            .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
 
-        // SPHINCS+ key gen and encryption
-        let mut rng = rand_chacha::ChaCha8Rng::from_seed(
-            (&*sphincs_seed)
-                .try_into()
-                .expect("Slice with incorrect length"),
-        );
-        let (pub_key, pri_key) = slh_dsa_shake_128f::try_keygen_with_rng(&mut rng)?;
         let pub_key_clone = pub_key.clone();
         let pri_key_bytes = SecureVec::from_slice(&pri_key.into_bytes());
         let encrypted_pri = encrypt(&password, &pri_key_bytes)?;
@@ -775,5 +800,73 @@ impl KeyVault {
 
         signing_key.zeroize(); // TODO check zeroize on drop
         Ok(Uint8Array::from(signature.as_slice()))
+    }
+
+    /// Supporting wallet recovery - derives a list of public keys from the seed phrase starting from a given index.
+    ///
+    /// **Parameters**:
+    /// - `password: Uint8Array` - The password used to decrypt the mnemonic.
+    /// - `start_index: u32` - The starting index for derivation.
+    /// - `count: u32` - The number of public keys to derive.
+    ///
+    /// **Returns**:
+    /// - `Result<Vec<String>, JsValue>` - A list of public keys as strings on success,
+    ///   or a JavaScript error on failure.
+    #[wasm_bindgen]
+    pub async fn search_accounts(
+        password: Uint8Array,
+        start_index: u32,
+        count: u32,
+    ) -> Result<Vec<String>, JsValue> {
+        let password = SecureVec::from_slice(&password.to_vec());
+        // Get and decrypt the mnemonic seed phrase
+        let payload = get_encrypted_mnemonic_phrase()
+            .await
+            .map_err(|e| e.to_jsvalue())?
+            .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
+        let seed = decrypt(&password, payload)?;
+        let mut key_list: Vec<String> = Vec::new();
+        for i in start_index..(start_index + count) {
+            let (pub_key, _) = derive_sphincs_key(&seed, i)
+                .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
+            key_list.push(encode(pub_key.into_bytes()));
+        }
+        Ok(key_list)
+    }
+
+    /// Supporting wallet recovery - Recovers the wallet by deriving and storing private keys for the first N accounts.
+    ///
+    /// **Parameters**:
+    /// - `password: Uint8Array` - The password used to decrypt the seed phrase.
+    /// - `count: u32` - The number of accounts to recover (from index 0 to count-1).
+    ///
+    /// **Returns**:
+    /// - `Result<(), JsValue>` - Ok on success, or a JavaScript error on failure.
+    ///
+    /// **Async**: Yes
+    #[wasm_bindgen]
+    pub async fn recover_wallet(password: Uint8Array, count: u32) -> Result<(), JsValue> {
+        let password = SecureVec::from_slice(&password.to_vec());
+        // Get and decrypt the mnemonic seed phrase
+        let payload = get_encrypted_mnemonic_phrase()
+            .await
+            .map_err(|e| e.to_jsvalue())?
+            .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
+        let seed = decrypt(&password, payload)?;
+        for i in 0..count {
+            let (pub_key, pri_key) = derive_sphincs_key(&seed, i)
+                .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
+            let pri_key_bytes = SecureVec::from_slice(&pri_key.into_bytes());
+            let encrypted_pri = encrypt(&password, &pri_key_bytes)?;
+            // Store to DB
+            let pair = SphincsPlusKeyPair {
+                index: 0, // Init to 0; Will be set correctly in add_key_pair
+                pub_key: encode(pub_key.into_bytes()),
+                pri_enc: encrypted_pri,
+            };
+
+            add_key_pair(pair).await.map_err(|e| e.to_jsvalue())?;
+        }
+        Ok(())
     }
 }
