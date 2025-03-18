@@ -273,4 +273,31 @@ export default class QuantumPurse {
   public async getAllAccounts(): Promise<string[]> {
     return await KeyVault.get_all_sphincs_pub();
   }
+
+  /**
+   * Retrieve a list of on-the-fly sphincs+ public key for wallet recovery process.
+   * @param password - The password to decrypt the master seed (will be zeroed out).
+   * @param startIndex - The index to start searching from.
+   * @param count - The number of keys to search for.
+   * @returns An ordered array of all child key's sphincs plus public keys.
+   */
+  public async searchAccount(
+    password: Uint8Array,
+    startIndex: number,
+    count: number
+  ): Promise<string[]> {
+    return await KeyVault.search_accounts(password, startIndex, count);
+  }
+
+  /**
+   * Retrieve a list of on-the-fly sphincs+ public key for wallet recovery process.
+   * @param password - The password to decrypt the master seed (will be zeroed out).
+   * @param count - The number of keys to search for.
+   */
+  public async recoverAccount(
+    password: Uint8Array,
+    count: number
+  ): Promise<void> {
+    return await KeyVault.recover_wallet(password, count);
+  }
 }
