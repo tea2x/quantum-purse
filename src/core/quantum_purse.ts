@@ -21,6 +21,7 @@ import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import __wbg_init, { KeyVault } from "../../key-vault/pkg/key_vault";
 import { CKBSphincsPlusHasher } from "./hasher";
+import Worker from 'worker-loader!../../light-client/worker.js';
 
 /**
  * Manages a wallet using the SPHINCS+ post-quantum signature scheme (shake-128f simple)
@@ -30,6 +31,16 @@ import { CKBSphincsPlusHasher } from "./hasher";
  * managing seed phrases, and interacting with the blockchain.
  */
 export default class QuantumPurse {
+  // ckb light client wasm worker
+  private static worker: Worker | undefined;
+  private pendingRequests: Map<
+    string,
+    {
+      resolve: (value: any) => void;
+      reject: (reason: any) => void;
+    }
+  > = new Map();
+
   // all in one lock script configuration
   private MULTISIG_ID = "80";
   private REQUIRE_FISRT_N = "00";
@@ -55,6 +66,37 @@ export default class QuantumPurse {
     );
   }
 
+  /** Initialize web worker to run ckb light client */
+  private static async initWebWorker() {
+    QuantumPurse.worker = new Worker();
+  }
+
+  /** Request to ckb light client web worker */
+  private sendRequest() {
+    if (!QuantumPurse.worker)
+      throw new Error("Light client worker not initialized");
+
+    // Send data to the worker
+    QuantumPurse.worker.postMessage('Start task');
+    console.log('Message sent to worker');
+
+    // Receive data from the worker
+    QuantumPurse.worker.onmessage = function (event) {
+      console.log('Message received from worker:', event.data);
+      // Handle the result
+    };
+
+    // Handle worker errors
+    QuantumPurse.worker.onerror = function (error) {
+      console.error('Error from worker:', error.message);
+    };
+  }
+
+  /** test invocation */
+  public async getTipHeader() {
+    this.sendRequest();
+  }
+
   /**
    * Gets the singleton instance of QuantumPurse.
    * @returns The singleton instance of QuantumPurse.
@@ -62,6 +104,7 @@ export default class QuantumPurse {
   public static async getInstance(): Promise<QuantumPurse> {
     await __wbg_init();
     if (!QuantumPurse.instance) {
+      this.initWebWorker();
       QuantumPurse.instance = new QuantumPurse(
         SPHINCSPLUS_LOCK.codeHash,
         SPHINCSPLUS_LOCK.hashType as HashType
