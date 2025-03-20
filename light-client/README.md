@@ -1,0 +1,1 @@
+This worker runs in the backgroud to periodically update light client sync indicator.

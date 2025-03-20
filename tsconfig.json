@@ -7,10 +7,10 @@
     "target": "es2020",
     "jsx": "react",
     "allowJs": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "strict": true,
     "allowUnreachableCode": false,
   },
-  "include": ["src", "light-client", "tests"]
+  "include": ["src", "tests"]
 }
