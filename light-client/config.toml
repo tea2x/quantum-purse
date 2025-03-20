@@ -16,33 +16,18 @@ listen_addresses = ["/ip4/0.0.0.0/tcp/8110"]
 # Node connects to nodes listed here to discovery other peers when there's no local stored peers.
 # When chain.spec is changed, this usually should also be changed to the bootnodes in the new chain.
 bootnodes = [
-    # Ohio, North America
-    "/dns4/wss-proxy.yutong.site/tcp/8200/wss/p2p/QmZ3g4ikFdUijFyQdDsuxnvMwgC4uMU4Ux8siwPGPxLnRC",
-    # "/ip4/18.167.71.41/tcp/8115/wss/p2p/QmZ3g4ikFdUijFyQdDsuxnvMwgC4uMU4Ux8siwPGPxLnRC",
-    # # Singapore, Asia
-    # "/ip4/18.136.60.221/tcp/8111/p2p/QmTt6HeNakL8Fpmevrhdna7J4NzEMf9pLchf1CXtmtSrwb",
-    # # # London, Europe
-    # "/ip4/35.176.207.239/tcp/8111/p2p/QmSJTsMsMGBjzv1oBNwQU36VhQRxc2WQpFoRu1ZifYKrjZ",
-    # # # Singapore, Asia
-    # "/ip4/13.228.149.113/tcp/8111/p2p/QmQoTR39rBkpZVgLApDGDoFnJ2YDBS9hYeiib1Z6aoAdEf",
-    # # # Bahrain, Asia
-    # "/ip4/157.241.73.87/tcp/8111/p2p/QmSPkAyXqsWpRiS7HpHLTProVdhQWLKFHCXbRjaLpJj7ZL",
-    # # # Japan, Asia
-    # "/ip4/4.241.132.26/tcp/8111/p2p/QmX5D6aJiAQ5Fxn4BfVqSn6zrgyuQM1oXVC9yvmzLuHXnx",
-    # # # Korea, Asia
-    # "/ip4/52.147.120.180/tcp/8111/p2p/QmPcJY2gZLUm66szYA9QaG1P3rzwseWCMgbj6AyNCyW4G2",
-    # # # Hong Kong, Asia
-    # "/ip4/18.167.196.121/tcp/8111/p2p/QmQMjFrNGaphzfHin3mbYybbJcFMDUihKAcknquYvm9J3W",
-    # # # Oregon, North America
-    # "/ip4/34.216.103.183/tcp/8111/p2p/Qmd41MaByDprkC5gP1XBKgamZ9DTLNk37zbPgwtiWCzRV6",
-    # # # Canada, North America
-    # "/ip4/3.98.152.180/tcp/8111/p2p/QmWVuW5KquiWDSqgMJRFW1xRtVqkYJrWz6S9NNk6fFn3wh",
-    # # # Frankfurt, Europe
-    # "/ip4/18.192.147.65/tcp/8111/p2p/QmWcEhsMNRcfJit62EbKgzpgtAJZX1G3Ur4shXjcvLsYDb",
-    # # # Sydney, Oceania
-    # "/ip4/13.236.13.195/tcp/8111/p2p/QmfUTZxsse7rFJTJfoUv8bbStoDLETxst5nJEpJozNuAnH",
-    # # "/ip4/127.0.0.1/tcp/8118/ws/p2p/QmSjZo796NKNkRfdxqkQ9LK2iybGqGTzSWEufRxVNmcUF5",
-    # # "/ip4/127.0.0.1/tcp/8116/p2p/QmTgML5rVBWgtNV2o7kgnx8yDSS9vovkxiNNo2spyho8qY",
+    "/dns4/dagon.ckb.guide/tcp/443/wss/p2p/QmX5D6aJiAQ5Fxn4BfVqSn6zrgyuQM1oXVC9yvmzLuHXnx",
+    "/dns4/javelin.ckb.guide/tcp/443/wss/p2p/QmPcJY2gZLUm66szYA9QaG1P3rzwseWCMgbj6AyNCyW4G2",
+    "/dns4/diadem.ckb.guide/tcp/443/wss/p2p/QmQMjFrNGaphzfHin3mbYybbJcFMDUihKAcknquYvm9J3W",
+    "/dns4/bloodstone.ckb.guide/tcp/443/wss/p2p/QmQoTR39rBkpZVgLApDGDoFnJ2YDBS9hYeiib1Z6aoAdEf",
+    "/dns4/crown.ckb.guide/tcp/443/wss/p2p/QmTt6HeNakL8Fpmevrhdna7J4NzEMf9pLchf1CXtmtSrwb",
+    "/dns4/mekansm.ckb.guide/tcp/443/wss/p2p/QmT6DFfm18wtbJz3y4aPNn3ac86N4d4p4xtfQRRPf73frC",
+    "/dns4/circlet.ckb.guide/tcp/443/wss/p2p/Qmd41MaByDprkC5gP1XBKgamZ9DTLNk37zbPgwtiWCzRV6",
+    "/dns4/vanguard.ckb.guide/tcp/443/wss/p2p/QmWVuW5KquiWDSqgMJRFW1xRtVqkYJrWz6S9NNk6fFn3wh",
+    "/dns4/chainmail.ckb.guide/tcp/443/wss/p2p/QmfUTZxsse7rFJTJfoUv8bbStoDLETxst5nJEpJozNuAnH",
+    "/dns4/gleipnir.ckb.guide/tcp/443/wss/p2p/QmSPkAyXqsWpRiS7HpHLTProVdhQWLKFHCXbRjaLpJj7ZL",
+    "/dns4/parasma.ckb.guide/tcp/443/wss/p2p/QmSJTsMsMGBjzv1oBNwQU36VhQRxc2WQpFoRu1ZifYKrjZ",
+    "/dns4/bottle.ckb.guide/tcp/443/wss/p2p/QmWcEhsMNRcfJit62EbKgzpgtAJZX1G3Ur4shXjcvLsYDb"
 ]
 
 ### Whitelist-only mode

@@ -22,7 +22,10 @@ import __wbg_init, {
   Util as KeyVaultUtil,
 } from "../../key-vault/pkg/key_vault";
 import { CKBSphincsPlusHasher } from "./hasher";
-import Worker from 'worker-loader!../../light-client/worker.js';
+import Worker from "worker-loader!../../light-client/worker.js";
+import { LightClient, randomSecretKey } from "ckb-light-client-js";
+import networkConfig from "../../light-client/config.toml";
+import { ClientIndexerSearchKeyLike } from "@ckb-ccc/core";
 
 /**
  * Manages a wallet using the SPHINCS+ post-quantum signature scheme (shake-128f simple)
@@ -30,75 +33,33 @@ import Worker from 'worker-loader!../../light-client/worker.js';
  * managing seed phrases, and interacting with the blockchain.
  */
 export default class QuantumPurse {
-  // ckb light client wasm worker
+  /* All in one lock script configuration */
+  private static readonly MULTISIG_ID = "80";
+  private static readonly REQUIRE_FISRT_N = "00";
+  private static readonly THRESHOLD = "01";
+  private static readonly PUBKEY_NUM = "01";
+  private static readonly QR_LOCK_FLAGS = "6d"; // [0110110]|[1]: [shake128f-id]|[signature-flag]
+  private static readonly SPX_SIG_LEN: number = 17088;
+  private static instance: QuantumPurse | null = null;
+  /* CKB light client wasm worker */
   private static worker: Worker | undefined;
-  private pendingRequests: Map<
+  private static pendingRequests: Map<
     string,
     {
       resolve: (value: any) => void;
       reject: (reason: any) => void;
     }
   > = new Map();
-
-  // all in one lock script configuration
-  private MULTISIG_ID = "80";
-  private REQUIRE_FISRT_N = "00";
-  private THRESHOLD = "01";
-  private PUBKEY_NUM = "01"; // 1 pubkey (personal lock)
-  /*             6d
-   *-----------------------------
-   *   [0110110]  |      [1]
-   *-----------------------------
-   * shake128f-id | signature-flag
-   */
-  private QR_LOCK_FLAGS = "6d";
-  private SPX_SIG_LEN: number = 17088;
-  private static instance: QuantumPurse | null = null;
-
-  public accountPointer?: string; // a sphincs+ public key
-  public sphincsLock: { codeHash: string; hashType: HashType };
+  private static client: LightClient;
+  private static readonly CLIENT_ID = "ckb-light-client-wasm-secret-key";
+  private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
+  /* Account management */
+  private accountPointer?: string; // Is a sphincs+ public key
+  private sphincsLock: { codeHash: string; hashType: HashType };
 
   /** Constructor that takes sphincs+ on-chain binary deployment info */
   private constructor(sphincsCodeHash: string, sphincsHashType: HashType) {
     this.sphincsLock = { codeHash: sphincsCodeHash, hashType: sphincsHashType };
-  }
-
-  /** Conjugate the first 4 bytes of the witness.lock for the hasher */
-  private spxAllInOneSetupHashInput(): string {
-    return (
-      this.MULTISIG_ID + this.REQUIRE_FISRT_N + this.THRESHOLD + this.PUBKEY_NUM
-    );
-  }
-
-  /** Initialize web worker to run ckb light client */
-  private static async initWebWorker() {
-    QuantumPurse.worker = new Worker();
-  }
-
-  /** Request to ckb light client web worker */
-  private sendRequest() {
-    if (!QuantumPurse.worker)
-      throw new Error("Light client worker not initialized");
-
-    // Send data to the worker
-    QuantumPurse.worker.postMessage('Start task');
-    console.log('Message sent to worker');
-
-    // Receive data from the worker
-    QuantumPurse.worker.onmessage = function (event) {
-      console.log('Message received from worker:', event.data);
-      // Handle the result
-    };
-
-    // Handle worker errors
-    QuantumPurse.worker.onerror = function (error) {
-      console.error('Error from worker:', error.message);
-    };
-  }
-
-  /** test invocation */
-  public async getTipHeader() {
-    this.sendRequest();
   }
 
   /**
@@ -107,6 +68,7 @@ export default class QuantumPurse {
    */
   public static async getInstance(): Promise<QuantumPurse> {
     if (!QuantumPurse.instance) {
+      await this.startLightClient();
       this.initWebWorker();
       await __wbg_init();
       QuantumPurse.instance = new QuantumPurse(
@@ -117,6 +79,123 @@ export default class QuantumPurse {
     return QuantumPurse.instance;
   }
 
+
+  /** Conjugate the first 4 bytes of the witness.lock for the hasher */
+  private spxAllInOneSetupHashInput(): string {
+    return (
+      QuantumPurse.MULTISIG_ID +
+      QuantumPurse.REQUIRE_FISRT_N +
+      QuantumPurse.THRESHOLD +
+      QuantumPurse.PUBKEY_NUM
+    );
+  }
+
+  /** Initialize web worker to poll sync status */
+  private static initWebWorker() {
+    if (!QuantumPurse.worker) {
+      QuantumPurse.worker = new Worker();
+      QuantumPurse.worker!.onmessage = (event) => {
+        const { command, data, requestId } = event.data;
+        if (command === "getSyncStatus") {
+          // Worker requests sync status from the client
+          this.getSyncStatusInternal().then((status) => {
+            console.log(">>> Internal status: ", status);
+            QuantumPurse.worker!.postMessage({
+              type: "syncStatus",
+              data: status,
+              requestId,
+            });
+          });
+        } else if (requestId && QuantumPurse.pendingRequests.has(requestId)) {
+          const { resolve } = QuantumPurse.pendingRequests.get(requestId)!;
+          resolve(data);
+          QuantumPurse.pendingRequests.delete(requestId);
+        }
+      };
+      // Start the worker’s polling loop
+      this.sendRequest("start");
+    }
+  }
+
+  /** Request to ckb light client web worker */
+  private static sendRequest(command: string): Promise<any> {
+    if (!QuantumPurse.worker) throw new Error("Worker not initialized");
+    return new Promise((resolve, reject) => {
+      const requestId = Math.random().toString(36).substring(7);
+      QuantumPurse.pendingRequests.set(requestId, { resolve, reject });
+      QuantumPurse.worker!.postMessage({ command, requestId });
+    });
+  }
+
+  /* Get balance */
+  public async getBalanceN(sphincsPlusPubKey?: string): Promise<bigint> {
+    if (!QuantumPurse.client) throw new Error("Light client not initialized");
+
+    const lock = this.getLock(sphincsPlusPubKey);
+    const searchKey: ClientIndexerSearchKeyLike = {
+      scriptType: "lock",
+      script: lock,
+      scriptSearchMode: "prefix",
+    };
+    const capacity = await QuantumPurse.client.getCellsCapacity(searchKey);
+    return capacity;
+  }
+
+  /* Send transaction */
+  public async sendTransaction(signedTx: Transaction): Promise<string> {
+    const txid = QuantumPurse.client.sendTransaction(signedTx);
+    return txid;
+  }
+
+  /* Set script filter */
+  private async setScripts(sphincsPlusPubKey?: string): Promise<void> {
+    const lock = this.getLock(sphincsPlusPubKey);
+    const tipHeader = await QuantumPurse.client.getTipHeader();
+    QuantumPurse.client.setScripts([
+      { blockNumber: tipHeader.number, script: lock, scriptType: "lock" },
+    ]);
+  }
+
+  /* Calculate sync status */
+  private static async getSyncStatusInternal() {
+    const syncedBlock = Number(
+      (await QuantumPurse.client.getScripts())[0]?.blockNumber ?? 0
+    );
+    const topBlock = Number((await QuantumPurse.client.getTipHeader()).number);
+    const startBlock = 0;
+    const syncedStatus =
+      topBlock > startBlock
+        ? ((syncedBlock - startBlock) / (topBlock - startBlock)) * 100
+        : 0;
+    return { syncedBlock, topBlock, syncedStatus, startBlock };
+  }
+
+  /* Get sync status from the worker */
+  public static async getSyncStatusFromWorker() {
+    return this.sendRequest("getSyncStatus");
+  }
+
+  /* Start light client thread*/
+  private static async startLightClient() {
+    const config = await (await fetch(networkConfig)).text();
+    this.client = new LightClient();
+    let secretKey = localStorage.getItem(QuantumPurse.CLIENT_ID);
+    if (!secretKey) {
+      secretKey = randomSecretKey();
+      if (secretKey) {
+        localStorage.setItem(QuantumPurse.CLIENT_ID, secretKey);
+      } else {
+        throw new Error("Failed to generate a secret key.");
+      }
+    }
+    let enableDebug = undefined;
+    await this.client.start(
+      { type: "TestNet", config },
+      secretKey,
+      enableDebug ? "debug" : "info"
+    );
+  }
+  
   /**
    * Gets the CKB lock script.
    * @param sphincsPlusPubKey - The sphincs+ public key to get a lock script from.
@@ -134,7 +213,7 @@ export default class QuantumPurse {
     hasher.update("0x" + this.spxAllInOneSetupHashInput());
     hasher.update(
       "0x" +
-        ((parseInt(this.QR_LOCK_FLAGS, 16) >> 1) << 1)
+        ((parseInt(QuantumPurse.QR_LOCK_FLAGS, 16) >> 1) << 1)
           .toString(16)
           .padStart(2, "0")
     );
@@ -207,7 +286,7 @@ export default class QuantumPurse {
     }
 
     const witnessLen =
-      this.SPX_SIG_LEN + hexStringToUint8Array(accPointer).length;
+      QuantumPurse.SPX_SIG_LEN + hexStringToUint8Array(accPointer).length;
     tx = insertWitnessPlaceHolder(tx, witnessLen);
     tx = prepareSphincsPlusSigningEntries(tx);
 
@@ -223,7 +302,7 @@ export default class QuantumPurse {
     const fullCkbQrSig =
       "0x" +
       this.spxAllInOneSetupHashInput() +
-      this.QR_LOCK_FLAGS +
+      QuantumPurse.QR_LOCK_FLAGS +
       accPointer +
       serializedSpxSig.replace(/^0x/, "");
 
