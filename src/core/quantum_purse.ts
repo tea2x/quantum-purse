@@ -22,13 +22,13 @@ import __wbg_init, {
   Util as KeyVaultUtil,
 } from "../../key-vault/pkg/key_vault";
 import { CKBSphincsPlusHasher } from "./hasher";
-import Worker from "worker-loader!../../light-client/worker.js";
+import Worker from "worker-loader!../../light-client/status_worker.js";
 import {
   LightClient,
   randomSecretKey,
   LightClientSetScriptsCommand,
 } from "ckb-light-client-js";
-import networkConfig from "../../light-client/config.toml";
+import networkConfig from "../../light-client/network.toml";
 import { ClientIndexerSearchKeyLike, Hex } from "@ckb-ccc/core";
 
 /**
