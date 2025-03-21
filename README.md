@@ -5,7 +5,7 @@ Quantum Purse is a quantum-safe wallet for the CKB blockchain, currently utilizi
 
 
 #### Overview
-![Architecture overview](overview.png)
+<img width="535" alt="overview" src="https://github.com/user-attachments/assets/476323b5-9c75-4fa6-9d96-e004d97e3018" />
 
 #### Indexed DB store model
 
