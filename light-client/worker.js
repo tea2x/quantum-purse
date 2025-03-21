@@ -1,5 +1,11 @@
-// Cached sync status in the worker
-let syncStatus = { syncedBlock: 0, topBlock: 0, syncedStatus: 0, startBlock: 0 };
+// This workers constantly update sync status via an inteface provided by QuantumPurse class
+// and cached sync status in a variable set below to be used by the main thread.
+let syncStatus = {
+  syncedBlock: 0,
+  topBlock: 0,
+  syncedStatus: 0,
+  startBlock: 0,
+};
 
 // Function to request sync status from the main thread
 function requestSyncStatus() {
@@ -19,7 +25,11 @@ function requestSyncStatus() {
 async function startSyncStatusUpdates() {
   setInterval(async () => {
     syncStatus = await requestSyncStatus();
-  }, 1000);
+    console.log(
+      "\x1b[37;44m INFO \x1b[0m \x1b[1mstatus-worker\x1b[0m: updating sync status: ",
+      syncStatus
+    );
+  }, 5000);
 }
 
 // Handle messages from the main thread
