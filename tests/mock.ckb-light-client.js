@@ -16,6 +16,10 @@ class MockLightClient {
   async setScripts(scripts, command) {
     return Promise.resolve();
   }
+
+  async fetchTransaction(txHash) {
+    return Promise.resolve();
+  }
 }
 
 module.exports = {
