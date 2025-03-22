@@ -103,4 +103,6 @@ Until a proper SPHINCS+ hardware wallet is available for secure key management, 
 
 While Quantum Purse is not yet fully optimized for 3) - air-gapped usage, implementing such functionality would require minimal effort. If you're interested, open an issue to let me know what you need!
 
-Lastly, I'll be building on CKB for at least 5 years ahead <3. To help me build more stuff like this, you can buy me a coffee: ckb1qrgqep8saj8agswr30pls73hra28ry8jlnlc3ejzh3dl2ju7xxpjxqgqqxeu0ghthh9tw5lllkw7hajcv5r5gj094q8u7dpk
+Lastly, I'll be building on CKB for at least 5 years ahead <3. To help me build more stuff like this, you can buy me a coffee:
+**_ckb1qrgqep8saj8agswr30pls73hra28ry8jlnlc3ejzh3dl2ju7xxpjxqgqqxeu0ghthh9tw5lllkw7hajcv5r5gj094q8u7dpk_**
+<img width="200" alt="tungpham bit" src="https://github.com/user-attachments/assets/269fe4f6-827d-41b4-9806-1c962a439517" />
