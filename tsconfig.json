@@ -19,6 +19,6 @@
     "outDir": "./dist",
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
-  "include": ["src", "deploy.js"],
+  "include": ["src", "tests", "deploy.js"],
   "exclude": ["node_modules"]
 }

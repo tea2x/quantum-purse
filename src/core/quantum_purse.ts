@@ -110,10 +110,7 @@ export default class QuantumPurse {
    * @throws Error if no account pointer is set by default (see `getLock` for details).
    */
   public getAddress(sphincsPlusPubKey?: string): string {
-    const lock =
-      sphincsPlusPubKey !== undefined
-        ? this.getLock(sphincsPlusPubKey)
-        : this.getLock();
+    const lock = this.getLock(sphincsPlusPubKey);
     return scriptToAddress(lock, IS_MAIN_NET);
   }
 
@@ -161,6 +158,7 @@ export default class QuantumPurse {
     const accPointer =
       sphincsPlusPubKey !== undefined ? sphincsPlusPubKey : this.accountPointer;
     if (!accPointer || accPointer === "") {
+      password.fill(0);
       throw new Error("Account pointer not available!");
     }
 
@@ -184,6 +182,8 @@ export default class QuantumPurse {
       this.QR_LOCK_FLAGS +
       accPointer +
       serializedSpxSig.replace(/^0x/, "");
+
+    password.fill(0);
     return sealTransaction(tx, [fullCkbQrSig]);
   }
 
@@ -272,5 +272,32 @@ export default class QuantumPurse {
    */
   public async getAllAccounts(): Promise<string[]> {
     return await KeyVault.get_all_sphincs_pub();
+  }
+
+  /**
+   * Retrieve a list of on-the-fly sphincs+ public key for wallet recovery process.
+   * @param password - The password to decrypt the master seed (will be zeroed out).
+   * @param startIndex - The index to start searching from.
+   * @param count - The number of keys to search for.
+   * @returns An ordered array of all child key's sphincs plus public keys.
+   */
+  public async searchAccount(
+    password: Uint8Array,
+    startIndex: number,
+    count: number
+  ): Promise<string[]> {
+    return await KeyVault.search_accounts(password, startIndex, count);
+  }
+
+  /**
+   * Retrieve a list of on-the-fly sphincs+ public key for wallet recovery process.
+   * @param password - The password to decrypt the master seed (will be zeroed out).
+   * @param count - The number of keys to search for.
+   */
+  public async recoverAccount(
+    password: Uint8Array,
+    count: number
+  ): Promise<void> {
+    return await KeyVault.recover_wallet(password, count);
   }
 }
