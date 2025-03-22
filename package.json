@@ -9,7 +9,7 @@
     "build:webpack": "webpack --config ./webpack/webpack.prod.js",
     "build": "npm run build:wasm && npm run build:webpack",
     "deploy": "node ./src/deploy.js",
-    "predeploy": "DEPLOY_TARGET=gh-pages npm run build"
+    "predeploy": "DEPLOY_TARGET=gh-pages npm run build",
     "test:rust": "cargo test",
     "test:js": "npx karma start",
     "test": "npm run test:rust && npm run test:js"
