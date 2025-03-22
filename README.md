@@ -61,12 +61,12 @@ npm run deploy
 ## How to use this software?
 
 The following are the recommended ways to use this software, ranked from most to least preferred:
-1. run locally with `npm run start` (Recommended).
+1. run locally with `npm run start` (recommended).
 2. run `npm run deploy` to deploy it on your own GitHub page and allow others to use it.
 
 ## Connection
 
-Quantum Purse does not use centralized RPC endpoints but it runs it's own ckb light client right in your browser. When you first use the wallet and create child accounts, Quantum Purse automatically sets your starting block (the starting point where ckb light client starts sampling). For whatever reason these info gets lost, your account's starting block will be reset to 0 which requires a longer time syncing (might be 4 hours). In such case, you have to check the explorer and set stating blocks yourself (starting block is usually the blocks where your accounts has first transaction).
+Quantum Purse does not use centralized RPC endpoints but it runs it's own ckb light client right in your browser. When you first use the wallet and create child accounts, Quantum Purse automatically sets your starting block (the starting point where ckb light client starts sampling). For whatever reason these info gets lost e.g. wallet recovery in a new device, your account's starting block will be reset to 0 which requires a longer time syncing (might be 4 hours). In such case, you have to check the explorer and set stating blocks yourself (starting block is usually the blocks where your accounts has first transaction).
 
 ## Wallet recovery
 
