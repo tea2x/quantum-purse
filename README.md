@@ -68,8 +68,9 @@ The following are the recommended ways to use this software, ranked from most to
 
 ## Notes
 
-1. Backup your seedphrases.
-2. QuantumPurse does NOT store your passwords. Passwords are used on the fly to encrypt/decrypt secret data.
-3. Indexed DB only maintain public data such as sphincs+ public keys, and encrypted secret data.
-4. If you forget your password, you can import your seedphrase and set a new password, on the fly.
-5. If you encounter a problem using the wallet, open a github issue or contact this telegram handle **@quantumpurse**
+1. Quantum resistance is experimental. Use this software at your own risk.
+2. Back up your seed phrases. Losing them means losing access to your wallet.
+3. QuantumPurse does NOT store your passwords. Passwords are used only temporarily to encrypt and decrypt your secret data.
+4. IndexedDB stores only public data (e.g., SPHINCS+ public keys) and encrypted secret data. Your private keys remain protected.
+5. Forgot your password? You can recover access by importing your seed phrase and setting a new password instantly.
+6. Need help? If you encounter an issue, report it on GitHub or contact us on Telegram: @quantumpurse
