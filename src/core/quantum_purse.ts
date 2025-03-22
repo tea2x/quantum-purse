@@ -177,10 +177,10 @@ export default class QuantumPurse {
     if (startingBlock !== undefined) {
       start = startingBlock;
       localStorage.setItem(storageKey, start.toString());
-      return;
+    } else {
+        start = await this.inferStartBlock(sphincsPlusPubKey);
     }
-
-    start = await this.inferStartBlock(sphincsPlusPubKey);
+    
     this.client.setScripts(
       [{ blockNumber: start, script: lock, scriptType: "lock" }],
       LightClientSetScriptsCommand.Partial
