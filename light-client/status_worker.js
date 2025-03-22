@@ -26,7 +26,7 @@ async function startSyncStatusUpdates() {
   setInterval(async () => {
     syncStatus = await requestSyncStatus();
     console.log(
-      "\x1b[37;44m INFO \x1b[0m \x1b[1mstatus-worker\x1b[0m: updating sync status: ",
+      "\x1b[37;44m INFO \x1b[0m \x1b[1mlight-client-sync-status\x1b[0m: ",
       syncStatus
     );
   }, 5000);

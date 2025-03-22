@@ -17,7 +17,7 @@ import { CellCollector, Indexer } from "@ckb-lumos/ckb-indexer";
 import { Script, HashType, Transaction } from "@ckb-lumos/base";
 import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
 import { TransactionSkeletonType, sealTransaction } from "@ckb-lumos/helpers";
-import __wbg_init, {
+import keyVaultWasmInit, {
   KeyVault,
   Util as KeyVaultUtil,
 } from "../../key-vault/pkg/key_vault";
@@ -148,7 +148,7 @@ export default class QuantumPurse {
     return txid;
   }
 
-  /* Helper to calculate start block based on sphincs+ pub key */
+  /* Helper to infer start block based on sphincs+ pub key */
   private async inferStartBlock(sphincsPlusPubKey: string): Promise<bigint> {
     const tipHeader = await this.client!.getTipHeader();
     const storageKey = QuantumPurse.START_BLOCK + "-" + sphincsPlusPubKey;
@@ -230,6 +230,12 @@ export default class QuantumPurse {
       secretKey as Hex,
       enableDebug ? "debug" : "info"
     );
+  }
+
+  /* Fetch the sphincs+ celldeps to the light client in quantumPurse wallet setup */
+  private async fetchSphincsPlusCellDeps() {
+    if (!this.client) throw new Error("Light client not initialized");
+    await this.client.fetchTransaction(SPHINCSPLUS_LOCK.outPoint.txHash);
   }
 
   /**
@@ -428,8 +434,9 @@ export default class QuantumPurse {
    * @remark The password is overwritten with zeros after use. Handle the returned seed carefully to avoid leakage.
    */
   public async init(password: Uint8Array): Promise<void> {
-    await __wbg_init();
+    await keyVaultWasmInit();
     await this.startLightClient();
+    await this.fetchSphincsPlusCellDeps();
     this.startClientSyncStatusWorker();
     await KeyVault.key_init(password);
     password.fill(0);
