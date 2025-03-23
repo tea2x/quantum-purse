@@ -58,7 +58,7 @@ export default class QuantumPurse {
   private static readonly CLIENT_ID = "ckb-light-client-wasm-secret-key";
   private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
   /* Account management */
-  private accountPointer?: string; // Is a sphincs+ public key
+  public accountPointer?: string; // Is a sphincs+ public key
   private sphincsLock: { codeHash: string; hashType: HashType };
 
   /** Constructor that takes sphincs+ on-chain binary deployment info */
@@ -339,7 +339,7 @@ export default class QuantumPurse {
       accPointer,
       hexStringToUint8Array(signingEntries[0].message)
     );
-    const serializedSpxSig = new Reader(spxSig.buffer).serializeJson();
+    const serializedSpxSig = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
 
     const fullCkbQrSig =
       "0x" +

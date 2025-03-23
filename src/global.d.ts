@@ -12,3 +12,7 @@ declare module 'worker-loader!*' {
   const Worker: any;
   export default Worker;
 }
+
+declare module 'qrcode.react' {
+  export const QRCodeSVG: ComponentType<QRCodeSVGProps>;
+}
