@@ -90,6 +90,7 @@ export const wallet = createModel<RootModel>()({
       }
       isInitializing = true;
       quantum = await Quantum.getInstance();
+      await quantum.initLightClient();
       try {
         const accountsData: any = await this.loadAccounts();
         await quantum.setAccPointer(accountsData[0].sphincsPlusPubKey);
@@ -179,7 +180,7 @@ export const wallet = createModel<RootModel>()({
           utf8ToBytes(password),
           fromSphincsPlusPubKey
         );
-        const txId: string = await sendTransaction(NODE_URL, signedTx);
+        const txId: string = await quantum.sendTransaction(signedTx);
 
         if (
           from === rootState.wallet.current.address ||

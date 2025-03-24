@@ -1,21 +1,16 @@
 // QuantumPurse.ts
 import {
-  CKB_INDEXER_URL,
-  NODE_URL,
   IS_MAIN_NET,
   SPHINCSPLUS_LOCK,
 } from "./config";
 import {
-  hexToInt,
   insertWitnessPlaceHolder,
   prepareSphincsPlusSigningEntries,
   hexStringToUint8Array,
 } from "./utils";
 import { Reader } from "ckb-js-toolkit";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
-import { CellCollector, Indexer } from "@ckb-lumos/ckb-indexer";
 import { Script, HashType, Transaction } from "@ckb-lumos/base";
-import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
 import { TransactionSkeletonType, sealTransaction } from "@ckb-lumos/helpers";
 import keyVaultWasmInit, {
   KeyVault,
@@ -72,6 +67,7 @@ export default class QuantumPurse {
    */
   public static async getInstance(): Promise<QuantumPurse> {
     if (!QuantumPurse.instance) {
+      await keyVaultWasmInit(); //todo to be grouped with other init
       QuantumPurse.instance = new QuantumPurse(
         SPHINCSPLUS_LOCK.codeHash,
         SPHINCSPLUS_LOCK.hashType as HashType
@@ -126,20 +122,6 @@ export default class QuantumPurse {
     });
   }
 
-  /* Get balance */
-  public async getBalanceN(sphincsPlusPubKey?: string): Promise<bigint> {
-    if (!this.client) throw new Error("Light client not initialized");
-
-    const lock = this.getLock(sphincsPlusPubKey);
-    const searchKey: ClientIndexerSearchKeyLike = {
-      scriptType: "lock",
-      script: lock,
-      scriptSearchMode: "prefix",
-    };
-    const capacity = await this.client.getCellsCapacity(searchKey);
-    return capacity;
-  }
-
   /* Send transaction */
   public async sendTransaction(signedTx: Transaction): Promise<string> {
     if (!this.client) throw new Error("Light client not initialized");
@@ -191,17 +173,30 @@ export default class QuantumPurse {
   private async getSyncStatusInternal() {
     if (!this.client) throw new Error("Light client not initialized");
 
+    // accountPointer can be not ready when this pool loop starts
+    if (!this.accountPointer) return;
+    
     const lock = this.getLock();
+    const localNodeInfo = await this.client.localNodeInfo();
     const scripts = await this.client.getScripts();
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
-    const topBlock = Number((await this.client.getTipHeader()).number);
+
+    const tipBlock = Number((await this.client.getTipHeader()).number);
     const startBlock = Number(await this.inferStartBlock(this.accountPointer!));
-    const syncedStatus =
-      topBlock > startBlock
-        ? ((syncedBlock - startBlock) / (topBlock - startBlock)) * 100
+
+    const syncedStatus = tipBlock > startBlock
+        ? ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100
         : 0;
-    return { syncedBlock, topBlock, syncedStatus, startBlock };
+
+    return {
+      nodeId: localNodeInfo.nodeId,
+      connections: localNodeInfo.connections,
+      syncedBlock,
+      tipBlock,
+      syncedStatus,
+      startBlock
+    };
   }
 
   /* Get sync status from the worker */
@@ -279,31 +274,18 @@ export default class QuantumPurse {
     return scriptToAddress(lock, IS_MAIN_NET);
   }
 
-  /**
-   * Calculates the wallet's balance on the Nervos CKB blockchain.
-   * @param sphincsPlusPubKey - The sphincs+ public key to get an address from which a balance is retrieved.
-   * @returns A promise resolving to the balance in BigInt (in shannons).
-   * @throws Error if no account is set (see `getLock` for details).
-   */
+  /* Get balance */
   public async getBalance(sphincsPlusPubKey?: string): Promise<bigint> {
-    const lock =
-      sphincsPlusPubKey !== undefined
-        ? this.getLock(sphincsPlusPubKey)
-        : this.getLock();
-    const query: CKBIndexerQueryOptions = {
-      lock: lock,
-      type: "empty",
-    };
-    const cellCollector = new CellCollector(
-      new Indexer(CKB_INDEXER_URL, NODE_URL),
-      query
-    );
-    let balance = BigInt(0);
+    if (!this.client) throw new Error("Light client not initialized");
 
-    for await (const cell of cellCollector.collect()) {
-      balance += hexToInt(cell.cellOutput.capacity);
-    }
-    return balance;
+    const lock = this.getLock(sphincsPlusPubKey);
+    const searchKey: ClientIndexerSearchKeyLike = {
+      scriptType: "lock",
+      script: lock,
+      scriptSearchMode: "prefix",
+    };
+    const capacity = await this.client.getCellsCapacity(searchKey);
+    return capacity;
   }
 
   /**
@@ -358,11 +340,11 @@ export default class QuantumPurse {
    */
   public async dbClear(): Promise<void> {
     await KeyVault.clear_database();
-    localStorage.removeItem(QuantumPurse.CLIENT_ID);
-    const accList = await this.getAllAccounts();
-    accList.forEach((acc) => {
-      localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + acc);
-    });
+    // localStorage.removeItem(QuantumPurse.CLIENT_ID);
+    // const accList = await this.getAllAccounts();
+    // accList.forEach((acc) => {
+    //   localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + acc);
+    // });
   }
 
   /**
@@ -428,16 +410,19 @@ export default class QuantumPurse {
     return seed;
   }
 
+  /* init light client and status worker */
+  public async initLightClient(): Promise<void> {
+    await this.startLightClient();
+    await this.fetchSphincsPlusCellDeps();
+    this.startClientSyncStatusWorker();
+  }
+
   /**
    * QuantumPurse wallet initialization for wasm code init, key-vault, light-client and light-client status worker.
    * @param password - The password to encrypt the seed (will be zeroed out) in key-vault initilization.
    * @remark The password is overwritten with zeros after use. Handle the returned seed carefully to avoid leakage.
    */
   public async init(password: Uint8Array): Promise<void> {
-    await keyVaultWasmInit();
-    await this.startLightClient();
-    await this.fetchSphincsPlusCellDeps();
-    this.startClientSyncStatusWorker();
     await KeyVault.key_init(password);
     password.fill(0);
   }
