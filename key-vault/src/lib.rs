@@ -814,7 +814,7 @@ impl KeyVault {
     /// - `Result<Vec<String>, JsValue>` - A list of public keys as strings on success,
     ///   or a JavaScript error on failure.
     #[wasm_bindgen]
-    pub async fn search_accounts(
+    pub async fn gen_account_batch(
         password: Uint8Array,
         start_index: u32,
         count: u32,
@@ -846,7 +846,7 @@ impl KeyVault {
     ///
     /// **Async**: Yes
     #[wasm_bindgen]
-    pub async fn recover_wallet(password: Uint8Array, count: u32) -> Result<(), JsValue> {
+    pub async fn recover_accounts(password: Uint8Array, count: u32) -> Result<(), JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
         let payload = get_encrypted_mnemonic_phrase()

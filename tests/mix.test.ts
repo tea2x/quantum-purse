@@ -90,4 +90,22 @@ describe("Quantum Purse Basics", () => {
     const txId = await sendTransaction(NODE_URL, signedTx);
     await waitForTransactionConfirmation(NODE_URL, txId);
   });
+
+  it("Should zeroize password after generating account batch", async () => {
+    let passwordStrHandler = utf8ToBytes(passwordStr);
+    await wallet.initSeedPhrase(passwordStrHandler);
+
+    passwordStrHandler = utf8ToBytes(passwordStr);
+    await wallet.genAccountInBatch(passwordStrHandler, 0, 3);
+    expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
+  });
+
+  it("Should zeroize password after recovering accounts", async () => {
+    let passwordStrHandler = utf8ToBytes(passwordStr);
+    await wallet.initSeedPhrase(passwordStrHandler);
+
+    passwordStrHandler = utf8ToBytes(passwordStr);
+    await wallet.recoverAccounts(passwordStrHandler, 3);
+    expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
+  });
 });

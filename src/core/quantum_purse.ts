@@ -122,7 +122,12 @@ export default class QuantumPurse {
     });
   }
 
-  /* Send transaction */
+  /**
+   * Send the signed transaction via the light client.
+   * @param signedTx The signed CKB transaction
+   * @returns The transaction hash(id).
+   * @throws Error light client is not initialized.
+   */
   public async sendTransaction(signedTx: Transaction): Promise<string> {
     if (!this.client) throw new Error("Light client not initialized");
 
@@ -143,7 +148,14 @@ export default class QuantumPurse {
     return start;
   }
 
-  /* Set sync filter on account, starting block*/
+  /**
+   * This function tells the light client which account and from what block they start making transactions.
+   * @param sphincsPlusPubKey The sphincs+ publickey representing a sphincs+ account in your DB.
+   * @param firstAccount Is this the first account to be generated in your wallet?
+   * @param startingBlock The starting block to be set. Inferred as tip/0 block by default. TODO correct
+   * @returns The transaction hash(id).
+   * @throws Error light client is not initialized.
+   */
   public async setSellectiveSyncFilter(
     sphincsPlusPubKey: string,
     firstAccount: boolean,
@@ -201,7 +213,10 @@ export default class QuantumPurse {
     };
   }
 
-  /* Get sync status from the worker */
+  /**
+   * This function reads sync status from the status worker
+   * @returns The node info and sync status.
+   */
   public async getSyncStatusFromWorker() {
     return this.sendRequest("getSyncStatus");
   }
@@ -276,7 +291,12 @@ export default class QuantumPurse {
     return scriptToAddress(lock, IS_MAIN_NET);
   }
 
-  /* Get balance */
+  /**
+   * Gets account balance via light client protocol.
+   * @param sphincsPlusPubKey - The sphincs+ public key to get an address from which balance is retrieved, via light client.
+   * @returns The account balance.
+   * @throws Error light client is not initialized.
+   */
   public async getBalance(sphincsPlusPubKey?: string): Promise<bigint> {
     if (!this.client) throw new Error("Light client not initialized");
 
@@ -297,7 +317,7 @@ export default class QuantumPurse {
    * @param sphincsPlusPubKey - The sphincs+ public key to get a lock script from.
    * @returns A promise resolving to the signed transaction.
    * @throws Error if no account is set or decryption fails.
-   * @remark The password and sensitive data are overwritten with zeros after use.
+   * @remark The password is overwritten with zeros after use.
    */
   public async sign(
     tx: TransactionSkeletonType,
@@ -336,10 +356,7 @@ export default class QuantumPurse {
     return sealTransaction(tx, [fullCkbQrSig]);
   }
 
-  /**
-   * Clears all data from a specific store in IndexedDB.
-   * @returns A promise that resolves when the store is cleared.
-   */
+  /* Clears all local data of the wallet. */
   public async deleteWallet(): Promise<void> {
     localStorage.removeItem(QuantumPurse.CLIENT_ID);
     const accList = await this.getAllAccounts();
@@ -358,7 +375,7 @@ export default class QuantumPurse {
    * @param password - The password to decrypt the master seed and encrypt the child key (will be zeroed out).
    * @returns A promise that resolves when the account is generated and set.
    * @throws Error if the master seed is not found or decryption fails.
-   * @remark The password should be overwritten with zeros after use.
+   * @remark The password is overwritten with zeros after use.
    */
   public async genAccount(password: Uint8Array): Promise<string> {
     const [accList, sphincs_pub] = await Promise.all([
@@ -373,6 +390,7 @@ export default class QuantumPurse {
   /**
    * Sets the account pointer (There can be many sub/child accounts in db but at a time Quantum Purse will show just 1).
    * @param accPointer - The SPHINCS+ public key (as a pointer to the encrypted privatekey in DB) to set.
+   * @throws Error if the account to be set is not in the DB.
    */
   public async setAccPointer(accPointer: string): Promise<void> {
     const accList = await this.getAllAccounts();
@@ -429,7 +447,7 @@ export default class QuantumPurse {
   /**
    * QuantumPurse wallet initialization for wasm code init, key-vault, light-client and light-client status worker.
    * @param password - The password to encrypt the seed (will be zeroed out) in key-vault initilization.
-   * @remark The password is overwritten with zeros after use. Handle the returned seed carefully to avoid leakage.
+   * @remark The password is overwritten with zeros after use.
    */
   public async initSeedPhrase(password: Uint8Array): Promise<void> {
     await KeyVault.key_init(password);
@@ -450,24 +468,30 @@ export default class QuantumPurse {
    * @param startIndex - The index to start searching from.
    * @param count - The number of keys to search for.
    * @returns An ordered array of all child key's sphincs plus public keys.
+   * @remark The password is overwritten with zeros after use.
    */
-  public async searchAccount(
+  public async genAccountInBatch(
     password: Uint8Array,
     startIndex: number,
     count: number
   ): Promise<string[]> {
-    return await KeyVault.search_accounts(password, startIndex, count);
+    const list = await KeyVault.gen_account_batch(password, startIndex, count);
+    password.fill(0);
+    return list;
   }
 
   /**
    * Retrieve a list of on-the-fly sphincs+ public key for wallet recovery process.
    * @param password - The password to decrypt the master seed (will be zeroed out).
    * @param count - The number of keys to search for.
+   * @remark The password is overwritten with zeros after use.
    */
-  public async recoverAccount(
+  public async recoverAccounts(
     password: Uint8Array,
     count: number
   ): Promise<void> {
-    return await KeyVault.recover_wallet(password, count);
+    await KeyVault.recover_accounts(password, count);
+    password.fill(0);
+    return;
   }
 }
