@@ -86,23 +86,24 @@ The recovery process continues until it encounters 10 consecutive empty accounts
 
 ## Commentary
 
-Quantum Purse is designed as a static web app that utilizes web browser's execution engine. This means there's no backend or server involved, only the software that runs in the browser. There're both pros and cons to this approach. The pros is that it shortens development time and can access multiple platforms as long as users have their browser installed. The cons is that it is vulnerable to browser-based threats, such as malicious extensions, script injection, and other web-based attacks.
+Quantum Purse is designed as a static web app that utilizes web browser's execution engine. This means there's no backend or server involved, only the software that runs in the browser. There're both pros and cons to this approach. The pros is that it shortens development time and can access multiple platforms as long as users have their web browser installed. The cons is that it is vulnerable to browser-based threats, such as malicious extensions, script injection, and other web-based attacks.
 
 Quantum Purse requires users to enter their password for each transaction or key-related function. While the application ensures that sensitive data is securely erased (zeroized) after processing, the password input remains a potential attack vector. This is inherently the weakest link in all password-based cryptocurrency wallets.
 
 Until a proper SPHINCS+ hardware wallet is available for secure key management, consider the following best practices to maximize security:
 
-1. Use a dedicated device with minimal software installed to run Quantum Purse.
-2. Terminate the web browser after completing a transaction. Ideally, power off your computer to ensure any residual data in RAM is wiped.
+1. Use a dedicated device with minimal software(including web extension) installed to run Quantum Purse.
+2. Terminate the web browser after completing a transaction. Ideally, power off your computer to ensure any residual passwords-related data in RAM is wiped.
 3. For maximum security, use an air-gapped device (one with no internet connection) to run Quantum Purse. To sign a transaction:
-  - Construct an unsigned transaction on a separate, internet-connected device.
+  - Construct an unsigned transaction on a separate, internet-connected device, using your public address.
   - Transfer it via a secure USB drive (free from malware please ^^) to the air-gapped device.
   - Sign the transaction on the air-gapped device.
-  - Transfer the signed transaction back via USB and broadcast it using a tool like [this one](https://explorer.nervos.org/tools/broadcast-tx). You might want to try with joyID signed transactions first ^^!
+  - Transfer the signed transaction back via USB and broadcast it using a tool like [this one](https://explorer.nervos.org/tools/broadcast-tx). You might want to try the broadcaster with joyID signed transactions first ^^!
   - This effectively turns your dedicated device into a quantum-safe offline signer!
 
-While Quantum Purse is not yet fully optimized for 3) - air-gapped usage, implementing such functionality would require minimal effort. If you're interested, open an issue to let me know what you need!
+While Quantum Purse is currently not yet fully optimized for 3) - air-gapped usage, implementing such functionality would require minimal effort. If you're interested, open an issue to let me know what you need!
 
 Lastly, I'll be building on CKB for at least 5 years ahead <3. To help me build more stuff like this, you can buy me a coffee:
 **_ckb1qrgqep8saj8agswr30pls73hra28ry8jlnlc3ejzh3dl2ju7xxpjxqgqqxeu0ghthh9tw5lllkw7hajcv5r5gj094q8u7dpk_**
+
 <img width="200" alt="tungpham bit" src="https://github.com/user-attachments/assets/269fe4f6-827d-41b4-9806-1c962a439517" />
