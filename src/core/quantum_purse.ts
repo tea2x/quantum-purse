@@ -324,36 +324,38 @@ export default class QuantumPurse {
     password: Uint8Array,
     sphincsPlusPubKey?: string
   ): Promise<Transaction> {
-    const accPointer =
-      sphincsPlusPubKey !== undefined ? sphincsPlusPubKey : this.accountPointer;
-    if (!accPointer || accPointer === "") {
+    try {
+      const accPointer =
+        sphincsPlusPubKey !== undefined ? sphincsPlusPubKey : this.accountPointer;
+
+      if (!accPointer || accPointer === "") {
+        throw new Error("Account pointer not available!");
+      }
+
+      const witnessLen =
+        QuantumPurse.SPX_SIG_LEN + hexStringToUint8Array(accPointer).length;
+      tx = insertWitnessPlaceHolder(tx, witnessLen);
+      tx = prepareSphincsPlusSigningEntries(tx);
+
+      const signingEntries = tx.get("signingEntries").toArray();
+      const spxSig = await KeyVault.sign(
+        password,
+        accPointer,
+        hexStringToUint8Array(signingEntries[0].message)
+      );
+      const serializedSpxSig = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
+
+      const fullCkbQrSig =
+        "0x" +
+        this.spxAllInOneSetupHashInput() +
+        QuantumPurse.LOCK_FLAGS +
+        accPointer +
+        serializedSpxSig.replace(/^0x/, "");
+
+      return sealTransaction(tx, [fullCkbQrSig]);
+    } finally {
       password.fill(0);
-      throw new Error("Account pointer not available!");
     }
-
-    const witnessLen =
-      QuantumPurse.SPX_SIG_LEN + hexStringToUint8Array(accPointer).length;
-    tx = insertWitnessPlaceHolder(tx, witnessLen);
-    tx = prepareSphincsPlusSigningEntries(tx);
-
-    const signingEntries = tx.get("signingEntries").toArray();
-
-    const spxSig = await KeyVault.sign(
-      password,
-      accPointer,
-      hexStringToUint8Array(signingEntries[0].message)
-    );
-    const serializedSpxSig = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
-
-    const fullCkbQrSig =
-      "0x" +
-      this.spxAllInOneSetupHashInput() +
-      QuantumPurse.LOCK_FLAGS +
-      accPointer +
-      serializedSpxSig.replace(/^0x/, "");
-
-    password.fill(0);
-    return sealTransaction(tx, [fullCkbQrSig]);
   }
 
   /* Clears all local data of the wallet. */
@@ -378,13 +380,16 @@ export default class QuantumPurse {
    * @remark The password is overwritten with zeros after use.
    */
   public async genAccount(password: Uint8Array): Promise<string> {
-    const [accList, sphincs_pub] = await Promise.all([
-      this.getAllAccounts(),
-      KeyVault.gen_new_key_pair(password)
-    ]);  
-    await this.setSellectiveSyncFilter(sphincs_pub, (accList.length === 0));
-    password.fill(0);
-    return sphincs_pub;
+    try {
+      const [accList, sphincs_pub] = await Promise.all([
+        this.getAllAccounts(),
+        KeyVault.gen_new_key_pair(password)
+      ]);  
+      await this.setSellectiveSyncFilter(sphincs_pub, (accList.length === 0));
+      return sphincs_pub;
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
@@ -405,7 +410,11 @@ export default class QuantumPurse {
    * @remark The input password is overwritten with zeros after calculation.
    */
   public static checkPassword(password: Uint8Array): number {
-    return KeyVaultUtil.password_checker(password);
+    try {
+      return KeyVaultUtil.password_checker(password);
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
@@ -419,9 +428,12 @@ export default class QuantumPurse {
     seedPhrase: Uint8Array,
     password: Uint8Array
   ): Promise<void> {
-    await KeyVault.import_seed_phrase(seedPhrase, password);
-    password.fill(0);
-    seedPhrase.fill(0);
+    try {
+      await KeyVault.import_seed_phrase(seedPhrase, password);
+    } finally {
+      password.fill(0);
+      seedPhrase.fill(0);
+    }
   }
 
   /**
@@ -432,9 +444,12 @@ export default class QuantumPurse {
    * @remark The password is overwritten with zeros after use. Handle the returned seed carefully to avoid leakage.
    */
   public async exportSeedPhrase(password: Uint8Array): Promise<Uint8Array> {
-    const seed = await KeyVault.export_seed_phrase(password);
-    password.fill(0);
-    return seed;
+    try {
+      const seed = await KeyVault.export_seed_phrase(password);
+      return seed;
+    } finally {
+      password.fill(0);
+    }
   }
 
   /* init light client and status worker */
@@ -450,8 +465,11 @@ export default class QuantumPurse {
    * @remark The password is overwritten with zeros after use.
    */
   public async initSeedPhrase(password: Uint8Array): Promise<void> {
-    await KeyVault.key_init(password);
-    password.fill(0);
+    try {
+      await KeyVault.key_init(password);
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
@@ -475,9 +493,12 @@ export default class QuantumPurse {
     startIndex: number,
     count: number
   ): Promise<string[]> {
-    const list = await KeyVault.gen_account_batch(password, startIndex, count);
-    password.fill(0);
-    return list;
+    try {
+      const list = await KeyVault.gen_account_batch(password, startIndex, count);
+      return list;
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
@@ -490,8 +511,10 @@ export default class QuantumPurse {
     password: Uint8Array,
     count: number
   ): Promise<void> {
-    await KeyVault.recover_accounts(password, count);
-    password.fill(0);
-    return;
+    try {
+      await KeyVault.recover_accounts(password, count);
+    } finally {
+      password.fill(0);
+    }
   }
 }
