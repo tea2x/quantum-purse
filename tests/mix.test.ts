@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { NODE_URL } from "../src/core/config";
 import QuantumPurse from "../src/core/quantum_purse";
 import { transfer, buildDummyTx } from "../src/core/transaction_builder";
+import sinon from "sinon";
 import {
   utf8ToBytes,
   bytesToUtf8,
@@ -38,13 +39,15 @@ describe("Quantum Purse Basics", () => {
 
   it("Should zeroize password after wallet init", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.init(passwordStrHandler);
+    await wallet.initSeedPhrase(passwordStrHandler);
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
   });
 
   it("Should zeroize password after generating an account", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.init(passwordStrHandler);
+    await wallet.initSeedPhrase(passwordStrHandler);
+    // Mocking lightClient related function
+    sinon.stub(wallet, 'setSellectiveSyncFilter').resolves();
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccount(passwordStrHandler);
@@ -61,7 +64,7 @@ describe("Quantum Purse Basics", () => {
 
   it("Should zeroize password after exporting seed phrase", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.init(passwordStrHandler);
+    await wallet.initSeedPhrase(passwordStrHandler);
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.exportSeedPhrase(passwordStrHandler);
