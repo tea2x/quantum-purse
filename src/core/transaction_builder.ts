@@ -34,7 +34,7 @@ import {
   IS_MAIN_NET,
   SPHINCSPLUS_LOCK,
 } from "./config";
-import { hexToInt, intToHex, prepareSphincsPlusSigningEntries } from "./utils";
+import { hexToInt, intToHex, prepareSigningEntries } from "./utils";
 import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
 
 /**
@@ -123,7 +123,7 @@ function generateSphicsPlusLockInfo(
     hashType: hashType as HashType,
     lockScriptInfo: {
       CellCollector: generateCollectorClass(codeHash),
-      prepareSigningEntries: prepareSphincsPlusSigningEntries,
+      prepareSigningEntries: prepareSigningEntries,
       async setupInputCell(txSkeleton, inputCell, _, options = {}) {
         const fromScript = inputCell.cellOutput.lock;
         asserts(

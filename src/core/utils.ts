@@ -213,11 +213,11 @@ function get_ckb_tx_message_all_hash(tx: TransactionSkeletonType): Uint8Array {
 }
 
 /**
- * Prepares signing entries for SPHINCS+ by hashing transaction data and witness information.
+ * Prepares entries for SPHINCS+ signing by hashing transaction data and witness information.
  * @param txSkeleton - The transaction skeleton to process.
  * @returns An updated transaction skeleton with signing entries.
  */
-export function prepareSphincsPlusSigningEntries(
+export function prepareSigningEntries(
   txSkeleton: TransactionSkeletonType
 ): TransactionSkeletonType {
   let processedArgs = Set<string>();
@@ -230,7 +230,7 @@ export function prepareSphincsPlusSigningEntries(
       const signingEntry = {
         type: "witness_args_lock",
         index: i,
-        message: uint8ArrayToHexString(get_ckb_tx_message_all_hash(txSkeleton)),
+        message: byteArrayToHex(get_ckb_tx_message_all_hash(txSkeleton)),
       };
       signingEntries = signingEntries.push(signingEntry);
     }
@@ -361,7 +361,7 @@ export async function waitForConfirmation(
  * @param hex - The hex string to convert.
  * @returns A Uint8Array representing the hex string.
  */
-export function hexStringToUint8Array(hex: string): Uint8Array {
+export function hexToByteArray(hex: string): Uint8Array {
   if (hex.startsWith("0x")) {
     hex = hex.slice(2);
   }
@@ -383,7 +383,7 @@ export function hexStringToUint8Array(hex: string): Uint8Array {
  * @param arr - The uint8 array to convert.
  * @returns A hex string.
  */
-export function uint8ArrayToHexString(arr: Uint8Array): string {
+export function byteArrayToHex(arr: Uint8Array): string {
   return (
     "0x" +
     Array.from(arr)

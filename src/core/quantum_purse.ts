@@ -1,28 +1,14 @@
 // QuantumPurse.ts
-import {
-  IS_MAIN_NET,
-  SPHINCSPLUS_LOCK,
-} from "./config";
-import {
-  insertWitnessPlaceHolder,
-  prepareSphincsPlusSigningEntries,
-  hexStringToUint8Array,
-} from "./utils";
+import { IS_MAIN_NET, SPHINCSPLUS_LOCK } from "./config";
 import { Reader } from "ckb-js-toolkit";
+import { CKBSphincsPlusHasher } from "./hasher";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { Script, HashType, Transaction } from "@ckb-lumos/base";
 import { TransactionSkeletonType, sealTransaction } from "@ckb-lumos/helpers";
-import keyVaultWasmInit, {
-  KeyVault,
-  Util as KeyVaultUtil,
-} from "../../key-vault/pkg/key_vault";
-import { CKBSphincsPlusHasher } from "./hasher";
+import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from "./utils";
+import keyVaultWasmInit, { KeyVault, Util as KeyVaultUtil } from "../../key-vault/pkg/key_vault";
+import { LightClient, randomSecretKey, LightClientSetScriptsCommand } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
-import {
-  LightClient,
-  randomSecretKey,
-  LightClientSetScriptsCommand,
-} from "ckb-light-client-js";
 import networkConfig from "../../light-client/network.toml";
 import { ClientIndexerSearchKeyLike, Hex } from "@ckb-ccc/core";
 
@@ -130,18 +116,16 @@ export default class QuantumPurse {
    */
   public async sendTransaction(signedTx: Transaction): Promise<string> {
     if (!this.client) throw new Error("Light client not initialized");
-
     const txid = this.client.sendTransaction(signedTx);
     return txid;
   }
 
   /* Helper to infer start block based on sphincs+ pub key */
   private async inferStartBlock(storeKey: string): Promise<bigint> {
-    const tipHeader = await this.client!.getTipHeader();
-
     let startStr = localStorage.getItem(storeKey);
     let start: bigint = BigInt(0);
     if (startStr === null) {
+      const tipHeader = await this.client!.getTipHeader();
       startStr = tipHeader.number.toString();
     }
     start = BigInt(parseInt(startStr));
@@ -150,21 +134,21 @@ export default class QuantumPurse {
 
   /**
    * This function tells the light client which account and from what block they start making transactions.
-   * @param sphincsPlusPubKey The sphincs+ publickey representing a sphincs+ account in your DB.
+   * @param spxPubKey The sphincs+ publickey representing a sphincs+ account in your DB.
    * @param firstAccount Is this the first account to be generated in your wallet?
    * @param startingBlock The starting block to be set. Inferred as tip/0 block by default. TODO correct
    * @returns The transaction hash(id).
    * @throws Error light client is not initialized.
    */
   public async setSellectiveSyncFilter(
-    sphincsPlusPubKey: string,
+    spxPubKey: string,
     firstAccount: boolean,
     startingBlock?: bigint
   ): Promise<void> {
     if (!this.client) throw new Error("Light client not initialized");
 
-    const lock = this.getLock(sphincsPlusPubKey);
-    const storageKey = QuantumPurse.START_BLOCK + "-" + sphincsPlusPubKey;
+    const lock = this.getLock(spxPubKey);
+    const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKey;
     let start: bigint = BigInt(0);
     if (startingBlock !== undefined) {
       start = startingBlock;
@@ -252,13 +236,13 @@ export default class QuantumPurse {
 
   /**
    * Gets the CKB lock script.
-   * @param sphincsPlusPubKey - The sphincs+ public key to get a lock script from.
+   * @param spxPubKey - The sphincs+ public key to get a lock script from.
    * @returns The CKB lock script (an asset lock in CKB blockchain).
    * @throws Error if no account pointer is set by default.
    */
-  public getLock(sphincsPlusPubKey?: string): Script {
+  public getLock(spxPubKey?: string): Script {
     const accPointer =
-      sphincsPlusPubKey !== undefined ? sphincsPlusPubKey : this.accountPointer;
+      spxPubKey !== undefined ? spxPubKey : this.accountPointer;
     if (!accPointer || accPointer === "") {
       throw new Error("Account pointer not available!");
     }
@@ -282,25 +266,25 @@ export default class QuantumPurse {
 
   /**
    * Gets the blockchain address.
-   * @param sphincsPlusPubKey - The sphincs+ public key to get an address from.
+   * @param spxPubKey - The sphincs+ public key to get an address from.
    * @returns The CKB address as a string.
    * @throws Error if no account pointer is set by default (see `getLock` for details).
    */
-  public getAddress(sphincsPlusPubKey?: string): string {
-    const lock = this.getLock(sphincsPlusPubKey);
+  public getAddress(spxPubKey?: string): string {
+    const lock = this.getLock(spxPubKey);
     return scriptToAddress(lock, IS_MAIN_NET);
   }
 
   /**
    * Gets account balance via light client protocol.
-   * @param sphincsPlusPubKey - The sphincs+ public key to get an address from which balance is retrieved, via light client.
+   * @param spxPubKey - The sphincs+ public key to get an address from which balance is retrieved, via light client.
    * @returns The account balance.
    * @throws Error light client is not initialized.
    */
-  public async getBalance(sphincsPlusPubKey?: string): Promise<bigint> {
+  public async getBalance(spxPubKey?: string): Promise<bigint> {
     if (!this.client) throw new Error("Light client not initialized");
 
-    const lock = this.getLock(sphincsPlusPubKey);
+    const lock = this.getLock(spxPubKey);
     const searchKey: ClientIndexerSearchKeyLike = {
       scriptType: "lock",
       script: lock,
@@ -314,7 +298,7 @@ export default class QuantumPurse {
    * Signs a Nervos CKB transaction using the SPHINCS+ signature scheme.
    * @param tx - The transaction skeleton to sign.
    * @param password - The password to decrypt the private key (will be zeroed out after use).
-   * @param sphincsPlusPubKey - The sphincs+ public key to get a lock script from.
+   * @param spxPubKey - The sphincs+ public key to get a lock script from.
    * @returns A promise resolving to the signed transaction.
    * @throws Error if no account is set or decryption fails.
    * @remark The password is overwritten with zeros after use.
@@ -322,37 +306,27 @@ export default class QuantumPurse {
   public async sign(
     tx: TransactionSkeletonType,
     password: Uint8Array,
-    sphincsPlusPubKey?: string
+    spxPubKey?: string
   ): Promise<Transaction> {
     try {
-      const accPointer =
-        sphincsPlusPubKey !== undefined ? sphincsPlusPubKey : this.accountPointer;
-
+      const accPointer = spxPubKey !== undefined ? spxPubKey : this.accountPointer;
       if (!accPointer || accPointer === "") {
         throw new Error("Account pointer not available!");
       }
 
-      const witnessLen =
-        QuantumPurse.SPX_SIG_LEN + hexStringToUint8Array(accPointer).length;
+      const witnessLen = QuantumPurse.SPX_SIG_LEN + hexToByteArray(accPointer).length;
       tx = insertWitnessPlaceHolder(tx, witnessLen);
-      tx = prepareSphincsPlusSigningEntries(tx);
-
-      const signingEntries = tx.get("signingEntries").toArray();
-      const spxSig = await KeyVault.sign(
-        password,
-        accPointer,
-        hexStringToUint8Array(signingEntries[0].message)
-      );
-      const serializedSpxSig = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
-
+      tx = prepareSigningEntries(tx);
+      const entry = tx.get("signingEntries").toArray();
+      const spxSig = await KeyVault.sign(password, accPointer, hexToByteArray(entry[0].message));
+      const spxSigHex = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
       const fullCkbQrSig =
-        "0x" +
         this.spxAllInOneSetupHashInput() +
         QuantumPurse.LOCK_FLAGS +
         accPointer +
-        serializedSpxSig.replace(/^0x/, "");
+        spxSigHex.replace(/^0x/, "");
 
-      return sealTransaction(tx, [fullCkbQrSig]);
+      return sealTransaction(tx, ["0x" + fullCkbQrSig]);
     } finally {
       password.fill(0);
     }
