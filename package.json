@@ -8,7 +8,7 @@
     "build:wasm": "cd key-vault && wasm-pack build --release --target web",
     "build:webpack": "webpack --config ./webpack/webpack.prod.js",
     "build": "npm run build:wasm && npm run build:webpack",
-    "deploy": "node ./src/deploy.js",
+    "deploy": "npx gh-pages-clean && node ./src/deploy.js",
     "predeploy": "DEPLOY_TARGET=gh-pages npm run build",
     "test:rust": "cargo test",
     "test:js": "npx karma start",
