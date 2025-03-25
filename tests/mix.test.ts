@@ -114,4 +114,10 @@ describe("Quantum Purse Basics", () => {
     await wallet.recoverAccounts(passwordStrHandler, 3);
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
   });
+
+  it("Should zeroize password after checking password", async () => {
+    let passwordStrHandler = utf8ToBytes(passwordStr);
+    await QuantumPurse.checkPassword(passwordStrHandler);
+    expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
+  });
 });
