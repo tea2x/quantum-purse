@@ -1,7 +1,7 @@
 // This workers constantly update sync status via an inteface provided by QuantumPurse class
 // and cached sync status in a variable set below to be used by the main thread. Tobe removed
 let syncStatus = {
-  nodeId: 0,
+  nodeId: "",
   connections: 0,
   syncedBlock: 0,
   tipBlock: 0,
