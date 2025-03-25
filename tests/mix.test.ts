@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { NODE_URL } from "../src/core/config";
 import QuantumPurse from "../src/core/quantum_purse";
-import { transfer, buildDummyTx } from "../src/core/transaction_builder";
+import { transfer } from "../src/core/transaction_builder";
 import sinon from "sinon";
 import {
   utf8ToBytes,
@@ -76,10 +76,13 @@ describe("Quantum Purse Basics", () => {
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
   });
 
-  it.skip("Should conduct a transaction successfully and zeroize password after", async () => {
+  it("Should zeroize password after signing a transaction", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
     const seedPhraseHandler = utf8ToBytes(seedPhrase1);
     await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
+
+    // Mocking lightClient related function
+    sinon.stub(wallet, 'setSellectiveSyncFilter').resolves();
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccount(passwordStrHandler);
@@ -92,8 +95,8 @@ describe("Quantum Purse Basics", () => {
     const signedTx = await wallet.sign(tx, passwordStrHandler);
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
 
-    const txId = await sendTransaction(NODE_URL, signedTx);
-    await waitForTransactionConfirmation(NODE_URL, txId);
+    // const txId = await sendTransaction(NODE_URL, signedTx);
+    // await waitForTransactionConfirmation(NODE_URL, txId);
   });
 
   it("Should zeroize password after generating account batch", async () => {

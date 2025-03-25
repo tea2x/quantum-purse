@@ -178,7 +178,7 @@ export default class QuantumPurse {
       this.client.localNodeInfo(),
       this.client.getScripts(),
       this.client.getTipHeader(),
-      Number(await this.inferStartBlock(storeKey))
+      this.inferStartBlock(storeKey)
     ]);
 
     const tipBlock = Number(tipHeader.number);
