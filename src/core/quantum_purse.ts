@@ -88,28 +88,28 @@ export default class QuantumPurse {
 
   /** Initialize web worker to poll sync status */
   private startClientSyncStatusWorker() {
-    if (!this.worker) {
-      this.worker = new Worker();
-      this.worker!.onmessage = (event) => {
-        const { command, data, requestId } = event.data;
-        if (command === "getSyncStatus") {
-          // Worker requests sync status from the client
-          this.getSyncStatusInternal().then((status) => {
-            this.worker!.postMessage({
-              type: "syncStatus",
-              data: status,
-              requestId,
-            });
+    if (this.worker !== undefined) return;
+    
+    this.worker = new Worker();
+    this.worker!.onmessage = (event) => {
+      const { command, data, requestId } = event.data;
+      if (command === "getSyncStatus") {
+        // Worker requests sync status from the client
+        this.getSyncStatusInternal().then((status) => {
+          this.worker!.postMessage({
+            type: "syncStatus",
+            data: status,
+            requestId,
           });
-        } else if (requestId && this.pendingRequests.has(requestId)) {
-          const { resolve } = this.pendingRequests.get(requestId)!;
-          resolve(data);
-          this.pendingRequests.delete(requestId);
-        }
-      };
-      // Start the worker’s polling loop
-      this.sendRequest("start");
-    }
+        });
+      } else if (requestId && this.pendingRequests.has(requestId)) {
+        const { resolve } = this.pendingRequests.get(requestId)!;
+        resolve(data);
+        this.pendingRequests.delete(requestId);
+      }
+    };
+    // Start the worker’s polling loop
+    this.sendRequest("start");
   }
 
   /** Request to ckb light client web worker */
@@ -131,15 +131,13 @@ export default class QuantumPurse {
   }
 
   /* Helper to infer start block based on sphincs+ pub key */
-  private async inferStartBlock(sphincsPlusPubKey: string): Promise<bigint> {
+  private async inferStartBlock(storeKey: string): Promise<bigint> {
     const tipHeader = await this.client!.getTipHeader();
-    const storageKey = QuantumPurse.START_BLOCK + "-" + sphincsPlusPubKey;
 
-    let startStr = localStorage.getItem(storageKey);
+    let startStr = localStorage.getItem(storeKey);
     let start: bigint = BigInt(0);
     if (startStr === null) {
       startStr = tipHeader.number.toString();
-      localStorage.setItem(storageKey, startStr);
     }
     start = BigInt(parseInt(startStr));
     return start;
@@ -148,24 +146,25 @@ export default class QuantumPurse {
   /* Set sync filter on account, starting block*/
   public async setSellectiveSyncFilter(
     sphincsPlusPubKey: string,
+    firstAccount: boolean,
     startingBlock?: bigint
   ): Promise<void> {
     if (!this.client) throw new Error("Light client not initialized");
 
     const lock = this.getLock(sphincsPlusPubKey);
     const storageKey = QuantumPurse.START_BLOCK + "-" + sphincsPlusPubKey;
-
     let start: bigint = BigInt(0);
     if (startingBlock !== undefined) {
       start = startingBlock;
-      localStorage.setItem(storageKey, start.toString());
     } else {
-        start = await this.inferStartBlock(sphincsPlusPubKey);
+      start = await this.inferStartBlock(storageKey);
     }
+    
+    localStorage.setItem(storageKey, start.toString());
     
     this.client.setScripts(
       [{ blockNumber: start, script: lock, scriptType: "lock" }],
-      LightClientSetScriptsCommand.Partial
+      firstAccount ? LightClientSetScriptsCommand.All : LightClientSetScriptsCommand.Partial
     );
   }
 
@@ -177,17 +176,20 @@ export default class QuantumPurse {
     if (!this.accountPointer) return;
     
     const lock = this.getLock();
-    const localNodeInfo = await this.client.localNodeInfo();
-    const scripts = await this.client.getScripts();
+    const storeKey = QuantumPurse.START_BLOCK + "-" + this.accountPointer;
+
+    const [localNodeInfo, scripts, tipHeader, startBlockBigint] = await Promise.all([
+      this.client.localNodeInfo(),
+      this.client.getScripts(),
+      this.client.getTipHeader(),
+      Number(await this.inferStartBlock(storeKey))
+    ]);
+
+    const tipBlock = Number(tipHeader.number);
+    const startBlock = Number(startBlockBigint);
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
-
-    const tipBlock = Number((await this.client.getTipHeader()).number);
-    const startBlock = Number(await this.inferStartBlock(this.accountPointer!));
-
-    const syncedStatus = tipBlock > startBlock
-        ? ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100
-        : 0;
+    const syncedStatus = ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100;
 
     return {
       nodeId: localNodeInfo.nodeId,
@@ -206,8 +208,7 @@ export default class QuantumPurse {
 
   /* Start light client thread*/
   private async startLightClient() {
-    const config = await (await fetch(networkConfig)).text();
-    this.client = new LightClient();
+    if (this.client !== undefined) return;
 
     let secretKey = localStorage.getItem(QuantumPurse.CLIENT_ID);
     if (!secretKey) {
@@ -219,11 +220,12 @@ export default class QuantumPurse {
       }
     }
 
-    let enableDebug = undefined;
+    this.client = new LightClient();
+    const config = await (await fetch(networkConfig)).text();
     await this.client.start(
       { type: IS_MAIN_NET ? "MainNet" : "TestNet", config },
       secretKey as Hex,
-      enableDebug ? "debug" : "info"
+      "info"
     );
   }
 
@@ -338,25 +340,32 @@ export default class QuantumPurse {
    * Clears all data from a specific store in IndexedDB.
    * @returns A promise that resolves when the store is cleared.
    */
-  public async dbClear(): Promise<void> {
-    await KeyVault.clear_database();
-    // localStorage.removeItem(QuantumPurse.CLIENT_ID);
-    // const accList = await this.getAllAccounts();
-    // accList.forEach((acc) => {
-    //   localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + acc);
-    // });
+  public async deleteWallet(): Promise<void> {
+    localStorage.removeItem(QuantumPurse.CLIENT_ID);
+    const accList = await this.getAllAccounts();
+    accList.forEach((acc) => {
+      localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + acc);
+    });
+    await Promise.all([
+      KeyVault.clear_database(),
+      this.client!.stop()
+    ]);  
   }
 
   /**
-   * Generates a new account derived from the master seed.
+   * Generates a new account derived from the master seed; Set sellective sync filter for the account on the ckb light client;
+   * For the first account generation (index 0), sellectice sync filter will replace the previous sync filters.
    * @param password - The password to decrypt the master seed and encrypt the child key (will be zeroed out).
    * @returns A promise that resolves when the account is generated and set.
    * @throws Error if the master seed is not found or decryption fails.
    * @remark The password should be overwritten with zeros after use.
    */
   public async genAccount(password: Uint8Array): Promise<string> {
-    const sphincs_pub = await KeyVault.gen_new_key_pair(password);
-    await this.setSellectiveSyncFilter(sphincs_pub);
+    const [accList, sphincs_pub] = await Promise.all([
+      this.getAllAccounts(),
+      KeyVault.gen_new_key_pair(password)
+    ]);  
+    await this.setSellectiveSyncFilter(sphincs_pub, (accList.length === 0));
     password.fill(0);
     return sphincs_pub;
   }
@@ -422,7 +431,7 @@ export default class QuantumPurse {
    * @param password - The password to encrypt the seed (will be zeroed out) in key-vault initilization.
    * @remark The password is overwritten with zeros after use. Handle the returned seed carefully to avoid leakage.
    */
-  public async init(password: Uint8Array): Promise<void> {
+  public async initSeedPhrase(password: Uint8Array): Promise<void> {
     await KeyVault.key_init(password);
     password.fill(0);
   }
