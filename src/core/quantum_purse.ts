@@ -26,7 +26,7 @@ export default class QuantumPurse {
   private static readonly LOCK_FLAGS = "6d"; // [0110110]|[1]: [shake128f-id]|[signature-flag]
   private static readonly SPX_SIG_LEN: number = 17088;
   private static instance?: QuantumPurse;
-  /* CKB light client wasm worker */
+  /* CKB light client status worker */
   private worker: Worker | undefined;
   private pendingRequests: Map<
     string,
@@ -53,7 +53,9 @@ export default class QuantumPurse {
    */
   public static async getInstance(): Promise<QuantumPurse> {
     if (!QuantumPurse.instance) {
-      await keyVaultWasmInit(); //todo to be grouped with other init
+      /* It seems this should be placed in a different init function. But Keyvault
+       * is too fused to QuantumPurse so for convenience, key-vault is initialized here. */
+      await keyVaultWasmInit();
       QuantumPurse.instance = new QuantumPurse(
         SPHINCSPLUS_LOCK.codeHash,
         SPHINCSPLUS_LOCK.hashType as HashType
@@ -434,13 +436,13 @@ export default class QuantumPurse {
   }
 
   /**
-   * QuantumPurse wallet initialization for wasm code init, key-vault, light-client and light-client status worker.
-   * @param password - The password to encrypt the seed (will be zeroed out) in key-vault initilization.
+   * initialize a master seedphrase in DB.
+   * @param password - The password to encrypt the master seed phrase.
    * @remark The password is overwritten with zeros after use.
    */
   public async initSeedPhrase(password: Uint8Array): Promise<void> {
     try {
-      await KeyVault.key_init(password);
+      await KeyVault.init_seed_phrase(password);
     } finally {
       password.fill(0);
     }

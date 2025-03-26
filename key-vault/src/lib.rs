@@ -644,7 +644,7 @@ impl KeyVault {
     ///
     /// **Note**: Only effective when the mnemonic phrase is not yet set.
     #[wasm_bindgen]
-    pub async fn key_init(password: Uint8Array) -> Result<(), JsValue> {
+    pub async fn init_seed_phrase(password: Uint8Array) -> Result<(), JsValue> {
         let stored_seed = get_encrypted_mnemonic_phrase()
             .await
             .map_err(|e| e.to_jsvalue())?;
