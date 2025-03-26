@@ -122,69 +122,72 @@ export default class QuantumPurse {
     return txid;
   }
 
-  /* Helper to infer start block based on sphincs+ pub key */
-  private async inferStartBlock(storeKey: string): Promise<bigint> {
+  /* Helper to infer start block set in the light client
+  When querying status, if no data in DB is detected, start is inferred as 0 to not mis relevant data */
+  private inferStartBlock(storeKey: string): bigint {
     let startStr = localStorage.getItem(storeKey);
-    let start: bigint = BigInt(0);
     if (startStr === null) {
-      const tipHeader = await this.client!.getTipHeader();
-      startStr = tipHeader.number.toString();
+      return BigInt(0);
+    } else {
+      return BigInt(parseInt(startStr));
     }
-    start = BigInt(parseInt(startStr));
-    return start;
   }
 
-  /**
-   * This function tells the light client which account and from what block they start making transactions.
-   * @param spxPubKey The sphincs+ publickey representing a sphincs+ account in your DB.
-   * @param firstAccount Is this the first account to be generated in your wallet?
-   * @param startingBlock The starting block to be set. Inferred as tip/0 block by default. TODO correct
-   * @returns The transaction hash(id).
-   * @throws Error light client is not initialized.
-   */
-  public async setSellectiveSyncFilter(
+  /* Helper function for genAccount that tells the light client which account and from what block they start making transactions. 
+   * In account generation, each account's lightclient starting block will be set to the tip block, naturally.
+  */
+  private async setSellectiveSyncFilterInternal(
     spxPubKey: string,
-    firstAccount: boolean,
-    startingBlock?: bigint
+    firstAccount: boolean
   ): Promise<void> {
     if (!this.client) throw new Error("Light client not initialized");
 
     const lock = this.getLock(spxPubKey);
     const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKey;
-    let start: bigint = BigInt(0);
-    if (startingBlock !== undefined) {
-      start = startingBlock;
-    } else {
-      start = await this.inferStartBlock(storageKey);
-    }
+    let startingBlock: bigint = (await this.client!.getTipHeader()).number;
     
-    localStorage.setItem(storageKey, start.toString());
+    localStorage.setItem(storageKey, startingBlock.toString());
     
     this.client.setScripts(
-      [{ blockNumber: start, script: lock, scriptType: "lock" }],
+      [{ blockNumber: startingBlock, script: lock, scriptType: "lock" }],
       firstAccount ? LightClientSetScriptsCommand.All : LightClientSetScriptsCommand.Partial
+    );
+  }
+
+  /**
+   * Helper function tells the light client which account and from what block they start making transactions.
+   * @param spxPubKey The sphincs+ publickey representing a sphincs+ account in your DB.
+   * @param startingBlock The starting block to be set.
+   * @throws Error light client is not initialized.
+   */
+  public setSellectiveSyncFilter(spxPubKey: string, startingBlock: bigint) {
+    if (!this.client) throw new Error("Light client not initialized");
+
+    const lock = this.getLock(spxPubKey);
+    const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKey;
+    localStorage.setItem(storageKey, startingBlock.toString());
+
+    this.client.setScripts(
+      [{ blockNumber: startingBlock, script: lock, scriptType: "lock" }],
+      LightClientSetScriptsCommand.Partial
     );
   }
 
   /* Calculate sync status */
   private async getSyncStatusInternal() {
     if (!this.client) throw new Error("Light client not initialized");
+    if (!this.accountPointer) return; // accountPointer may not be ready
 
-    // accountPointer can be not ready when this pool loop starts
-    if (!this.accountPointer) return;
-    
-    const lock = this.getLock();
-    const storeKey = QuantumPurse.START_BLOCK + "-" + this.accountPointer;
-
-    const [localNodeInfo, scripts, tipHeader, startBlockBigint] = await Promise.all([
+    const [localNodeInfo, scripts, tipHeader] = await Promise.all([
       this.client.localNodeInfo(),
       this.client.getScripts(),
       this.client.getTipHeader(),
-      this.inferStartBlock(storeKey)
     ]);
 
+    const lock = this.getLock();
+    const storeKey = QuantumPurse.START_BLOCK + "-" + this.accountPointer;
     const tipBlock = Number(tipHeader.number);
-    const startBlock = Number(startBlockBigint);
+    const startBlock = Number(this.inferStartBlock(storeKey));
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
     const syncedStatus = ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100;
@@ -361,7 +364,7 @@ export default class QuantumPurse {
         this.getAllAccounts(),
         KeyVault.gen_new_key_pair(password)
       ]);  
-      await this.setSellectiveSyncFilter(sphincs_pub, (accList.length === 0));
+      await this.setSellectiveSyncFilterInternal(sphincs_pub, (accList.length === 0));
       return sphincs_pub;
     } finally {
       password.fill(0);
