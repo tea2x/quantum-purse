@@ -17,7 +17,7 @@ Quantum Purse is a quantum-safe wallet for the CKB blockchain, currently utilizi
 3. Docker Engine/Desktop (heavy, currently not enabled, skippable).
 4. Node ^20.
 
-## Build
+## Commands
 
 ```shell
 # Init git submodule
