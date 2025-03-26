@@ -52,7 +52,7 @@ describe("Quantum Purse Basics", () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.initSeedPhrase(passwordStrHandler);
     // Mocking lightClient related function
-    sinon.stub(wallet, 'setSellectiveSyncFilter').resolves();
+    sinon.stub(wallet as any, 'setSellectiveSyncFilterInternal').resolves();
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccount(passwordStrHandler);
@@ -82,7 +82,7 @@ describe("Quantum Purse Basics", () => {
     await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
 
     // Mocking lightClient related function
-    sinon.stub(wallet, 'setSellectiveSyncFilter').resolves();
+    sinon.stub(wallet as any, 'setSellectiveSyncFilterInternal').resolves();
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccount(passwordStrHandler);
