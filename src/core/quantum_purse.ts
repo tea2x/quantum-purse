@@ -295,6 +295,7 @@ export default class QuantumPurse {
       scriptType: "lock",
       script: lock,
       scriptSearchMode: "prefix",
+      withData: false //todo check no effect
     };
     const capacity = await this.client.getCellsCapacity(searchKey);
     return capacity;
@@ -486,16 +487,33 @@ export default class QuantumPurse {
    * @param password - The password to decrypt the master seed (will be zeroed out).
    * @param count - The number of keys to search for.
    * @remark The password is overwritten with zeros after use.
-   * TODO set sellective sync filter for all accounts
+   * TODO test set sellective sync
    */
   public async recoverAccounts(
     password: Uint8Array,
     count: number
   ): Promise<void> {
     try {
+      if (!this.client) throw new Error("Light client not initialized");
+
       const spxPubKeyList = await KeyVault.recover_accounts(password, count);
-      spxPubKeyList.forEach((spxPub) => {
-        this.setSellectiveSyncFilter(spxPub, BigInt(0));
+      spxPubKeyList.forEach(async(spxPub) => {
+        const lock = this.getLock(spxPub);
+        const searchKey: ClientIndexerSearchKeyLike = {
+          scriptType: "lock",
+          script: lock,
+          scriptSearchMode: "prefix",
+        };
+
+        // get the first transaction, deduct the block number, set sellective sync
+        const response = await this.client?.getTransactions(searchKey, "asc", 1);
+        if (response) {
+          for (const txs of response.transactions) {
+            const tx = txs.transaction;
+            const block = await this.client!.getHeader(tx.hash());
+            block && this.setSellectiveSyncFilter(spxPub, BigInt(block.number));
+          }
+        }
       });
     } finally {
       password.fill(0);
