@@ -826,13 +826,13 @@ impl KeyVault {
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
         let seed = decrypt(&password, payload)?;
-        let mut key_list: Vec<String> = Vec::new();
+        let mut pub_keys: Vec<String> = Vec::new();
         for i in start_index..(start_index + count) {
             let (pub_key, _) = derive_sphincs_key(&seed, i)
                 .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
-            key_list.push(encode(pub_key.into_bytes()));
+            pub_keys.push(encode(pub_key.into_bytes()));
         }
-        Ok(key_list)
+        Ok(pub_keys)
     }
 
     /// Supporting wallet recovery - Recovers the wallet by deriving and storing private keys for the first N accounts.
@@ -842,21 +842,24 @@ impl KeyVault {
     /// - `count: u32` - The number of accounts to recover (from index 0 to count-1).
     ///
     /// **Returns**:
-    /// - `Result<(), JsValue>` - Ok on success, or a JavaScript error on failure.
+    /// - `Result<(), JsValue>` - A list of newly generated sphincs+ public keys on success, or a JavaScript error on failure.
     ///
     /// **Async**: Yes
     #[wasm_bindgen]
-    pub async fn recover_accounts(password: Uint8Array, count: u32) -> Result<(), JsValue> {
+    pub async fn recover_accounts(password: Uint8Array, count: u32) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
         let payload = get_encrypted_mnemonic_phrase()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
+        let mut pub_keys: Vec<String> = Vec::new();
         let seed = decrypt(&password, payload)?;
         for i in 0..count {
             let (pub_key, pri_key) = derive_sphincs_key(&seed, i)
                 .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
+
+            let pub_key_clone = pub_key.clone();
             let pri_key_bytes = SecureVec::from_slice(&pri_key.into_bytes());
             let encrypted_pri = encrypt(&password, &pri_key_bytes)?;
             // Store to DB
@@ -865,9 +868,10 @@ impl KeyVault {
                 pub_key: encode(pub_key.into_bytes()),
                 pri_enc: encrypted_pri,
             };
+            pub_keys.push(encode(pub_key_clone.into_bytes()));
 
             add_key_pair(pair).await.map_err(|e| e.to_jsvalue())?;
         }
-        Ok(())
+        Ok(pub_keys)
     }
 }

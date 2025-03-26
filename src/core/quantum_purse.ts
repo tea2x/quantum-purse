@@ -134,7 +134,8 @@ export default class QuantumPurse {
   }
 
   /* Helper function for genAccount that tells the light client which account and from what block they start making transactions. 
-   * In account generation, each account's lightclient starting block will be set to the tip block, naturally.
+   * In account generation, each account's lightclient starting block will be set to the tip block, naturally. Designed to be called
+   * when accounts are created gradually via genAccount (when users want to create a new account)
   */
   private async setSellectiveSyncFilterInternal(
     spxPubKey: string,
@@ -340,9 +341,9 @@ export default class QuantumPurse {
   /* Clears all local data of the wallet. */
   public async deleteWallet(): Promise<void> {
     localStorage.removeItem(QuantumPurse.CLIENT_ID);
-    const accList = await this.getAllAccounts();
-    accList.forEach((acc) => {
-      localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + acc);
+    const spxPubKeyList = await this.getAllAccounts();
+    spxPubKeyList.forEach((spxPub) => {
+      localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + spxPub);
     });
     await Promise.all([
       KeyVault.clear_database(),
@@ -481,17 +482,21 @@ export default class QuantumPurse {
   }
 
   /**
-   * Retrieve a list of on-the-fly sphincs+ public key for wallet recovery process.
+   * Generate and settle accounts to the DB.
    * @param password - The password to decrypt the master seed (will be zeroed out).
    * @param count - The number of keys to search for.
    * @remark The password is overwritten with zeros after use.
+   * TODO set sellective sync filter for all accounts
    */
   public async recoverAccounts(
     password: Uint8Array,
     count: number
   ): Promise<void> {
     try {
-      await KeyVault.recover_accounts(password, count);
+      const spxPubKeyList = await KeyVault.recover_accounts(password, count);
+      spxPubKeyList.forEach((spxPub) => {
+        this.setSellectiveSyncFilter(spxPub, BigInt(0));
+      });
     } finally {
       password.fill(0);
     }
