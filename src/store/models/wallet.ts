@@ -171,7 +171,7 @@ export const wallet = createModel<RootModel>()({
     },
     async send({ from, to, amount, password }, rootState) {
       try {
-        const tx = await transfer(from, to, amount);
+        const tx = await quantum.buildTransfer(from, to, amount);
         const fromSphincsPlusPubKey = rootState.wallet.accounts.find(
           (account) => account.address === from
         )?.sphincsPlusPubKey;

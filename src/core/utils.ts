@@ -164,7 +164,11 @@ function get_ckb_tx_message_all_hash(tx: TransactionSkeletonType): Uint8Array {
         hash_type: input.cellOutput.lock.hashType,
         args: input.cellOutput.lock.args,
       },
-      type: input.cellOutput.type,
+      type: input.cellOutput.type ? {
+        code_hash: input.cellOutput.type?.codeHash,
+        hash_type: input.cellOutput.type?.hashType,
+        args: input.cellOutput.type?.args
+      } : null,
     },
     data: input.data,
     header: null,

@@ -3,14 +3,15 @@ import { IS_MAIN_NET, SPHINCSPLUS_LOCK } from "./config";
 import { Reader } from "ckb-js-toolkit";
 import { CKBSphincsPlusHasher } from "./hasher";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
-import { Script, HashType, Transaction } from "@ckb-lumos/base";
-import { TransactionSkeletonType, sealTransaction } from "@ckb-lumos/helpers";
+import { Script, HashType, Address, Transaction, DepType, Cell } from "@ckb-lumos/base";
+import { TransactionSkeletonType, TransactionSkeleton, sealTransaction, addressToScript } from "@ckb-lumos/helpers";
 import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from "./utils";
 import keyVaultWasmInit, { KeyVault, Util as KeyVaultUtil } from "../../key-vault/pkg/key_vault";
-import { LightClient, randomSecretKey, LightClientSetScriptsCommand } from "ckb-light-client-js";
+import { LightClient, randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import networkConfig from "../../light-client/network.toml";
 import { ClientIndexerSearchKeyLike, Hex } from "@ckb-ccc/core";
+import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
 
 /**
  * Manages a wallet using the SPHINCS+ post-quantum signature scheme (shake-128f simple)
@@ -517,5 +518,96 @@ export default class QuantumPurse {
     } finally {
       password.fill(0);
     }
+  }
+
+  /* Build transfer transaction */
+  public async buildTransfer(
+    from: Address,
+    to: Address,
+    amount: string
+  ): Promise<TransactionSkeletonType> {
+    if (!this.client) throw new Error("Light client not initialized");
+
+    // initialize configuration
+    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
+    initializeConfig(configuration);
+
+    let txSkeleton = new TransactionSkeleton();
+    const transactionFee = BigInt(20000); // 20_000 shannons
+    const outputCapacity = BigInt(amount) * BigInt(1e8);
+    const minimalSphincsPlusCapacity = BigInt(73) * BigInt(1e8);
+    const requiredCapacity = transactionFee + outputCapacity + minimalSphincsPlusCapacity;
+
+    // add sphics+ celldep
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
+      cellDeps.push({
+        outPoint: SPHINCSPLUS_LOCK.outPoint,
+        depType: SPHINCSPLUS_LOCK.depType as DepType,
+      })
+    );
+
+    // add input cells
+    const searchKey: ClientIndexerSearchKeyLike = {
+      scriptType: "lock",
+      script: addressToScript(from),
+      scriptSearchMode: "prefix"
+    };
+    const collectedCells: CellWithBlockNumAndTxIndex[] = [];
+    let cursor: Hex | undefined;
+    let inputCapacity = BigInt(0);
+    cellCollecting: while (true) {
+      try {
+        const cells = await this.client.getCells(searchKey, "asc", 10, cursor);
+        if (cells.cells.length === 0) break cellCollecting;
+        cursor = cells.lastCursor as Hex;
+        for (const cell of cells.cells) {
+          if (inputCapacity >= requiredCapacity) break cellCollecting;
+          collectedCells.push(cell);
+          inputCapacity += BigInt(cell.cellOutput.capacity as string);
+        }
+      } catch(error) {
+        // error likely from getCells. todo check
+        console.error("Failed to fetch cells:", error);
+        break cellCollecting;
+      }
+    }
+
+    let inputCells:Cell[] = collectedCells.map(item => ({
+      cellOutput: {
+        ...item.cellOutput,
+        capacity: "0x" + item.cellOutput.capacity.toString(16)
+      },
+      data: item.outputData,
+      outPoint: {
+        ...item.outPoint,
+        index: "0x" + item.outPoint.index.toString(16)
+      }
+    } as Cell));
+    txSkeleton = txSkeleton.update("inputs", (i) => i.concat(inputCells));
+
+    // add the output cell
+    const output: Cell = {
+      cellOutput: {
+        capacity: "0x" + outputCapacity.toString(16),
+        lock: addressToScript(to),
+        type: undefined,
+      },
+      data: "0x",
+    };
+    txSkeleton = txSkeleton.update("outputs", (o) => o.push(output));
+
+    // add the change cell
+    const changeCapacity = inputCapacity - outputCapacity - transactionFee;
+    const changeCell: Cell = {
+      cellOutput: {
+        capacity: "0x" + changeCapacity.toString(16),
+        lock: addressToScript(from),
+        type: undefined,
+      },
+      data: "0x",
+    };
+    txSkeleton = txSkeleton.update("outputs", (o) => o.push(changeCell));
+
+    return txSkeleton;
   }
 }
