@@ -49,12 +49,12 @@ export default class QuantumPurse {
 
   /**
    * Gets the singleton instance of QuantumPurse.
+   * It seems key-vault initialization should be placed in a different init function.
+   * But Keyvault is too fused to QuantumPurse so for convenience, it is placed here.
    * @returns The singleton instance of QuantumPurse.
    */
   public static async getInstance(): Promise<QuantumPurse> {
     if (!QuantumPurse.instance) {
-      /* It seems this should be placed in a different init function. But Keyvault
-       * is too fused to QuantumPurse so for convenience, key-vault is initialized here. */
       await keyVaultWasmInit();
       QuantumPurse.instance = new QuantumPurse(
         SPHINCSPLUS_LOCK.codeHash,
@@ -74,7 +74,7 @@ export default class QuantumPurse {
     );
   }
 
-  /** Initialize web worker to poll sync status */
+  /** Initialize web worker to poll the sync status from the ckb light client */
   private startClientSyncStatusWorker() {
     if (this.worker !== undefined) return;
     
@@ -294,8 +294,7 @@ export default class QuantumPurse {
     const searchKey: ClientIndexerSearchKeyLike = {
       scriptType: "lock",
       script: lock,
-      scriptSearchMode: "prefix",
-      withData: false //todo check no effect
+      scriptSearchMode: "prefix"
     };
     const capacity = await this.client.getCellsCapacity(searchKey);
     return capacity;
