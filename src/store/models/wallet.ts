@@ -1,8 +1,6 @@
 import { createModel, init } from "@rematch/core";
 import { message, Modal } from "antd";
-import { NODE_URL } from "../../core/config";
 import Quantum from "../../core/quantum_purse";
-import { transfer } from "../../core/transaction_builder";
 import { bytesToUtf8, sendTransaction, utf8ToBytes } from "../../core/utils";
 import { RootModel } from "./index";
 
