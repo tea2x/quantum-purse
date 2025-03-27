@@ -550,7 +550,10 @@ export default class QuantumPurse {
     const searchKey: ClientIndexerSearchKeyLike = {
       scriptType: "lock",
       script: addressToScript(from),
-      scriptSearchMode: "prefix"
+      scriptSearchMode: "prefix",
+      filter: {
+        outputDataLenRange: [0, 1]
+      }
     };
     const collectedCells: CellWithBlockNumAndTxIndex[] = [];
     let cursor: Hex | undefined;
@@ -571,6 +574,9 @@ export default class QuantumPurse {
         break cellCollecting;
       }
     }
+
+    if (inputCapacity < requiredCapacity)
+      throw new Error("Insufficient balance!");
 
     let inputCells:Cell[] = collectedCells.map(item => ({
       cellOutput: {
