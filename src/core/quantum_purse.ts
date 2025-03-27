@@ -504,7 +504,7 @@ export default class QuantumPurse {
           scriptSearchMode: "prefix",
         };
 
-        // get the first transaction, deduct the block number, set sellective sync
+        // get the first transaction, get the block number, set sellective sync
         const response = await this.client?.getTransactions(searchKey, "asc", 1);
         if (response) {
           for (const txs of response.transactions) {

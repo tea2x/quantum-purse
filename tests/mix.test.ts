@@ -113,6 +113,10 @@ describe("Quantum Purse Basics", () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
 
+    // Mock `this.client`
+    (wallet as any).client = {};
+    sinon.stub(wallet as any, "client").resolves();
+
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.recoverAccounts(passwordStrHandler, 3);
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;

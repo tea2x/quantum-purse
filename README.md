@@ -22,7 +22,7 @@ The following are the recommended ways to use this software, ranked from most to
 2. serve on github pages or vercel and allow others to use via command `npm run deploy` (useable, **not recommended**).
 
 ###### <u>Restrictions</u>
-Due to [github pages not supporting custom headers for cross-origin isolation](https://github.com/orgs/community/discussions/13309) and light client's dependence on this, you can't have this work when deploy the latest release with ckb light client integrated on github pages. You can either 2.1. Deploy to Vercel... Or ... 2.2. If you'd like to stick to github pages, pick a version that utilizes RPC end point T.B.D.
+Due to [github pages not supporting custom headers for cross-origin isolation](https://github.com/orgs/community/discussions/13309) and light client's dependence on this, you can't have this work when deploy the latest release with ckb light client integrated on github pages. For the moment you can either 2.1. Deploy to Vercel... Or ... 2.2. If you'd like to stick to github pages, pick a version that utilizes RPC end point T.B.D.
 
 ###### <u>Dependencies</u>
 1. Rust and Cargo.
