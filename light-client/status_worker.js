@@ -1,7 +1,6 @@
 // This workers constantly update sync status via an inteface provided by QuantumPurse class
 // and cached sync status in a variable set below to be used by the main thread. Tobe removed
 let syncStatus = {
-  nodeId: "",
   connections: 0,
   syncedBlock: 0,
   tipBlock: 0,
@@ -12,8 +11,10 @@ let syncStatus = {
 // Function to request sync status from the main thread
 function requestSyncStatus() {
   return new Promise((resolve) => {
+    // create & request
     const requestId = Math.random().toString(36).substring(7);
     self.postMessage({ command: "getSyncStatus", requestId });
+    // fulfill & remove
     self.addEventListener("message", function handler(event) {
       if (event.data.requestId === requestId) {
         resolve(event.data.data);
@@ -34,13 +35,11 @@ async function startSyncStatusUpdates() {
   }, 5000);
 }
 
-// Handle messages from the main thread
+// This worker's persistant command receiver
 self.onmessage = async function (event) {
   const { command, requestId } = event.data;
   if (command === "start") {
     startSyncStatusUpdates();
     self.postMessage({ type: "started", requestId });
-  } else if (command === "getSyncStatus") {
-    self.postMessage({ type: "syncStatus", data: syncStatus, requestId });
   }
 };

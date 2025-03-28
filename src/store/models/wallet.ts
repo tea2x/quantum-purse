@@ -1,7 +1,7 @@
 import { createModel, init } from "@rematch/core";
 import { message, Modal } from "antd";
 import Quantum from "../../core/quantum_purse";
-import { bytesToUtf8, sendTransaction, utf8ToBytes } from "../../core/utils";
+import { bytesToUtf8, utf8ToBytes } from "../../core/utils";
 import { RootModel } from "./index";
 
 interface IAccount {

@@ -83,10 +83,8 @@ export default class QuantumPurse {
     this.worker!.onmessage = (event) => {
       const { command, data, requestId } = event.data;
       if (command === "getSyncStatus") {
-        // Worker requests sync status from the client
         this.getSyncStatusInternal().then((status) => {
           this.worker!.postMessage({
-            type: "syncStatus",
             data: status,
             requestId,
           });
@@ -98,11 +96,11 @@ export default class QuantumPurse {
       }
     };
     // Start the worker’s polling loop
-    this.sendRequest("start");
+    this.sendRequestToWorker("start");
   }
 
   /** Request to ckb light client web worker */
-  private sendRequest(command: string): Promise<any> {
+  private sendRequestToWorker(command: string): Promise<any> {
     if (!this.worker) throw new Error("Worker not initialized");
     return new Promise((resolve, reject) => {
       const requestId = Math.random().toString(36).substring(7);
@@ -195,21 +193,12 @@ export default class QuantumPurse {
     const syncedStatus = ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100;
 
     return {
-      nodeId: localNodeInfo.nodeId,
       connections: localNodeInfo.connections,
       syncedBlock,
       tipBlock,
       syncedStatus,
       startBlock
     };
-  }
-
-  /**
-   * This function reads sync status from the status worker
-   * @returns The node info and sync status.
-   */
-  public async getSyncStatusFromWorker() {
-    return this.sendRequest("getSyncStatus");
   }
 
   /* Start light client thread*/
