@@ -9,7 +9,8 @@ import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from 
 import keyVaultWasmInit, { KeyVault, Util as KeyVaultUtil } from "../../key-vault/pkg/key_vault";
 import { LightClient, randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
-import networkConfig from "../../light-client/network.toml";
+import testnetConfig from "../../light-client/network.test.toml";
+import mainnetConfig from "../../light-client/network.main.toml";
 import { ClientIndexerSearchKeyLike, Hex } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
 
@@ -204,7 +205,9 @@ export default class QuantumPurse {
     const startBlock = Number(this.inferStartBlock(storeKey));
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
-    const syncedStatus = ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100;
+    const syncedStatus = tipBlock > startBlock 
+      ? ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100 
+      : 0;
 
     return {
       connections: localNodeInfo.connections,
@@ -230,7 +233,9 @@ export default class QuantumPurse {
     }
 
     this.client = new LightClient();
-    const config = await (await fetch(networkConfig)).text();
+    const config = IS_MAIN_NET 
+      ? await (await fetch(mainnetConfig)).text() 
+      : await (await fetch(testnetConfig)).text();
     await this.client.start(
       { type: IS_MAIN_NET ? "MainNet" : "TestNet", config },
       secretKey as Hex,
