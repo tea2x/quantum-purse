@@ -520,7 +520,15 @@ export default class QuantumPurse {
     }
   }
 
-  /* Build transfer transaction */
+  /**
+   * Assemble a CKB transfer transaction.
+   *
+   * @param from - The sender's address.
+   * @param to - The recipient's address.
+   * @param amount - The amount to transfer in CKB.
+   * @returns A Promise that resolves to a TransactionSkeletonType object.
+   * @throws Error if Light client is not ready / insufficient balance.
+   */
   public async buildTransfer(
     from: Address,
     to: Address,

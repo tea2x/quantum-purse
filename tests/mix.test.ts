@@ -1,15 +1,9 @@
 import { expect } from "chai";
-import { NODE_URL } from "../src/core/config";
 import QuantumPurse from "../src/core/quantum_purse";
-import { transfer } from "../src/core/transaction_builder";
 import sinon from "sinon";
-import {
-  utf8ToBytes,
-  bytesToUtf8,
-  sendTransaction,
-  waitForTransactionConfirmation,
-} from "../src/core/utils";
+import { utf8ToBytes, bytesToUtf8 } from "../src/core/utils";
 import __wbg_init from "../key-vault/pkg/key_vault";
+import { dummyTx } from "./dummy_tx";
 
 describe("Quantum Purse Basics", () => {
   let wallet: QuantumPurse;
@@ -88,7 +82,10 @@ describe("Quantum Purse Basics", () => {
     await wallet.genAccount(passwordStrHandler);
     const accountList = await wallet.getAllAccounts();
     const address0 = wallet.getAddress(accountList[0]);
-    const tx = await transfer(address0, address0, "333");
+
+    // Stub buildTransfer to return a dummy transaction
+    sinon.stub(wallet as any, 'buildTransfer').resolves(dummyTx);
+    const tx = await wallet.buildTransfer(address0, address0, "333");
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.setAccPointer(accountList[0]);

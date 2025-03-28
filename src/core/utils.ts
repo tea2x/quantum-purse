@@ -244,45 +244,6 @@ export function prepareSigningEntries(
 }
 
 /**
- * Sends a signed transaction to the CKB node.
- * @param nodeURL - The URL of the CKB node.
- * @param signedTx - The signed transaction to send.
- * @returns A promise resolving to the transaction ID.
- * @throws {Error} If there's an error sending the transaction, with detailed error information.
- */
-export async function sendTransaction(nodeURL: string, signedTx: Transaction) {
-  const rpc = new RPC(nodeURL, { fetch });
-
-  let txid = "";
-  try {
-    txid = await rpc.sendTransaction(signedTx);
-  } catch (error: any) {
-    const regex = /^(\w+): ([\w\s]+) (\{.*\})$/;
-    const matches = error.message.match(regex);
-
-    if (!!matches && matches.length > 0) {
-      const category = matches[1];
-      const type = matches[2];
-      const json = JSON.parse(matches[3]);
-
-      console.log();
-      console.error(`Error: ${category}`);
-      console.error(`Type: ${type}`);
-      console.error(`Code: ${json.code}`);
-      console.error(`Message: ${json.message}`);
-      console.error(`Data: ${json.data}`);
-      console.log();
-
-      throw new Error("RPC Returned Error!");
-    } else {
-      throw error;
-    }
-  }
-
-  return txid;
-}
-
-/**
  * Waits for a transaction to be confirmed on the blockchain.
  * @param nodeURL - The URL of the CKB node to monitor.
  * @param txid - The transaction ID to wait for.
@@ -321,7 +282,6 @@ export async function waitForConfirmation(
     throwOnNotFound: true,
   };
   options = { ...defaults, ...options };
-
   return new Promise(async (resolve, reject) => {
     let timedOut = false;
     const timeoutTimer =
@@ -334,17 +294,12 @@ export async function waitForConfirmation(
 
     while (true) {
       if (timedOut) return reject(Error("Transaction timeout."));
-
       const transaction = await rpc.getTransaction(txid);
-
       if (!!transaction) {
         const status = transaction.txStatus.status;
-
         updateProgress(status);
-
         if (status === "committed") {
           if (timeoutTimer) clearTimeout(timeoutTimer);
-
           break;
         }
       } else if (transaction === null) {
@@ -352,10 +307,8 @@ export async function waitForConfirmation(
           return reject(Error("Transaction was not found."));
         else updateProgress("not_found");
       }
-
       await new Promise((resolve) => setTimeout(resolve, options.recheckMs));
     }
-
     return resolve;
   });
 }
