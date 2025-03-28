@@ -1,5 +1,4 @@
-// This workers constantly update sync status via an inteface provided by QuantumPurse class
-// and cached sync status in a variable set below to be used by the main thread. Tobe removed
+// This worker constantly every 5 seconds updates sync status to the UI via an interface provided by QuantumPurse class
 let syncStatus = {
   connections: 0,
   syncedBlock: 0,
@@ -32,10 +31,12 @@ async function startSyncStatusUpdates() {
       "\x1b[37;44m INFO \x1b[0m \x1b[1mlight-client-sync-status\x1b[0m: ",
       syncStatus
     );
+    // Send the sync status to the main thread
+    self.postMessage({ type: "syncStatusUpdate", data: syncStatus });
   }, 5000);
 }
 
-// This worker's persistant command receiver
+// This worker's persistent command receiver
 self.onmessage = async function (event) {
   const { command, requestId } = event.data;
   if (command === "start") {

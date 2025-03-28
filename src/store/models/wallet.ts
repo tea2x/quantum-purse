@@ -15,12 +15,20 @@ interface IWallet {
   active: boolean;
   current: IAccount;
   accounts: IAccount[];
+  syncStatus: {
+    connections: number;
+    syncedBlock: number;
+    tipBlock: number;
+    syncedStatus: number;
+    startBlock: number;
+  };
 }
 
 type StateType = IWallet;
 
 let isInitializing = false;
 export let quantum: Quantum;
+let syncStatusListener: ((status: any) => void) | null = null;
 
 const initState: StateType = {
   active: !localStorage.getItem("wallet-step"),
@@ -31,11 +39,21 @@ const initState: StateType = {
     sphincsPlusPubKey: "",
   },
   accounts: [],
+  syncStatus: {
+    connections: 0,
+    syncedBlock: 0,
+    tipBlock: 0,
+    syncedStatus: 0,
+    startBlock: 0,
+  },
 };
 
 export const wallet = createModel<RootModel>()({
   state: initState,
   reducers: {
+    setSyncStatus(state: StateType, syncStatus: any) {
+      return { ...state, syncStatus };
+    },
     setActive(state: StateType, active: boolean) {
       return { ...state, active };
     },
@@ -93,6 +111,13 @@ export const wallet = createModel<RootModel>()({
         const accountsData: any = await this.loadAccounts();
         await quantum.setAccPointer(accountsData[0].sphincsPlusPubKey);
         this.setActive(true);
+
+        // Setup light client sync status listener for the status worker
+        syncStatusListener = (status) => {
+          this.setSyncStatus(status);
+        };
+        quantum.addSyncStatusListener(syncStatusListener);
+
       } catch (error) {
         this.setActive(false);
         // throw error;
@@ -193,6 +218,12 @@ export const wallet = createModel<RootModel>()({
     },
     async ejectWallet() {
       try {
+
+        // remove light client sync status listener
+        if (syncStatusListener) {
+          quantum.removeSyncStatusListener(syncStatusListener);
+          syncStatusListener = null;
+        }
         await quantum.deleteWallet();
         this.reset();
       } catch (error) {

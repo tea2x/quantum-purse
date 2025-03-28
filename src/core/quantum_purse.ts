@@ -37,6 +37,8 @@ export default class QuantumPurse {
     }
   > = new Map();
   private client?: LightClient;
+  private syncStatusListeners: Set<(status: any) => void> = new Set();
+
   private static readonly CLIENT_ID = "ckb-light-client-wasm-secret-key";
   private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
   /* Account management */
@@ -75,13 +77,22 @@ export default class QuantumPurse {
     );
   }
 
+  /* Method to add a listener */
+  public addSyncStatusListener(listener: (status: any) => void): void {
+    this.syncStatusListeners.add(listener);
+  }
+  /* Method to remove a listener */
+  public removeSyncStatusListener(listener: (status: any) => void): void {
+    this.syncStatusListeners.delete(listener);
+  }
+
   /** Initialize web worker to poll the sync status from the ckb light client */
   private startClientSyncStatusWorker() {
     if (this.worker !== undefined) return;
-    
+
     this.worker = new Worker();
     this.worker!.onmessage = (event) => {
-      const { command, data, requestId } = event.data;
+      const { command, data, requestId, type } = event.data;
       if (command === "getSyncStatus") {
         this.getSyncStatusInternal().then((status) => {
           this.worker!.postMessage({
@@ -89,6 +100,9 @@ export default class QuantumPurse {
             requestId,
           });
         });
+      } else if (type === "syncStatusUpdate") {
+        // Notify all listeners of the new sync status
+        this.syncStatusListeners.forEach((listener) => listener(data));
       } else if (requestId && this.pendingRequests.has(requestId)) {
         const { resolve } = this.pendingRequests.get(requestId)!;
         resolve(data);
