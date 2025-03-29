@@ -273,17 +273,7 @@ const ImportWalletContent: React.FC = () => {
   return (
     <section className={cx(styles.importWallet, "panel")}>
       <h1>Import wallet</h1>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-        initialValues={{
-          srp: "extra draw screen amused scale crouch eyebrow swallow off miracle bag satoshi actor come tenant check copy luxury theory insect net runway project tobacco",
-          password: "akjsfhas98123)(&afj10239))(LKJL::MOQIWVNQQWOIJ",
-          confirmPassword: "akjsfhas98123)(&afj10239))(LKJL::MOQIWVNQQWOIJ",
-          passwordAwareness: true,
-        }}
-      >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
         <Steps current={currentStep} items={steps} />
         <Tabs
           items={steps.map((step) => ({

@@ -257,16 +257,12 @@ export const wallet = createModel<RootModel>()({
             limit
           );
 
-          console.log(`Gen account from ${offset} to ${offset + limit}`);
-
           const accountsWithBalance = await Promise.all(
             accounts.map(async (sphincsPlusPubKey) => {
               const balance = await quantum.getBalance(sphincsPlusPubKey);
               return { sphincsPlusPubKey, balance };
             })
           );
-
-          console.log("Gen 10 accounts with balance", accountsWithBalance);
 
           const lastAccountWithBalance = accountsWithBalance.reduceRight(
             (lastIndex, account, currentIndex) =>
@@ -276,18 +272,13 @@ export const wallet = createModel<RootModel>()({
             -1
           );
 
-          console.log("Last account with balance", lastAccountWithBalance);
-
           if (lastAccountWithBalance !== -1) {
             accountsLength = offset + lastAccountWithBalance + 1;
-            console.log("Updated accounts length", accountsLength);
             await checkAccount(accountsLength + 1, limit);
           }
         };
 
         await checkAccount(0, FIND_ACCOUNT_THRESHOLD);
-
-        console.log("Accounts length", accountsLength);
 
         await quantum.recoverAccount(utf8ToBytes(password), accountsLength);
 
