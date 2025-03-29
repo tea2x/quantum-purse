@@ -191,7 +191,6 @@ export default class QuantumPurse {
   /* Calculate sync status */
   private async getSyncStatusInternal() {
     if (!this.client) throw new Error("Light client not initialized");
-    if (!this.accountPointer) return; // accountPointer may not be ready
 
     const [localNodeInfo, scripts, tipHeader] = await Promise.all([
       this.client.localNodeInfo(),
@@ -199,9 +198,19 @@ export default class QuantumPurse {
       this.client.getTipHeader(),
     ]);
 
+    const tipBlock = Number(tipHeader.number);
+    /* When wallet/accounts may not be created (accountPointer not available),
+    light client connection and tipBlock can still be shown to let users know */
+    if (!this.accountPointer) return {
+      connections: localNodeInfo.connections,
+      syncedBlock: 0,
+      tipBlock: tipBlock,
+      syncedStatus: 0,
+      startBlock: 0
+    };
+
     const lock = this.getLock();
     const storeKey = QuantumPurse.START_BLOCK + "-" + this.accountPointer;
-    const tipBlock = Number(tipHeader.number);
     const startBlock = Number(this.inferStartBlock(storeKey));
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);

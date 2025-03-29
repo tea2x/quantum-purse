@@ -106,17 +106,17 @@ export const wallet = createModel<RootModel>()({
       }
       isInitializing = true;
       quantum = await Quantum.getInstance();
-      await quantum.initLightClient();
       try {
-        const accountsData: any = await this.loadAccounts();
-        await quantum.setAccPointer(accountsData[0].sphincsPlusPubKey);
-        this.setActive(true);
-
-        // Setup light client sync status listener for the status worker
+        await quantum.initLightClient();
+        // Setup listener for the light client status worker
         syncStatusListener = (status) => {
           this.setSyncStatus(status);
         };
         quantum.addSyncStatusListener(syncStatusListener);
+
+        const accountsData: any = await this.loadAccounts();
+        await quantum.setAccPointer(accountsData[0].sphincsPlusPubKey);
+        this.setActive(true);
 
       } catch (error) {
         this.setActive(false);

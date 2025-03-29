@@ -1,13 +1,6 @@
 // This worker constantly every 5 seconds updates sync status to the UI via an interface provided by QuantumPurse class
-let syncStatus = {
-  connections: 0,
-  syncedBlock: 0,
-  tipBlock: 0,
-  syncedStatus: 0,
-  startBlock: 0,
-};
 
-// Function to request sync status from the main thread
+/* Function to request sync status from the main thread */
 function requestSyncStatus() {
   return new Promise((resolve) => {
     // create & request
@@ -23,7 +16,7 @@ function requestSyncStatus() {
   });
 }
 
-// Start periodic sync status updates every 5 seconds
+/* Start periodic sync status updates every 5 seconds */
 async function startSyncStatusUpdates() {
   setInterval(async () => {
     syncStatus = await requestSyncStatus();
@@ -36,7 +29,7 @@ async function startSyncStatusUpdates() {
   }, 5000);
 }
 
-// This worker's persistent command receiver
+/* This worker's persistent command receiver */
 self.onmessage = async function (event) {
   const { command, requestId } = event.data;
   if (command === "start") {

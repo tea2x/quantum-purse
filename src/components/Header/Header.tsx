@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
       </div>
       <div className="header-right">
         {syncStatus && (
-          <div className={styles.syncStatus}>
+          <div>
             Connections: {parseInt(syncStatus.connections.toString())} | Synced: {syncStatus.syncedStatus.toFixed(2)}%
           </div>
         )}
