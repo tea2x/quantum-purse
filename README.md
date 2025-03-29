@@ -30,7 +30,11 @@ When you import your seed phrase into QuantumPurse, it automatically restores yo
 
 ## Light client
 
-Latest version of Quantum Purse does not use centralized RPC endpoints but it runs it's own [ckb light client node](https://github.com/nervosnetwork/ckb-light-client) right in your browser.
+Latest version of Quantum Purse does not use centralized RPC endpoints but it runs it's own [ckb light client node](https://github.com/nervosnetwork/ckb-light-client) right in your browser. The light client sync status sites on the right side of the app's header as below:
+
+<img width="258" alt="header-right" src="https://github.com/user-attachments/assets/3a53afb8-2f38-43cd-866b-15ef603fa89e" />
+
+For the moment, please be sure to see your PEERS value > 0 before creating your wallet! This will be improve in the next update!
 
 ## How to use
 
