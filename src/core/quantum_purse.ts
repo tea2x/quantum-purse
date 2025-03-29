@@ -199,7 +199,7 @@ export default class QuantumPurse {
     ]);
 
     const tipBlock = Number(tipHeader.number);
-    /* When wallet/accounts may not be created (accountPointer not available),
+    /* When wallet/accounts may not be created yet(accountPointer not available),
     light client connection and tipBlock can still be shown to let users know */
     if (!this.accountPointer) return {
       connections: localNodeInfo.connections,
