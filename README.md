@@ -59,8 +59,13 @@ GitHub Pages [does not support custom headers for cross-origin isolation](https:
 2. Stick with GitHub Pages but use a version that utilizes an RPC endpoint, like [this one](https://github.com/tea2x/quantum-purse-web-static/releases/tag/v1.0.0-rc1).
 
 ## Give a try?
-I deployed this app to my github account and serve here: https://tea2x.github.io/quantum-purse-web-static/welcome.
-Github pages' role here is only to serve the app build(source code, instructions for your browser to intepret data from your local indexedDB). You can definitely serve it on your github account (refer to command list) or best, serve it locally!
+I deployed 2 versions of this app and serve in 2 links below. Github pages' or Vercel role here is only to serve the app build(source code, instructions) for the app to intepret data from your local browser's indexedDB. You can definitely serve it on your github/vercel account (refer to command list) or best, serve it locally via `npm run start`!
+
+###### <u>Gh-pages</u>: (NO Light Client)
+- https://tea2x.github.io/quantum-purse-web-static/welcome
+
+###### <u>Vercel</u>: (With Light Client)
+- https://quantum-purse-vercel-xyz.vercel.app/welcome
 
 ## Contribute
 ###### <u>Dependencies</u>
