@@ -39,12 +39,13 @@ For the moment, please be sure to see your PEERS value > 0 before creating your 
 ## How to use
 
 The following are the recommended ways to use this software, ranked from most to least preferred:
-1. serve locally with webpack serve via command `npm run start` (**recommended**).
-2. serve on github pages or vercel and allow others to use via command `npm run deploy` (useable, **not recommended**).
+1. Serve locally with webpack serve via command `npm run start` (**recommended**). You can find a bunch of other ways to serve the built dist/ folder locally too.
+2. Though it is possible you can deploy this app on github pages or vercel and allow others to use via command `npm run deploy`, this is **not recommended**.
 
 ###### <u>Restrictions</u>
-Due to [github pages not supporting custom headers for cross-origin isolation](https://github.com/orgs/community/discussions/13309) and light client's dependence on this, you can't have this work when deploy the latest release with ckb light client integrated on github pages. For the moment you can either 2.1. Deploy to Vercel... Or ... 2.2. If you'd like to stick to github pages, pick a version that utilizes RPC end point T.B.D.
+Due to [github pages not supporting custom headers for cross-origin isolation](https://github.com/orgs/community/discussions/13309) and light client's dependence on this, you can't have light client work when deploy the latest release with ckb light client integrated on github pages. For the moment you can either 2.1. Deploy to Vercel... Or ... 2.2. If you'd like to stick to github pages, pick a version that utilizes RPC end point T.B.D.
 
+## Contribute
 ###### <u>Dependencies</u>
 1. Rust and Cargo.
 2. wasm-pack.
