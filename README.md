@@ -6,6 +6,7 @@ A static web application functioning as a quantum-safe wallet for CKB blockchain
 |--------------------|---------|
 | **Signature type** | SPHINCS+ SHAKE128F SIMPLE |
 | **Store**    | Indexed DB |
+| **Mnemonic standard**|BIP39 24 words - 256 bit secure|
 | **Local encryption** | AES256 & Scrypt |
 | **Key derivation** | Scrypt |
 | **Authentication** | Password |
