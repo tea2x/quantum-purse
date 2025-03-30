@@ -1,6 +1,9 @@
 import { Button, Form, Input, notification } from "antd";
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { Copy } from "../../components";
+import { Dispatch } from "../../store";
 import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { formatError } from "../../utils/methods";
 import styles from "./SrpTextBox.module.scss";
@@ -22,6 +25,8 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   exportSrpHandler,
   onConfirm,
 }) => {
+  const location = useLocation();
+  const dispatch = useDispatch<Dispatch>();
   const { rules: passwordRules } = usePasswordValidator();
   const onSubmit = async (values: { password: string }) => {
     try {
@@ -36,6 +41,13 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
       });
     }
   };
+
+  useEffect(() => {
+    return () => {
+      console.log("reset srp");
+      dispatch.wallet.resetSRP();
+    };
+  }, [location]);
 
   return (
     <div className={styles.srpTextBox}>
