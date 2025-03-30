@@ -6,6 +6,7 @@ A static web application functioning as a quantum-safe wallet for CKB blockchain
 |--------------------|---------|
 | **Signature type** | SPHINCS+ SHAKE128F SIMPLE |
 | **Store**    | Indexed DB |
+| **Mnemonic standard**|BIP39 24 words - 256 bit secure|
 | **Local encryption** | AES256 & Scrypt |
 | **Key derivation** | Scrypt |
 | **Authentication** | Password |
@@ -49,7 +50,7 @@ Due to [github pages not supporting custom headers for cross-origin isolation](h
 ###### <u>Dependencies</u>
 1. Rust and Cargo.
 2. wasm-pack.
-3. Docker Engine/Desktop (heavy, currently not enabled, skippable).
+3. Docker Engine/Desktop (currently skipped).
 4. Node ^20.
 
 ###### <u>Command list</u>

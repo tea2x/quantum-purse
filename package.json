@@ -4,15 +4,15 @@
   "description": "ckb quantum resistant wallet",
   "private": true,
   "scripts": {
-    "start": "webpack serve --open --config ./webpack/webpack.dev.js",
+    "start": "webpack serve --config ./webpack/webpack.dev.js",
     "build:wasm": "cd key-vault && wasm-pack build --release --target web",
     "build:webpack": "webpack --config ./webpack/webpack.prod.js",
     "build": "npm run build:wasm && npm run build:webpack",
-    "deploy": "npx gh-pages-clean && node ./src/deploy.js",
-    "predeploy": "DEPLOY_TARGET=gh-pages npm run build",
     "test:rust": "cargo test",
     "test:js": "npx karma start",
-    "test": "npm run test:rust && npm run test:js"
+    "test": "npm run test:rust && npm run test:js",
+    "deploy": "npx gh-pages-clean && node ./src/deploy.js",
+    "predeploy": "DEPLOY_TARGET=gh-pages npm run build"
   },
   "author": "tea2x",
   "license": "MIT",
