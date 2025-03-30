@@ -1,0 +1,19 @@
+.ejectWallet {
+  display: flex;
+  flex-direction: column;
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.6rem;
+    height: 70%;
+    p {
+      font-size: 1.4rem;
+      text-align: center;
+    }
+    button {
+      width: fit-content;
+    }
+  }
+}

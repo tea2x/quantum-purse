@@ -3,14 +3,17 @@ export const NODE_URL = "https://testnet.ckb.dev/";
 export const FEE_RATE = BigInt(1500);
 export const IS_MAIN_NET = false;
 
-// TODO replace smart contract info when deployed
+// Currently use a binary from the following commit:
+// https://github.com/cryptape/quantum-resistant-lock-script/pull/14/commits/bd5f76e877327052146aaf4dc9fe741989d52713
+// The cell containing this binary will properly be have a dead lock pointing to codehash of all zeros to be Quantum Safe
+// when the lockscript goes main-net. TODO replace smart contract info when deployed
 export const SPHINCSPLUS_LOCK = {
   codeHash:
-    "0xe48e518e7db3c44d1e13cb57d2d16eaea721d5e4d329d73d20181c4e490420b7",
+    "0x52ee8e71396abd2997f7f02697dd4c30c34d751ba7541db1817922b7add4a4a0",
   hashType: "data1",
   outPoint: {
     txHash:
-      "0xfdefc406a81a51bb672e552ccce6117516b3917b0cdff538faccc4e828b0ae12",
+      "0x4300037e02b79d50000fea127ff8f1ca620eb28ddb333f76437f9fb8fbfaacb3",
     index: "0x0",
   },
   depType: "code",
