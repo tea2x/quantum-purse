@@ -65,7 +65,7 @@ I deployed 2 versions of this app and serve in 2 links below. Github pages' or V
 - https://tea2x.github.io/quantum-purse-web-static/welcome
 
 ###### <u>Vercel</u>: (With Light Client)
-- https://quantum-purse-vercel-xyz.vercel.app/welcome
+- https://quantum-purse-vercel-7a1h-ipin9snsl-teas-projects-6b490beb.vercel.app/welcome
 
 ## Contribute
 ###### <u>Dependencies</u>
