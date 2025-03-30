@@ -4,7 +4,7 @@ import styles from "./Footer.module.scss";
 const Footer: React.FC = () => {
   return (
     <div className={styles.footer}>
-      <p>Quantum Purse is a non-custodial quantum-safe wallet for CKB.</p>
+      <p>A non-custodial quantum-safe wallet for CKB</p>
       <p>
         Developed by
         <a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">

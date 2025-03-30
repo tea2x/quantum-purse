@@ -174,7 +174,7 @@ export default class QuantumPurse {
       accPointer,
       hexStringToUint8Array(signingEntries[0].message)
     );
-    const serializedSpxSig = new Reader(spxSig.buffer).serializeJson();
+    const serializedSpxSig = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
 
     const fullCkbQrSig =
       "0x" +
