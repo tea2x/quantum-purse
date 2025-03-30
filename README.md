@@ -1,7 +1,7 @@
 # Quantum Purse
 
 > ⚠️ **Warning:**  
-> <span style="background-color:yellow; padding:3px; border-radius:3px;">For the moment, please be sure to see your PEERS value > 0 before creating your wallet! See more details in the [Light Client](#light-client) section.</span>
+> <span style="background-color:yellow; padding:3px; border-radius:3px;">For the moment, please be sure to see your PEERS value > 0 (your light node connections) before creating your wallet! See more details in the [Light Client](#light-client) section.</span>
 
 
 Quantum Purse is a quantum-safe wallet for CKB in the form of a static web application. There's only code that runs in the browser. Any deployment mentioned after this only means serving Quantum Purse code for your browser remotely!
@@ -61,11 +61,13 @@ GitHub Pages [does not support custom headers for cross-origin isolation](https:
 ## Give a try?
 I deployed 2 versions of this app and serve in 2 links below. Github pages' or Vercel role here is only to serve the app build(source code, instructions) for the app to intepret data from your local browser's indexedDB. You can definitely serve it on your github/vercel account (refer to command list) or best, serve it locally via `npm run start`!
 
-###### <u>Gh-pages</u>: (NO Light Client)
+###### <u>Gh-pages</u>:
 - https://tea2x.github.io/quantum-purse-web-static/welcome
+**Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">NO Light Client</span>
 
-###### <u>Vercel</u>: (With Light Client)
+###### <u>Vercel</u>:
 - https://quantum-purse-vercel.vercel.app/
+**Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">With Light Client but only Chrome based, Safari are supported. Check [Light Client](#light-client) section for details.</span>
 
 ## Contribute
 ###### <u>Dependencies</u>
