@@ -33,6 +33,10 @@ The following are the recommended ways to use this software, ranked from most to
 1. Serve locally with webpack serve via command `npm run start` (**recommended**). You can find a bunch of other ways to serve the built dist/ folder locally too.
 2. Though it is possible you can deploy this app on github pages and allow others to use via command `npm run deploy`, this is **not recommended**.
 
+## Give a try?
+I deployed this app to my github account and serve here: https://tea2x.github.io/quantum-purse-web-static/welcome.
+Github pages' role here is only to serve the app build(source code, instructions for your browser to intepret data from your local indexedDB). You can definitely serve it on your github account (refer to command list) or best, serve it locally!
+
 ## Contribute
 ###### <u>Dependencies</u>
 1. Rust and Cargo.
