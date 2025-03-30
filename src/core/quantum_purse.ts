@@ -286,7 +286,9 @@ export default class QuantumPurse {
     startIndex: number,
     count: number
   ): Promise<string[]> {
-    return await KeyVault.search_accounts(password, startIndex, count);
+    const list = await KeyVault.search_accounts(password, startIndex, count);
+    password.fill(0);
+    return list;
   }
 
   /**
@@ -298,6 +300,8 @@ export default class QuantumPurse {
     password: Uint8Array,
     count: number
   ): Promise<void> {
-    return await KeyVault.recover_wallet(password, count);
+    await KeyVault.recover_wallet(password, count);
+    password.fill(0);
+    return;
   }
 }
