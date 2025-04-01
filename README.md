@@ -84,14 +84,14 @@ git submodule update --init
 # Install all dependencies
 npm install
 
+# Build Key-vault and QuantumPurse
+npm run build
+
 # Run test
 npm run test
 
 # Run in development env
 npm run start
-
-# Build a production package
-npm run build
 
 # Deploy the web app to your GitHub Page
 npm run deploy
