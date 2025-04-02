@@ -31,12 +31,21 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
     <header className={cx(styles.header, className)} {...rest}>
       <div className="header-left">
         <Icon.Chip color="var(--white)" onClick={() => navigate(ROUTES.HOME)} />
-        <p className={styles.text}>Quantum Purse</p>
+        {screens.md && <p className={styles.text}>Quantum Purse</p>}
       </div>
-      <div className="header-right">
-        {syncStatus && (
+
+      <div className="header-center">
+        {!screens.md && syncStatus && (
           <div>
-            Peers: {parseInt(syncStatus.connections.toString())} | Sync: {syncStatus.syncedStatus.toFixed(1)}%
+            Peers: {parseInt(syncStatus.connections.toString())} | Sync: {syncStatus.syncedStatus.toFixed(2)}%
+          </div>
+        )}
+      </div>
+
+      <div className="header-right">
+        {screens.md && syncStatus && (
+          <div>
+            Peers: {parseInt(syncStatus.connections.toString())} | Sync: {syncStatus.syncedStatus.toFixed(2)}%
           </div>
         )}
         {!screens.md && (
