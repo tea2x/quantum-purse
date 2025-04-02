@@ -1,4 +1,4 @@
-import { utils, blockchain, Transaction } from "@ckb-lumos/base";
+import { utils, blockchain } from "@ckb-lumos/base";
 const { computeScriptHash } = utils; //todo improve. misused but still fulfill what needs to be done
 import { TransactionSkeletonType } from "@ckb-lumos/helpers";
 import { Set } from "immutable";

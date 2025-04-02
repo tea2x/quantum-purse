@@ -73,8 +73,7 @@ I deployed 2 versions of this app and serve in 2 links below. Github pages' or V
 ###### <u>Dependencies</u>
 1. Rust and Cargo.
 2. wasm-pack.
-3. Docker Engine/Desktop (currently skipped).
-4. Node ^20.
+3. Node ^20.
 
 ###### <u>Command list</u>
 ```shell

@@ -13,7 +13,7 @@ const Welcome: React.FC = () => {
   return (
     <section className={cx(styles.welcome, "panel")}>
       <h1>Let's get started</h1>
-      <p>Protecting Your CKB Assets from Post-Quantum Threats</p>
+      <p>Protecting your CKB assets from post-quantum threats</p>
       <Button onClick={() => navigate(ROUTES.CREATE_WALLET)}>
         Create a new wallet
       </Button>
