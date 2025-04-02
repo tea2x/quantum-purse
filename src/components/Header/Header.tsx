@@ -11,6 +11,10 @@ import { RootState } from "../../store";
 
 const { useBreakpoint } = Grid;
 
+const PeerValue: React.FC<{ value: number }> = ({ value }) => (
+  <span className={styles.blinker}>{value}</span>
+);
+
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
@@ -36,17 +40,17 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
 
       <div className="header-center">
         {!screens.md && syncStatus && (
-          <div>
-            Peers: {parseInt(syncStatus.connections.toString())} | Sync: {syncStatus.syncedStatus.toFixed(2)}%
-          </div>
+          <span>
+            Peers: <PeerValue value={parseInt(syncStatus.connections.toString())} /> | Sync: {syncStatus.syncedStatus.toFixed(2)}%
+          </span>
         )}
       </div>
 
       <div className="header-right">
         {screens.md && syncStatus && (
-          <div>
-            Peers: {parseInt(syncStatus.connections.toString())} | Sync: {syncStatus.syncedStatus.toFixed(2)}%
-          </div>
+          <span>
+            Peers connected: <PeerValue value={parseInt(syncStatus.connections.toString())} /> | Sync: {syncStatus.syncedStatus.toFixed(2)}%
+          </span>
         )}
         {!screens.md && (
           <Button

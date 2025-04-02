@@ -365,7 +365,7 @@ export default class QuantumPurse {
     });
     await Promise.all([
       KeyVault.clear_database(),
-      this.client!.stop()
+      // this.client!.stop();
     ]);  
   }
 
@@ -524,12 +524,12 @@ export default class QuantumPurse {
 
         // get the first transaction, get the block number, set sellective sync
         const response = await this.client?.getTransactions(searchKey, "asc", 1);
+        let startBlock = (await this.client!.getTipHeader()).number;
         if (response) {
-          for (const txs of response.transactions) {
-            const tx = txs.transaction;
-            const block = await this.client!.getHeader(tx.hash());
-            block && this.setSellectiveSyncFilter(spxPub, BigInt(block.number));
-          }
+          const txs = response.transactions;
+          if (txs && txs.length !== 0)
+            startBlock = txs[0].blockNumber;
+          this.setSellectiveSyncFilter(spxPub, startBlock - BigInt(1));
         }
       });
     } finally {
