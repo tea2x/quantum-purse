@@ -1,5 +1,6 @@
 .sidebar {
-  height: fit-content;
+  // height: fit-content;
+  overflow: auto;
   flex-grow: 0;
   padding: 0;
 
