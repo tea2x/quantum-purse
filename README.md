@@ -35,7 +35,7 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 - Multiple encrypted SPHINCS+ key pairs
 ```
 
-## 73 CKB at least
+## Minimal quantum-safe cell capacity
 To be quantum resistant, you'll need a bigger lock, thus a bigger cell. QuantumPurse addresses requires at least 73CKB each as minimum capacity.
 
 ## Wallet recovery
