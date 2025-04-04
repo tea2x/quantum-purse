@@ -1,7 +1,7 @@
 # Quantum Purse
 
 > ⚠️ **Warning:**  
-> <span style="background-color:yellow; padding:3px; border-radius:3px;">For the moment, please be sure to see your PEERS value > 0 (your light node connections) before creating your wallet! See more details in the [Light Client](#light-client) section.</span>
+> <span style="background-color:yellow; padding:3px; border-radius:3px;">For the moment, please be sure to see your PEERS value > 0 (your light node connections) before creating your wallet! See more details in the [Light Client](#light-client) section. This will be improved in the next release!</span>
 
 
 Quantum Purse is a quantum-safe wallet for CKB in the form of a static web application. There's only code that runs in the browser. Any deployment mentioned after this only means serving Quantum Purse code for your browser remotely!
@@ -35,6 +35,9 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 - Multiple encrypted SPHINCS+ key pairs
 ```
 
+## 73 CKB at least
+To be quantum resistant, you'll need a bigger lock, thus a bigger cell. QuantumPurse addresses requires at least 73CKB each as minimum capacity.
+
 ## Wallet recovery
 
 When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 10 consecutive empty accounts (i.e., accounts with no transaction history). At that point, the total number of recovered wallets will be equal to the highest index of a non-empty wallet.
@@ -45,7 +48,7 @@ Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetw
 
 <img width="258" alt="header-right" src="https://github.com/user-attachments/assets/3a53afb8-2f38-43cd-866b-15ef603fa89e" />
 
-**Important:** Ensure your PEERS value is greater than 0 before creating your wallet. This will be improved in the next release!
+**Important:** Ensure your PEERS value is greater than 0 before creating your wallet. Usually it takes 5-10 seconds to establish connections to other nodes in the network.
 
 ## How to use
 

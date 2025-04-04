@@ -194,7 +194,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
       <li {...props} className={cx(styles.accountItem)}>
         <div
           className="account-info"
-          onClick={() => setIsSwitchAccountModalOpen(true)}
+          onClick={() => !isActive && setIsSwitchAccountModalOpen(true)}
         >
           <p className="name">
             {name}{" "}
@@ -238,7 +238,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
       </Modal>
       {hasTools && (
         <Modal
-          open={isSwitchAccountModalOpen}
+          open={isSwitchAccountModalOpen && !isActive}
           onCancel={() => setIsSwitchAccountModalOpen(false)}
           onOk={() => {
             dispatch.wallet.switchAccount({ sphincsPlusPubKey });

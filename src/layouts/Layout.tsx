@@ -15,7 +15,6 @@ const Layout: React.FC<AuthLayoutProps> = ({
   ...rest
 }) => {
   const navigate = useNavigate();
-  const wallet = useSelector((state: RootState) => state.wallet);
   const dispatch = useDispatch<Dispatch>();
   useEffect(() => {
     const loadWallet = async () => {
