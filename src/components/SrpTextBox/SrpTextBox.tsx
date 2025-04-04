@@ -44,7 +44,6 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
 
   useEffect(() => {
     return () => {
-      console.log("reset srp");
       dispatch.wallet.resetSRP();
     };
   }, [location]);

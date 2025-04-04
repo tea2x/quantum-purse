@@ -40,7 +40,7 @@ export default class QuantumPurse {
   private client?: LightClient;
   private syncStatusListeners: Set<(status: any) => void> = new Set();
 
-  private static readonly CLIENT_ID = "ckb-light-client-wasm-secret-key";
+  private static readonly CLIENT_SECRET = "ckb-light-client-wasm-secret-key";
   private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
   /* Account management */
   public accountPointer?: string; // Is a sphincs+ public key
@@ -231,11 +231,11 @@ export default class QuantumPurse {
   private async startLightClient() {
     if (this.client !== undefined) return;
 
-    let secretKey = localStorage.getItem(QuantumPurse.CLIENT_ID);
+    let secretKey = localStorage.getItem(QuantumPurse.CLIENT_SECRET);
     if (!secretKey) {
       secretKey = randomSecretKey();
       if (secretKey) {
-        localStorage.setItem(QuantumPurse.CLIENT_ID, secretKey);
+        localStorage.setItem(QuantumPurse.CLIENT_SECRET, secretKey);
       } else {
         throw new Error("Failed to generate a secret key.");
       }
@@ -358,7 +358,7 @@ export default class QuantumPurse {
 
   /* Clears all local data of the wallet. */
   public async deleteWallet(): Promise<void> {
-    localStorage.removeItem(QuantumPurse.CLIENT_ID);
+    // localStorage.removeItem(QuantumPurse.CLIENT_SECRET);
     const spxPubKeyList = await this.getAllAccounts();
     spxPubKeyList.forEach((spxPub) => {
       localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + spxPub);
@@ -524,12 +524,12 @@ export default class QuantumPurse {
 
         // get the first transaction, get the block number, set sellective sync
         const response = await this.client?.getTransactions(searchKey, "asc", 1);
-        let startBlock = (await this.client!.getTipHeader()).number;
+        let startBlock = BigInt(0);
         if (response) {
           const txs = response.transactions;
           if (txs && txs.length !== 0)
             startBlock = txs[0].blockNumber;
-          this.setSellectiveSyncFilter(spxPub, startBlock - BigInt(1));
+          this.setSellectiveSyncFilter(spxPub, startBlock);
         }
       });
     } finally {

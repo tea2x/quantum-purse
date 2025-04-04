@@ -8,6 +8,7 @@ import Icon from "../Icon/Icon";
 import styles from "./Header.module.scss";
 import { useSelector } from 'react-redux';
 import { RootState } from "../../store";
+import { STORAGE_KEYS } from "../../utils/constants";
 
 const { useBreakpoint } = Grid;
 
@@ -34,7 +35,15 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   return (
     <header className={cx(styles.header, className)} {...rest}>
       <div className="header-left">
-        <Icon.Chip color="var(--white)" onClick={() => navigate(ROUTES.HOME)} />
+        <Icon.Chip
+          color="var(--white)"
+          onClick={() => {
+            const step = localStorage.getItem(STORAGE_KEYS.WALLET_STEP);
+            if (!step) {
+              navigate(ROUTES.HOME)
+            }
+          }}
+        />
         {screens.md && <p className={styles.text}>Quantum Purse</p>}
       </div>
 

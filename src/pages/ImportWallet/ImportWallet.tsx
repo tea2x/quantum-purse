@@ -238,7 +238,6 @@ const ImportWalletContent: React.FC = () => {
         description: "You can now use your wallet to send and receive tokens.",
       });
     } catch (error) {
-      console.log(error);
       notification.error({
         message: "Import wallet failed!",
         description: formatError(error),

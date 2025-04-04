@@ -46,7 +46,6 @@ export const WALLET_STEP = {
   PASSWORD: 1,
   SRP: 2,
 };
-export const FIND_ACCOUNT_MAX_RETRIES = 20;
 export const FIND_ACCOUNT_THRESHOLD = 10;
 
 export type WalletStepEnum = (typeof WALLET_STEP)[keyof typeof WALLET_STEP];
