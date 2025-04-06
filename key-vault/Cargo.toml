@@ -11,17 +11,18 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-fips205 = { version = "0.4.1" }
+fips205 = { version = "0.4.1", default-features = false }
 aes-gcm = { version = "0.10.3", features = ["aes", "zeroize"] }
 hex = "0.4.3"
 scrypt = { version = "0.11.0", default-features = false }
 wasm-bindgen = "0.2.100"
 zeroize = "1.8.1"
 getrandom = { version = "0.2.15", features = ["js"] }
+getrandom_v03 = { package = "getrandom", version = "0.3.2", features = ["wasm_js"] }
 bip39 = { version = "2.1.0", features = ["zeroize"] }
 web-sys = { version = "0.3.77", features = ["console"] }
-indexed_db_futures = "0.6.0"
-serde = { version = "1.0.218", features = ["derive"] }
+indexed_db_futures = "0.6.1"
+serde = { version = "1.0.219", features = ["derive"] }
 wasm-bindgen-futures = "0.4.50"
 serde-wasm-bindgen = "0.6.5"
 rand_chacha = "0.3.1"

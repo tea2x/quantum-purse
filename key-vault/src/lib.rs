@@ -20,7 +20,7 @@ use fips205::{
     slh_dsa_shake_128f,
     traits::{SerDes, Signer},
 };
-use getrandom::getrandom;
+use getrandom_v03;
 use hex::{decode, encode};
 use indexed_db_futures::{
     database::Database, error::Error as DBError, iter::ArrayMapIter, prelude::*,
@@ -310,9 +310,9 @@ async fn clear_object_store(db: &Database, store_name: &str) -> Result<(), KeyVa
 ///
 /// **Returns**:
 /// - `Result<SecureVec, String>` - A Secure vector of random bytes on success, or an error message on failure.
-fn get_random_bytes(length: usize) -> Result<SecureVec, String> {
+fn get_random_bytes(length: usize) -> Result<SecureVec, getrandom_v03::Error> {
     let mut buffer = SecureVec::new_with_length(length);
-    getrandom(&mut buffer).map_err(|e| e.to_string())?;
+    getrandom_v03::fill(&mut buffer)?;
     Ok(buffer)
 }
 
