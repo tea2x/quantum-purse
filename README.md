@@ -59,7 +59,7 @@ The following are the recommended ways to use this software, ranked from most to
 ###### <u>Restrictions</u>
 GitHub Pages [does not support custom headers for cross-origin isolation](https://github.com/orgs/community/discussions/13309), which the light client depends on. Therefore, the light client will not work if deployed on GitHub Pages. You have two options:
 1. Deploy to Vercel.
-2. Stick with GitHub Pages but use a version that utilizes an RPC endpoint, like [this one](https://github.com/tea2x/quantum-purse-web-static/releases/tag/v1.0.0-rc1).
+2. Stick with GitHub Pages but use a version that utilizes an RPC endpoint, like [this one](https://github.com/tea2x/quantum-purse-web-static/releases/tag/v0.0.1-rc1).
 
 ## Give a try?
 I deployed 2 versions of this app and serve in 2 links below. Github pages' or Vercel role here is only to serve the app build(source code, instructions) for the app to intepret data from your local browser's indexedDB. You can definitely serve it on your github/vercel account (refer to command list) or best, serve it locally via `npm run start`!
