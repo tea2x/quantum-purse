@@ -19,7 +19,7 @@ import {
 import React, { useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  AccountDetail,
+  AccountSetting,
   Authentication,
   AuthenticationRef,
   Copy,
@@ -234,7 +234,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
         footer={null}
         centered
       >
-        <AccountDetail account={{ name, address, sphincsPlusPubKey }} />
+        <AccountSetting account={{ name, address, sphincsPlusPubKey }} />
       </Modal>
       {hasTools && (
         <Modal
