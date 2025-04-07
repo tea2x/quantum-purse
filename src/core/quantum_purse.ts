@@ -163,7 +163,7 @@ export default class QuantumPurse {
     
     localStorage.setItem(storageKey, startingBlock.toString());
     
-    this.client.setScripts(
+    await this.client.setScripts(
       [{ blockNumber: startingBlock, script: lock, scriptType: "lock" }],
       firstAccount ? LightClientSetScriptsCommand.All : LightClientSetScriptsCommand.Partial
     );
@@ -175,14 +175,14 @@ export default class QuantumPurse {
    * @param startingBlock The starting block to be set.
    * @throws Error light client is not initialized.
    */
-  public setSellectiveSyncFilter(spxPubKey: string, startingBlock: bigint) {
+  public async setSellectiveSyncFilter(spxPubKey: string, startingBlock: bigint) {
     if (!this.client) throw new Error("Light client not initialized");
 
     const lock = this.getLock(spxPubKey);
     const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKey;
     localStorage.setItem(storageKey, startingBlock.toString());
 
-    this.client.setScripts(
+    await this.client.setScripts(
       [{ blockNumber: startingBlock, script: lock, scriptType: "lock" }],
       LightClientSetScriptsCommand.Partial
     );
@@ -523,13 +523,15 @@ export default class QuantumPurse {
         };
 
         // get the first transaction, get the block number, set sellective sync
+        // won't work if light client sync has not get past the first transaction
+        // todo use RPC for this process
         const response = await this.client?.getTransactions(searchKey, "asc", 1);
         let startBlock = BigInt(0);
         if (response) {
           const txs = response.transactions;
           if (txs && txs.length !== 0)
             startBlock = txs[0].blockNumber;
-          this.setSellectiveSyncFilter(spxPub, startBlock);
+          await this.setSellectiveSyncFilter(spxPub, startBlock);
         }
       });
     } finally {
