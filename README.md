@@ -36,11 +36,7 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 ```
 
 ## 73 CKB
-Quantum-Resistant Lock Script being bigger in size leads to bigger minimum capacity for QuantumPurse cells. The manifestation for this is that Quantum Purse addresses would only hold at least 73 CKB. Sending smaller amounts to Quantum Purse addresses violates CKB fundamentals.
-
-## Wallet recovery
-
-When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 10 consecutive empty accounts (i.e., accounts with no transaction history). At that point, the total number of recovered wallets will be equal to the highest index of a non-empty wallet.
+Quantum-Resistant Lock Script being bigger in size leads to bigger minimum capacity for QuantumPurse cells. The manifestation for this is that Quantum Purse addresses would hold at least 73 CKB. Sending smaller amounts to Quantum Purse addresses will violate CKB fundamentals.
 
 ## Light client
 
@@ -49,6 +45,12 @@ Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetw
 <img width="258" alt="header-right" src="https://github.com/user-attachments/assets/3a53afb8-2f38-43cd-866b-15ef603fa89e" />
 
 **Important:** Ensure your PEERS value is greater than 0 before creating your wallet. Usually it takes 5-10 seconds to establish connections to other nodes in the network.
+
+## Wallet recovery
+
+When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 10 consecutive empty accounts (i.e., accounts with no transaction history). At that point, the total number of recovered wallets will be equal to the highest index of a non-empty wallet.
+
+**Important:** Currently, recovering wallet on a newly setup Quantum Purse will result in the first account being created due to Light Client being too slow for this process. In such case, create accounts then set starting blocks manually! This will be improved in the next release.
 
 ## How to use
 
