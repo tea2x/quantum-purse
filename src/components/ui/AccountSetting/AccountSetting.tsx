@@ -44,6 +44,7 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account }) => {
             onClick={async () => {
               const wallet = await QuantumPurse.getInstance();
               await wallet.setSellectiveSyncFilter([account.sphincsPlusPubKey], [BigInt(startingBlock)], LightClientSetScriptsCommand.Partial);
+              setStartingBlock("");
             }}
             disabled={!isValidStartingBlock}
           >
