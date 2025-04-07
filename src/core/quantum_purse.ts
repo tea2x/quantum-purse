@@ -520,8 +520,6 @@ export default class QuantumPurse {
       if (!this.client) throw new Error("Light client not initialized");
   
       const spxPubKeyList = await KeyVault.recover_accounts(password, count);
-  
-      // Map each public key to a promise that resolves to its starting block
       const startBlocksPromises = spxPubKeyList.map(async (spxPub) => {
         const lock = this.getLock(spxPub);
         const searchKey: ClientIndexerSearchKeyLike = {
