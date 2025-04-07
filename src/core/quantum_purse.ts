@@ -7,7 +7,7 @@ import { Script, HashType, Address, Transaction, DepType, Cell } from "@ckb-lumo
 import { TransactionSkeletonType, TransactionSkeleton, sealTransaction, addressToScript } from "@ckb-lumos/helpers";
 import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from "./utils";
 import keyVaultWasmInit, { KeyVault, Util as KeyVaultUtil } from "../../key-vault/pkg/key_vault";
-import { LightClient, randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex } from "ckb-light-client-js";
+import { LightClient, randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex, ScriptStatus } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
@@ -171,21 +171,31 @@ export default class QuantumPurse {
 
   /**
    * Helper function tells the light client which account and from what block they start making transactions.
-   * @param spxPubKey The sphincs+ publickey representing a sphincs+ account in your DB.
-   * @param startingBlock The starting block to be set.
+   * @param spxPubKeys The sphincs+ publickey array representing sphincs+ accounts in your DB.
+   * @param startingBlocks The starting block array corresponding to the spxPubKeys to be set.
+   * @param setMode The mode to set the scripts (All, Partial, Delete).
    * @throws Error light client is not initialized.
    */
-  public async setSellectiveSyncFilter(spxPubKey: string, startingBlock: bigint) {
+  public async setSellectiveSyncFilter(spxPubKeys: string[], startingBlocks: bigint[], setMode: LightClientSetScriptsCommand) {
     if (!this.client) throw new Error("Light client not initialized");
 
-    const lock = this.getLock(spxPubKey);
-    const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKey;
-    localStorage.setItem(storageKey, startingBlock.toString());
+    if (spxPubKeys.length !== startingBlocks.length) {
+      throw new Error("Length of spxPubKeys and startingBlocks must be the same");
+    }
 
-    await this.client.setScripts(
-      [{ blockNumber: startingBlock, script: lock, scriptType: "lock" }],
-      LightClientSetScriptsCommand.Partial
-    );
+    for (let i = 0; i < spxPubKeys.length; i++) {
+      const lock = this.getLock(spxPubKeys[i]);
+      const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKeys[i];
+      localStorage.setItem(storageKey, startingBlocks[i].toString());
+    }
+
+    const filters:ScriptStatus[] = spxPubKeys.map((spxPubKey, index) => ({
+      blockNumber: startingBlocks[index],
+      script: this.getLock(spxPubKey),
+      scriptType: "lock"
+    }));
+    
+    await this.client.setScripts(filters, setMode);
   }
 
   /* Calculate sync status */
@@ -506,34 +516,31 @@ export default class QuantumPurse {
    * @remark The password is overwritten with zeros after use.
    * TODO test set sellective sync
    */
-  public async recoverAccounts(
-    password: Uint8Array,
-    count: number
-  ): Promise<void> {
+  public async recoverAccounts(password: Uint8Array, count: number): Promise<void> {
     try {
       if (!this.client) throw new Error("Light client not initialized");
-
+  
       const spxPubKeyList = await KeyVault.recover_accounts(password, count);
-      spxPubKeyList.forEach(async(spxPub) => {
+  
+      // Map each public key to a promise that resolves to its starting block
+      const startBlocksPromises = spxPubKeyList.map(async (spxPub) => {
         const lock = this.getLock(spxPub);
         const searchKey: ClientIndexerSearchKeyLike = {
           scriptType: "lock",
           script: lock,
           scriptSearchMode: "prefix",
         };
-
-        // get the first transaction, get the block number, set sellective sync
-        // won't work if light client sync has not get past the first transaction
-        // todo use RPC for this process
+  
         const response = await this.client?.getTransactions(searchKey, "asc", 1);
         let startBlock = BigInt(0);
-        if (response) {
-          const txs = response.transactions;
-          if (txs && txs.length !== 0)
-            startBlock = txs[0].blockNumber;
-          await this.setSellectiveSyncFilter(spxPub, startBlock);
+        if (response && response.transactions && response.transactions.length > 0) {
+          startBlock = response.transactions[0].blockNumber;
         }
+        return startBlock;
       });
+      
+      const startBlocks = await Promise.all(startBlocksPromises);
+      await this.setSellectiveSyncFilter(spxPubKeyList, startBlocks, LightClientSetScriptsCommand.All);
     } finally {
       password.fill(0);
     }

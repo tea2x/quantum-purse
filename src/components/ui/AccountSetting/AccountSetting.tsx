@@ -8,6 +8,7 @@ import { Button, Flex, Input } from "antd";
 import { useSelector } from 'react-redux';
 import { RootState } from "../../../store";
 import QuantumPurse from "../../../core/quantum_purse";
+import { LightClientSetScriptsCommand } from "ckb-light-client-js";
 
 interface AccountSettingProps {
   account: IAccount;
@@ -42,7 +43,7 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account }) => {
             type="primary"
             onClick={async () => {
               const wallet = await QuantumPurse.getInstance();
-              await wallet.setSellectiveSyncFilter(account.sphincsPlusPubKey, BigInt(startingBlock));
+              await wallet.setSellectiveSyncFilter([account.sphincsPlusPubKey], [BigInt(startingBlock)], LightClientSetScriptsCommand.Partial);
             }}
             disabled={!isValidStartingBlock}
           >
