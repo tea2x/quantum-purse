@@ -111,8 +111,13 @@ describe("Quantum Purse Basics", () => {
     await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
 
     // Mock `this.client`
-    (wallet as any).client = {};
-    sinon.stub(wallet as any, "client").resolves();
+    const mockClient = {
+      getTransactions: sinon.stub().resolves({
+        transactions: [{ blockNumber: BigInt(100) }],
+      }),
+      setScripts: sinon.stub().resolves(),
+    };
+    (wallet as any).client = mockClient;
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.recoverAccounts(passwordStrHandler, 3);
