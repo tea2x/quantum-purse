@@ -184,7 +184,6 @@ export default class QuantumPurse {
     }
 
     for (let i = 0; i < spxPubKeys.length; i++) {
-      const lock = this.getLock(spxPubKeys[i]);
       const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKeys[i];
       localStorage.setItem(storageKey, startingBlocks[i].toString());
     }
