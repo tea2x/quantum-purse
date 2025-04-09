@@ -21,7 +21,6 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 | **Key derivation** | Scrypt |
 | **Authentication** | Password |
 | **Password hashing** | Scrypt |
-| **Lock script** | [CKB Quantum-Resistant Lock Script](https://github.com/cryptape/quantum-resistant-lock-script) |
 | **RPC endpoint** | No |
 | **Light Client** | Chrome based, Safari |
 | **Nervos DAO** | is coming! |

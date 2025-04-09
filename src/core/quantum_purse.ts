@@ -6,13 +6,15 @@ import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { Script, HashType, Address, Transaction, DepType, Cell } from "@ckb-lumos/base";
 import { TransactionSkeletonType, TransactionSkeleton, sealTransaction, addressToScript } from "@ckb-lumos/helpers";
 import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from "./utils";
-import keyVaultWasmInit, { KeyVault, Util as KeyVaultUtil } from "../../key-vault/pkg/key_vault";
+import __wbg_init, { KeyVault, Util as KeyVaultUtil, SphincsVariant } from "../../key-vault/pkg/key_vault";
 import { LightClient, randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex, ScriptStatus } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
 import { ClientIndexerSearchKeyLike, Hex } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
+
+export { SphincsVariant } from "../../key-vault/pkg/key_vault";
 
 /**
  * Manages a wallet using the SPHINCS+ post-quantum signature scheme (shake-128f simple)
@@ -25,8 +27,6 @@ export default class QuantumPurse {
   private static readonly REQUIRE_FISRT_N = "00";
   private static readonly THRESHOLD = "01";
   private static readonly PUBKEY_NUM = "01";
-  private static readonly LOCK_FLAGS = "6d"; // [0110110]|[1]: [shake128f-id]|[signature-flag]
-  private static readonly SPX_SIG_LEN: number = 17088;
   private static instance?: QuantumPurse;
   /* CKB light client status worker */
   private worker: Worker | undefined;
@@ -43,23 +43,40 @@ export default class QuantumPurse {
   private static readonly CLIENT_SECRET = "ckb-light-client-wasm-secret-key";
   private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
   /* Account management */
+  private keyVault?: KeyVault;
   public accountPointer?: string; // Is a sphincs+ public key
   private sphincsLock: { codeHash: string; hashType: HashType };
 
   /** Constructor that takes sphincs+ on-chain binary deployment info */
   private constructor(sphincsCodeHash: string, sphincsHashType: HashType) {
     this.sphincsLock = { codeHash: sphincsCodeHash, hashType: sphincsHashType };
+    
   }
 
+  /* init code for wasm-bindgen module */
+  public async initWasmBindgen(): Promise<void> {
+    await __wbg_init();
+  }
+
+  /* init keyVault module with the input sphincs+ variant */
+  public initKeyVault(variant: SphincsVariant) {
+    this.keyVault = new KeyVault(variant);
+  }
+
+  /* get the name of sphincs+ paramset of choice*/
+  public getSphincsPlusParamSet(): string {
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+    return SphincsVariant[this.keyVault.sphincs_plus_variant];
+  }
+  
   /**
    * Gets the singleton instance of QuantumPurse.
    * It seems key-vault initialization should be placed in a different init function.
    * But Keyvault is too fused to QuantumPurse so for convenience, it is placed here.
    * @returns The singleton instance of QuantumPurse.
    */
-  public static async getInstance(): Promise<QuantumPurse> {
+  public static getInstance() {
     if (!QuantumPurse.instance) {
-      await keyVaultWasmInit();
       QuantumPurse.instance = new QuantumPurse(
         SPHINCSPLUS_LOCK.codeHash,
         SPHINCSPLUS_LOCK.hashType as HashType
@@ -280,14 +297,12 @@ export default class QuantumPurse {
       throw new Error("Account pointer not available!");
     }
 
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+
+    // recreating on-chain lock script procedure
     const hasher = new CKBSphincsPlusHasher();
     hasher.update("0x" + this.spxAllInOneSetupHashInput());
-    hasher.update(
-      "0x" +
-        ((parseInt(QuantumPurse.LOCK_FLAGS, 16) >> 1) << 1)
-          .toString(16)
-          .padStart(2, "0")
-    );
+    hasher.update("0x" + (this.keyVault.sphincs_plus_variant << 1).toString(16));
     hasher.update("0x" + accPointer);
 
     return {
@@ -346,16 +361,17 @@ export default class QuantumPurse {
       if (!accPointer || accPointer === "") {
         throw new Error("Account pointer not available!");
       }
+      
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
 
-      const witnessLen = QuantumPurse.SPX_SIG_LEN + hexToByteArray(accPointer).length;
-      tx = insertWitnessPlaceHolder(tx, witnessLen);
+      tx = insertWitnessPlaceHolder(tx);
       tx = prepareSigningEntries(tx);
       const entry = tx.get("signingEntries").toArray();
-      const spxSig = await KeyVault.sign(password, accPointer, hexToByteArray(entry[0].message));
+      const spxSig = await this.keyVault.sign(password, accPointer, hexToByteArray(entry[0].message));
       const spxSigHex = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
       const fullCkbQrSig =
         this.spxAllInOneSetupHashInput() +
-        QuantumPurse.LOCK_FLAGS +
+        ((this.keyVault.sphincs_plus_variant << 1) | 1).toString(16) +
         accPointer +
         spxSigHex.replace(/^0x/, "");
 
@@ -388,9 +404,10 @@ export default class QuantumPurse {
    */
   public async genAccount(password: Uint8Array): Promise<string> {
     try {
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
       const [accList, sphincs_pub] = await Promise.all([
         this.getAllAccounts(),
-        KeyVault.gen_new_key_pair(password)
+        this.keyVault.gen_new_key_pair(password)
       ]);  
       await this.setSellectiveSyncFilterInternal(sphincs_pub, (accList.length === 0));
       return sphincs_pub;
@@ -501,7 +518,8 @@ export default class QuantumPurse {
     count: number
   ): Promise<string[]> {
     try {
-      const list = await KeyVault.gen_account_batch(password, startIndex, count);
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      const list = await this.keyVault.gen_account_batch(password, startIndex, count);
       return list;
     } finally {
       password.fill(0);
@@ -518,8 +536,9 @@ export default class QuantumPurse {
   public async recoverAccounts(password: Uint8Array, count: number): Promise<void> {
     try {
       if (!this.client) throw new Error("Light client not initialized");
-  
-      const spxPubKeyList = await KeyVault.recover_accounts(password, count);
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      
+      const spxPubKeyList = await this.keyVault.recover_accounts(password, count);
       const startBlocksPromises = spxPubKeyList.map(async (spxPub) => {
         const lock = this.getLock(spxPub);
         const searchKey: ClientIndexerSearchKeyLike = {
@@ -564,7 +583,7 @@ export default class QuantumPurse {
     initializeConfig(configuration);
 
     let txSkeleton = new TransactionSkeleton();
-    const transactionFee = BigInt(20000); // 20_000 shannons
+    const transactionFee = BigInt(60000); // 60_000 shannons
     const outputCapacity = BigInt(amount) * BigInt(1e8);
     const minimalSphincsPlusCapacity = BigInt(73) * BigInt(1e8);
     const requiredCapacity = transactionFee + outputCapacity + minimalSphincsPlusCapacity;

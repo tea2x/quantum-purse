@@ -20,6 +20,10 @@ import {
 import { cx, formatError } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
+import ParamSetSelectorForm from "../../components/SphincsParamSet/Selector";
+import QuantumPurse, { SphincsVariant } from "../../core/quantum_purse";
+
+const wallet = QuantumPurse.getInstance();
 
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: WALLET_STEP.PASSWORD,
@@ -79,15 +83,15 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
     () => [
       {
         key: WALLET_STEP.PASSWORD,
-        title: "Create password",
-        description: "Create a secure password for your wallet",
+        title: "Wallet Type & Password",
+        description: "Create password and choose the SPHINCS+ parameter set",
         icon: loadingCreateWallet ? <LoadingOutlined /> : <KeyOutlined />,
         content: <StepCreatePassword />,
       },
       {
         key: WALLET_STEP.SRP,
         title: "Secure Secret Recovery Phrase",
-        description: "Save your recovery phrase in a secure location",
+        description: "Keep your Mnemonic Seed Phrase in a safe place",
         icon: loadingExportSRP ? <LoadingOutlined /> : <LockOutlined />,
         content: <StepSecureSRP />,
       },
@@ -132,6 +136,7 @@ export const StepCreatePassword: React.FC = () => {
   const { createWallet: loadingCreateWallet, exportSRP: loadingExportSRP } =
     useSelector((state: RootState) => state.loading.effects.wallet);
   const { rules: passwordRules } = usePasswordValidator();
+
   useEffect(() => {
     form
       .validateFields({ validateOnly: true })
@@ -139,7 +144,15 @@ export const StepCreatePassword: React.FC = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
-  const onFinish = async ({ password }: { password: string }) => {
+  const onFinish = async (
+    { password, parameterSet }: { password: string, parameterSet: SphincsVariant }
+  ) => {
+    if (parameterSet) {
+      wallet.initKeyVault(parameterSet);
+    }
+    // store chosen param set to storage, so wallet type retains when refreshed
+    localStorage.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+    
     await dispatch.wallet
       .createWallet({ password })
       .then(async () => {
@@ -156,8 +169,10 @@ export const StepCreatePassword: React.FC = () => {
 
   return (
     <div className={styles.stepCreatePassword}>
-      <h2>Create password</h2>
+      <h2>Wallet Type & Password</h2>
       <Form form={form} layout="vertical" onFinish={onFinish}>
+        <ParamSetSelectorForm />
+
         <Form.Item name="password" label="Password" rules={passwordRules}>
           <Input.Password size="large" placeholder="Enter your password" />
         </Form.Item>
@@ -180,6 +195,7 @@ export const StepCreatePassword: React.FC = () => {
         >
           <Input.Password size="large" placeholder="Confirm your password" />
         </Form.Item>
+
         <Form.Item
           name="passwordAwareness"
           valuePropName="checked"
@@ -197,7 +213,7 @@ export const StepCreatePassword: React.FC = () => {
           ]}
         >
           <Checkbox>
-            I understand that Quantum Purse cannot recover this password for me.
+            I understand that Quantum Purse cannot recover this password and I must backup the parameter set with the Mnemonic Seed Phrase in the next step.
           </Checkbox>
         </Form.Item>
         <Flex align="center" justify="center" gap={16}>
@@ -216,7 +232,7 @@ export const StepCreatePassword: React.FC = () => {
               disabled={!submittable || loadingCreateWallet || loadingExportSRP}
               loading={loadingCreateWallet || loadingExportSRP}
             >
-              Create a new wallet
+              Create
             </Button>
           </Form.Item>
         </Flex>
