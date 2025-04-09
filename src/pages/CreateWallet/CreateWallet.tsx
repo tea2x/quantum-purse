@@ -213,7 +213,7 @@ export const StepCreatePassword: React.FC = () => {
           ]}
         >
           <Checkbox>
-            I understand that Quantum Purse cannot recover this password and I must backup the parameter set with the Mnemonic Seed Phrase in the next step.
+            I understand that 1) I must backup the parameter set with the Mnemonic Seed Phrase in the next step and 2) Quantum Purse cannot recover this password.
           </Checkbox>
         </Form.Item>
         <Flex align="center" justify="center" gap={16}>

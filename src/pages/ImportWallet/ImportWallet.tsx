@@ -134,7 +134,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         ]}
       >
         <Checkbox>
-          I understand that Quantum Purse cannot recover this password and the parameter set I choose matches with the one i backed up with the seed phrase.
+          I understand that 1) the parameter set I choose must matches with the one I backed up with the seed phrase and 2) Quantum Purse cannot recover this password.
         </Checkbox>
       </Form.Item>
       <Flex align="center" justify="center" gap={16}>
