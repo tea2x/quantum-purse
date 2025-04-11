@@ -29,7 +29,9 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 <img width="628" alt="overview" src="https://github.com/user-attachments/assets/433a25dd-2845-4384-b9a3-e2374aac3227" />
 
 ## 73 CKB
-Quantum-Resistant Lock Script being bigger in size leads to bigger minimum capacity for QuantumPurse cells. The manifestation for this is that Quantum Purse addresses would hold at least 73 CKB. Sending smaller amounts to Quantum Purse addresses will violate CKB fundamentals.
+Due to the larger size of the quantum lock script:
+- Minimum CKB per Quantum Purse cell is 73 CKB
+- Smaller transfers will be rejected by the chain
 
 ## Light client
 
@@ -37,11 +39,15 @@ Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetw
 
 <img width="258" alt="header-right" src="https://github.com/user-attachments/assets/3a53afb8-2f38-43cd-866b-15ef603fa89e" />
 
-**Important:** It takes 5-10 seconds to establish connections to other nodes. Another 10 - 40 seconds to fully sync a newly added account. Ensure your PEERS value is greater than 0 before creating your wallet for a smooth experience. If you don't, no worries. In such case you'd notice that sync percentage grows very slowly and may want to set `starting block` for each account manually after creating wallet successfully.
+**Important:**
+- It takes 5-10 seconds to establish connections to other nodes.
+- Another 10 - 40 seconds to fully sync a newly added account.
+- For a smooth experience, ensure your PEERS value is greater than 0 before creating your wallet.
+- If you don't? no worries. In such case you'd notice that sync percentage grows very slowly and may want to set `starting block` for each account manually after creating wallet successfully.
 
 ## Wallet recovery
 
-When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 10 consecutive empty accounts (i.e., accounts with no transaction history). At that point, the total number of recovered wallets will be equal to the highest index of a non-empty wallet.
+When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 10 consecutive empty accounts (i.e., accounts with no transaction history).
 
 **Important:** Currently, recovering wallet on a newly setup Quantum Purse will result in only the first account being created because Light Client is too slow for this process. In such case, create accounts then set starting blocks manually! This will be improved in the next release.
 
@@ -94,10 +100,13 @@ npm run start
 npm run deploy
 ```
 
+## Contribution
+Any PR to develop branch is welcomed. Have an idea? Feel free to open a github issue.
+
 ## Notes
 
 1. As of 2025, quantum resistance is still experimental. Use this software at your own risk.
-2. Back up your seed phrases. Losing them means losing access to your wallet.
+2. Back up your seed phrases-loss means loss of funds
 3. Quantum Purse does NOT store your passwords. Passwords are used only temporarily to encrypt and decrypt your secret data.
 4. IndexedDB stores only public data (e.g., SPHINCS+ public keys) and encrypted secret data. Your SPHINCS+ private keys remain protected.
 5. Forgot your password? Recover access by importing your seed phrase and setting a new password instantly.
@@ -124,9 +133,8 @@ Until a proper SPHINCS+ hardware wallet is available for secure key management, 
 
 While Quantum Purse is not yet optimized for air-gapped usage, implementing this functionality would require minimal effort. If you're interested, open an issue to let me know what you need!
 
-Lastly, if you'd like to support my work and help me create more projects like this, consider buying me a coffee—every contribution counts!
-
-<u>**Address**(to be a quantum-safe address soon!):</u> **_ckb1qrgqep8saj8agswr30pls73hra28ry8jlnlc3ejzh3dl2ju7xxpjxqgqqxeu0ghthh9tw5lllkw7hajcv5r5gj094q8u7dpk_**
+If you'd like to support my work, below is my CKB address:
+**_ckb1qrgqep8saj8agswr30pls73hra28ry8jlnlc3ejzh3dl2ju7xxpjxqgqqxeu0ghthh9tw5lllkw7hajcv5r5gj094q8u7dpk_**
 
 <img width="200" alt="tungpham bit" src="https://github.com/user-attachments/assets/269fe4f6-827d-41b4-9806-1c962a439517" />
 
