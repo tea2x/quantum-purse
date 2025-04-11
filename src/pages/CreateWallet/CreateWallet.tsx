@@ -259,7 +259,7 @@ const StepSecureSRP: React.FC = () => {
       title={"Secure Secret Recovery Phrase"}
       description={
         srp
-          ? "Your secret recovery phrase is a list of 24 words that you can use to recover your wallet. Write down these 24 words in the order shown below, and keep it safe."
+          ? "Your secret recovery phrase is a list of 24 words that you can use to recover your wallet. Keep it safe!"
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process."
       }
       exportSrpHandler={exportSrpHandler}
