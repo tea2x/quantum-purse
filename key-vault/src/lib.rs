@@ -11,16 +11,9 @@ use aes_gcm::{
     Aes256Gcm, Key, Nonce,
 };
 use bip39::{Language, Mnemonic};
-use ckb_fips205_utils::{
-    ckb_tx_message_all_from_mock_tx::{generate_ckb_tx_message_all_from_mock_tx, ScriptOrIndex},
-    Hasher,
-};
-use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction};
 use fips205::{
-    slh_dsa_sha2_128f, slh_dsa_sha2_128s, slh_dsa_sha2_192f, slh_dsa_sha2_192s, slh_dsa_sha2_256f,
-    slh_dsa_sha2_256s, slh_dsa_shake_128f, slh_dsa_shake_128s, slh_dsa_shake_192f,
-    slh_dsa_shake_192s, slh_dsa_shake_256f, slh_dsa_shake_256s,
     traits::{SerDes, Signer},
+    *,
 };
 use getrandom_v03;
 use hex::{decode, encode};
@@ -30,147 +23,29 @@ use indexed_db_futures::{
 };
 use rand_chacha::rand_core::SeedableRng;
 use scrypt::{scrypt, Params};
-use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen;
 use wasm_bindgen::{prelude::*, JsValue};
 use web_sys::js_sys::Uint8Array;
 use zeroize::Zeroize;
 
+mod constants;
 mod errors;
-use crate::errors::KeyVaultError;
-
+mod macros;
 mod secure_vec;
-use secure_vec::SecureVec;
-
 #[cfg(test)]
 mod tests;
+mod types;
+mod utilities;
 
-#[macro_export]
-macro_rules! debug {
-    ($($arg:tt)*) => {
-        web_sys::console::log_1(&format!($($arg)*).into());
-    }
-}
-
-macro_rules! sphincs_keygen {
-    ($variant:expr, $rng:expr, $($pat:pat, $module:ident),*) => {
-        match $variant {
-            $(
-                $pat => {
-                    let (pub_key, pri_key) = $module::try_keygen_with_rng($rng)?;
-                    Ok((SecureVec::from_slice(&pub_key.into_bytes()), SecureVec::from_slice(&pri_key.into_bytes())))
-                }
-            ),*
-        }
-    };
-}
-
-macro_rules! sphincs_sign {
-    ($variant:expr, $pri_key:expr, $message:expr, $($pat:pat, $module:ident),*) => {
-        match $variant {
-            $(
-                $pat => {
-                    let mut signing_key = $module::PrivateKey::try_from_bytes(
-                        $pri_key.as_ref().try_into().expect("Fail to parse private key"),
-                    )
-                    .map_err(|e| JsValue::from_str(&format!("Unable to load private key: {:?}", e)))?;
-                    let signature = signing_key.try_sign($message, &[], true)
-                        .map_err(|e| JsValue::from_str(&format!("Signing error: {:?}", e)))?;
-                    signing_key.zeroize(); // Zeroize the private key
-                    Ok(Uint8Array::from(signature.as_slice()))
-                }
-            ),*
-        }
-    };
-}
-
-#[wasm_bindgen]
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
-pub enum SphincsVariant {
-    Sha2128F = 48,
-    Sha2128S,
-    Sha2192F,
-    Sha2192S,
-    Sha2256F,
-    Sha2256S,
-    Shake128F,
-    Shake128S,
-    Shake192F,
-    Shake192S,
-    Shake256F,
-    Shake256S,
-}
-
-/// Represents an encrypted payload containing salt, IV, and ciphertext, all hex-encoded.
-///
-/// **Fields**:
-/// - `salt: String` - Hex-encoded salt used for key derivation with Scrypt.
-/// - `iv: String` - Hex-encoded initialization vector (nonce) for AES-GCM encryption.
-/// - `cipher_text: String` - Hex-encoded encrypted data produced by AES-GCM.
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct CipherPayload {
-    salt: String,
-    iv: String,
-    cipher_text: String,
-}
-
-/// Represents a SPHINCS+ key pair with the public key and an encrypted private key.
-///
-/// **Fields**:
-/// - `index: u32` - db addition order
-/// - `pub_key: String` - Hex-encoded SPHINCS+ public key.
-/// - `pri_enc: CipherPayload` - Encrypted SPHINCS+ private key, stored as a `CipherPayload`.
-/// TODO improve size
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SphincsPlusKeyPair {
-    index: u32,
-    pub_key: String,
-    pri_enc: CipherPayload,
-}
+use crate::constants::*;
+use errors::KeyVaultError;
+use secure_vec::SecureVec;
+use types::*;
 
 #[wasm_bindgen]
 pub struct KeyVault {
     pub sphincs_plus_variant: SphincsVariant,
 }
-#[wasm_bindgen]
-pub struct Util;
-
-/// Scrypt param structure.
-struct ScryptParam {
-    log_n: u8,
-    r: u32,
-    p: u32,
-    len: usize,
-}
-
-// Constants
-const SALT_LENGTH: usize        = 16; // 128-bit salt
-const IV_LENGTH: usize          = 12; // 96-bit IV for AES-GCM
-const DB_NAME: &str             = "quantum_purse";
-const SEED_PHRASE_KEY: &str     = "seed_phrase";
-const SEED_PHRASE_STORE: &str   = "seed_phrase_store";
-const CHILD_KEYS_STORE: &str    = "child_keys_store";
-const KDF_PATH_PREFIX: &str     = "ckb/quantum-purse/sphincs-plus/";
-/// The following scrypt param is used together with a very high entropy source - a 256 bit mnemonic seephrase to serve as QuantumPurse KDF.
-/// Security level for the derived keys isn't upgraded with Scrypt, each attacker's guess simply gets longer to run.
-/// TODO: Adjust scrypt parameters for security/performance
-const KDF_SCRYPT: ScryptParam = ScryptParam {
-    log_n: 10,
-    r: 8,
-    p: 1,
-    len: 32,
-};
-
-/// Scrypt’s original paper suggests N = 16384 (log_n = 14) for interactive logins, but that’s for low-entropy passwords.
-/// QuantumPurse uses 256 bit high-entropy passwords together with the following scrypt param to protect data in DB.
-/// Security level for the encryption/decryption keys isn't upgraded with Scrypt, each attacker's guess simply gets longer to run.
-/// TODO: Adjust scrypt parameters for security/performance
-const ENC_SCRYPT: ScryptParam = ScryptParam {
-    log_n: 14,
-    r: 8,
-    p: 1,
-    len: 32,
-};
 
 /// Opens the IndexedDB database, creating object stores if necessary.
 ///
@@ -449,137 +324,6 @@ fn decrypt(password: &[u8], payload: CipherPayload) -> Result<SecureVec, String>
     let secure_decipher = SecureVec::from_slice(&decipher);
     decipher.zeroize();
     Ok(secure_decipher)
-}
-
-#[wasm_bindgen]
-impl Util {
-    /// https://github.com/xxuejie/rfcs/blob/cighash-all/rfcs/0000-ckb-tx-message-all/0000-ckb-tx-message-all.md.
-    ///
-    /// **Parameters**:
-    /// - `serialized_mock_tx: Uint8Array` - serialized CKB mock transaction.
-    ///
-    /// **Returns**:
-    /// - `Result<Uint8Array, JsValue>` - The CKB transaction message all hash digest as a `Uint8Array` on success,
-    ///   or a JavaScript error on failure.
-    ///
-    /// **Async**: no
-    #[wasm_bindgen]
-    pub fn get_ckb_tx_message_all(serialized_mock_tx: Uint8Array) -> Result<Uint8Array, JsValue> {
-        let serialized_bytes = serialized_mock_tx.to_vec();
-        let repr_mock_tx: ReprMockTransaction = serde_json::from_slice(&serialized_bytes)
-            .map_err(|e| JsValue::from_str(&format!("Deserialization error: {}", e)))?;
-        let mock_tx: MockTransaction = repr_mock_tx.into();
-        let mut message_hasher = Hasher::message_hasher();
-        let _ = generate_ckb_tx_message_all_from_mock_tx(
-            &mock_tx,
-            ScriptOrIndex::Index(0),
-            &mut message_hasher,
-        )
-        .map_err(|e| JsValue::from_str(&format!("CKB_TX_MESSAGE_ALL error: {:?}", e)))?;
-        let message = message_hasher.hash();
-        Ok(Uint8Array::from(message.as_slice()))
-    }
-
-    /// Measure bit strength of a password
-    ///
-    /// **Parameters**:
-    /// - `password: Uint8Array` - utf8 serialized password.
-    ///
-    /// **Returns**:
-    /// - `Result<u16, JsValue>` - The strength of the password measured in bit on success,
-    ///   or a JavaScript error on failure.
-    ///
-    /// **Async**: no
-    #[wasm_bindgen]
-    pub fn password_checker(password: Uint8Array) -> Result<u32, JsValue> {
-        let password = SecureVec::from_slice(&password.to_vec());
-        let password_str =
-            std::str::from_utf8(&password).map_err(|e| JsValue::from_str(&e.to_string()))?;
-
-        if password_str.is_empty() {
-            return Ok(0);
-        }
-
-        let mut has_lowercase = false;
-        let mut has_uppercase = false;
-        let mut has_digit = false;
-        let mut has_punctuation = false;
-        let mut has_space = false;
-        let mut has_other = false;
-
-        for c in password_str.chars() {
-            if c == ' ' {
-                has_space = true;
-            } else if c.is_ascii_lowercase() {
-                has_lowercase = true;
-            } else if c.is_ascii_uppercase() {
-                has_uppercase = true;
-            } else if c.is_ascii_digit() {
-                has_digit = true;
-            } else if c.is_ascii_punctuation() {
-                has_punctuation = true;
-            } else {
-                has_other = true;
-            }
-        }
-
-        if !has_uppercase {
-            return Err(JsValue::from_str(
-                "Password must contain at least one uppercase letter!",
-            ));
-        }
-        if !has_lowercase {
-            return Err(JsValue::from_str(
-                "Password must contain at least one lowercase letter!",
-            ));
-        }
-        if !has_digit {
-            return Err(JsValue::from_str(
-                "Password must contain at least one digit!",
-            ));
-        }
-        if !has_punctuation {
-            return Err(JsValue::from_str(
-                "Password must contain at least one symbol!",
-            ));
-        }
-
-        let character_set_size = if has_other {
-            256
-        } else {
-            let mut size = 0;
-            if has_lowercase {
-                size += 26;
-            } // a-z
-            if has_uppercase {
-                size += 26;
-            } // A-Z
-            if has_digit {
-                size += 10;
-            } // 0-9
-            if has_punctuation {
-                size += 32;
-            } // ASCII punctuation
-            if has_space {
-                size += 1;
-            } // Space character
-            size
-        };
-
-        if character_set_size == 0 {
-            return Ok(0);
-        }
-
-        let entropy = (password_str.len() as f64) * (character_set_size as f64).log2();
-        let rounded_entropy = entropy.round() as u32;
-
-        if rounded_entropy < 256 {
-            return Err(JsValue::from_str(
-                "Password entropy must be at least 256 bit. Consider lengthening your password!",
-            ));
-        }
-        Ok(rounded_entropy)
-    }
 }
 
 #[wasm_bindgen]
