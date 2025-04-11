@@ -123,7 +123,7 @@ export const wallet = createModel<RootModel>()({
             JSON.stringify({
               code: "WALLET_NOT_READY",
               step,
-              message: "Wallet is not ready to use",
+              message: "Wallet is not ready",
             })
           );
         }

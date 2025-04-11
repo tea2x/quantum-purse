@@ -22,7 +22,13 @@ const Layout: React.FC<AuthLayoutProps> = ({
         await dispatch.wallet.init({});
         await dispatch.wallet.loadCurrentAccount({});
       } catch (error: any) {
-        try {
+        
+        if (error.message.includes("SharedArrayBuffer is not defined")) {
+          notification.error({
+            message: "Insecure browser context",
+            description: "You are accessing this site form an insecure context. Try localhost or https!",
+          });
+        } else if (error.message.includes("WALLET_NOT_READY")) {
           const errorInfo = JSON.parse(error.message);
           if (errorInfo.code === "WALLET_NOT_READY") {
             navigate(ROUTES.CREATE_WALLET, {
@@ -31,12 +37,13 @@ const Layout: React.FC<AuthLayoutProps> = ({
               },
             });
             notification.info({
-              message: "Wallet not ready",
-              description: "Please finish your wallet creation",
+              message: errorInfo.message,
+              description: "Please finish the wallet creation process!",
             });
           }
-        } catch (error) {
-          console.error(error);
+        } else {
+          // rethrow
+          throw error;
         }
       }
     };
