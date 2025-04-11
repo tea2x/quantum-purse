@@ -21,18 +21,12 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 | **Key derivation** | Scrypt |
 | **Authentication** | Password |
 | **Password hashing** | Scrypt |
-| **RPC endpoint** | No |
-| **Light Client** | Chrome based, Safari |
-| **Nervos DAO** | is coming! |
+| **RPC endpoint** | Not required |
+| **Light Client** | Supported (Chrome-based & Safari) |
+| **Nervos DAO** | Is coming! |
 
 ###### Overview
 <img width="628" alt="overview" src="https://github.com/user-attachments/assets/433a25dd-2845-4384-b9a3-e2374aac3227" />
-
-###### Indexed DB store model
-```
-- Single encrypted master seed phrase
-- Multiple encrypted SPHINCS+ key pairs
-```
 
 ## 73 CKB
 Quantum-Resistant Lock Script being bigger in size leads to bigger minimum capacity for QuantumPurse cells. The manifestation for this is that Quantum Purse addresses would hold at least 73 CKB. Sending smaller amounts to Quantum Purse addresses will violate CKB fundamentals.
@@ -43,7 +37,7 @@ Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetw
 
 <img width="258" alt="header-right" src="https://github.com/user-attachments/assets/3a53afb8-2f38-43cd-866b-15ef603fa89e" />
 
-**Important:** Ensure your PEERS value is greater than 0 before creating your wallet. Usually it takes 5-10 seconds to establish connections to other nodes in the network.
+**Important:** It takes 5-10 seconds to establish connections to other nodes. Another 10 - 40 seconds to fully sync a newly added account. Ensure your PEERS value is greater than 0 before creating your wallet for a smooth experience. If you don't, no worries. In such case you'd notice that sync percentage grows very slowly and may want to set `starting block` for each account manually after creating wallet successfully.
 
 ## Wallet recovery
 
@@ -53,8 +47,8 @@ When you import your seed phrase into Quantum Purse, it automatically restores y
 
 ## How to use
 
-The following are the recommended ways to use this software, ranked from most to least preferred:
-1. Serve locally with webpack via `npm run start` (**recommended**). You can find other ways to serve the built `dist/` folder locally too.
+Currently, the following are the recommended ways to use this software, ranked from most to least preferred:
+1. Serve locally with webpack via `npm run start` (**recommended**). To use the wallet this way, refer to [Geting started](#getting-started) section. You can find other ways to serve the built `dist/` folder locally too.
 2. Though you can deploy this app on remote servers for example using `npm run deploy` for github pages, this is **not recommended** due to security reasons.
 
 ###### <u>Restrictions</u>
@@ -62,7 +56,7 @@ GitHub Pages [does not support custom headers for cross-origin isolation](https:
 1. Deploy to Vercel.
 2. Stick with GitHub Pages but use a version that utilizes an RPC endpoint, like [this one](https://github.com/tea2x/quantum-purse-web-static/releases/tag/v0.0.1-rc1).
 
-## Give a try?
+## Demo
 I deployed 2 versions of this app and serve in 2 links below. Github pages' or Vercel role here is only to serve the app build(source code, instructions) for the app to intepret data from your local browser's indexedDB. You can definitely serve it on your github/vercel account (refer to command list) or best, serve it locally via `npm run start`!
 
 ###### <u>Gh-pages</u>:
@@ -71,13 +65,13 @@ I deployed 2 versions of this app and serve in 2 links below. Github pages' or V
 
 ###### <u>Vercel</u>:
 - https://quantum-purse-vercel.vercel.app/
-**Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">With Light Client but only Chrome based, Safari are supported. Check [Light Client](#light-client) section for details.</span>
+**Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">With Light Client but only Chrome based, Safari are supported. Check [Light Client](#light-client) section for more details.</span>
 
-## Contribute
+## Getting started
 ###### <u>Dependencies</u>
 1. Rust and Cargo.
 2. wasm-pack.
-3. Node ^20.
+3. Node >=20.
 
 ###### <u>Command list</u>
 ```shell
@@ -108,7 +102,6 @@ npm run deploy
 4. IndexedDB stores only public data (e.g., SPHINCS+ public keys) and encrypted secret data. Your SPHINCS+ private keys remain protected.
 5. Forgot your password? Recover access by importing your seed phrase and setting a new password instantly.
 6. Need help? Report issues on GitHub or contact us on Telegram: @quantumpurse.
-7. Nervos DAO is coming!
 
 ## Commentary
 
