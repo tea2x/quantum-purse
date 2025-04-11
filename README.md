@@ -28,6 +28,18 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 ###### Overview
 <img width="628" alt="overview" src="https://github.com/user-attachments/assets/433a25dd-2845-4384-b9a3-e2374aac3227" />
 
+## Sha2-256s / Sha2-128s
+All 12 SPHINCS+ parameter sets approved by NIST is supported by Quantum Purse. All 12 parameters are the combinational results of:
+- 2 hashing algorithm: `Sha2`, `Shake`
+- 3 security levels: `128 bit`, `192 bit`, `256 bit`
+- 2 optimization method: `s`(small signature), `f`(fast signature generation)
+
+For CKB, `Sha2-128s` and `Sha2-256s` are recommended because:
+- 's' variant is on-chain friendly as it's fast and light weight. Tradeoff is that signature generation on QuantumPurse takes longer (~ 10 sec).
+- `Sha2` is faster than `Shake`.
+
+If you're all for security, `Sha2-256s` is good to start with.
+
 ## 73 CKB
 Due to the larger size of the quantum lock script:
 - Minimum CKB per Quantum Purse cell is 73 CKB
