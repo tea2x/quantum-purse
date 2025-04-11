@@ -14,7 +14,7 @@ const RevealSRP: React.FC = () => {
   const exportSrpHandler = async (password: string) =>
     await dispatch.wallet.exportSRP({ password });
 
-  const description = `Back this up with your current SPHINCS+ variant: ${wallet.getSphincsPlusParamSet()}`;
+  const description = `Back it up with your current SPHINCS+ variant: ${wallet.getSphincsPlusParamSet()}`;
 
   return (
     <section className={cx(styles.revealSRP, "panel")}>
