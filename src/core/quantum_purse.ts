@@ -50,7 +50,6 @@ export default class QuantumPurse {
   /** Constructor that takes sphincs+ on-chain binary deployment info */
   private constructor(sphincsCodeHash: string, sphincsHashType: HashType) {
     this.sphincsLock = { codeHash: sphincsCodeHash, hashType: sphincsHashType };
-    
   }
 
   /* init code for wasm-bindgen module */
@@ -68,7 +67,7 @@ export default class QuantumPurse {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
     return SphincsVariant[this.keyVault.sphincs_plus_variant];
   }
-  
+
   /**
    * Gets the singleton instance of QuantumPurse.
    * It seems key-vault initialization should be placed in a different init function.
@@ -99,6 +98,7 @@ export default class QuantumPurse {
   public addSyncStatusListener(listener: (status: any) => void): void {
     this.syncStatusListeners.add(listener);
   }
+  
   /* Method to remove a listener */
   public removeSyncStatusListener(listener: (status: any) => void): void {
     this.syncStatusListeners.delete(listener);
@@ -177,9 +177,9 @@ export default class QuantumPurse {
     const lock = this.getLock(spxPubKey);
     const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKey;
     let startingBlock: bigint = (await this.client!.getTipHeader()).number;
-    
+
     localStorage.setItem(storageKey, startingBlock.toString());
-    
+
     await this.client.setScripts(
       [{ blockNumber: startingBlock, script: lock, scriptType: "lock" }],
       firstAccount ? LightClientSetScriptsCommand.All : LightClientSetScriptsCommand.Partial
@@ -205,12 +205,12 @@ export default class QuantumPurse {
       localStorage.setItem(storageKey, startingBlocks[i].toString());
     }
 
-    const filters:ScriptStatus[] = spxPubKeys.map((spxPubKey, index) => ({
+    const filters: ScriptStatus[] = spxPubKeys.map((spxPubKey, index) => ({
       blockNumber: startingBlocks[index],
       script: this.getLock(spxPubKey),
       scriptType: "lock"
     }));
-    
+
     await this.client.setScripts(filters, setMode);
   }
 
@@ -240,8 +240,8 @@ export default class QuantumPurse {
     const startBlock = Number(this.inferStartBlock(storeKey));
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
-    const syncedStatus = tipBlock > startBlock 
-      ? ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100 
+    const syncedStatus = tipBlock > startBlock
+      ? ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100
       : 0;
 
     return {
@@ -268,8 +268,8 @@ export default class QuantumPurse {
     }
 
     this.client = new LightClient();
-    const config = IS_MAIN_NET 
-      ? await (await fetch(mainnetConfig)).text() 
+    const config = IS_MAIN_NET
+      ? await (await fetch(mainnetConfig)).text()
       : await (await fetch(testnetConfig)).text();
     await this.client.start(
       { type: IS_MAIN_NET ? "MainNet" : "TestNet", config },
@@ -361,7 +361,7 @@ export default class QuantumPurse {
       if (!accPointer || accPointer === "") {
         throw new Error("Account pointer not available!");
       }
-      
+
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
 
       tx = insertWitnessPlaceHolder(tx);
@@ -391,7 +391,7 @@ export default class QuantumPurse {
     await Promise.all([
       KeyVault.clear_database(),
       // this.client!.stop();
-    ]);  
+    ]);
   }
 
   /**
@@ -408,7 +408,7 @@ export default class QuantumPurse {
       const [accList, sphincs_pub] = await Promise.all([
         this.getAllAccounts(),
         this.keyVault.gen_new_key_pair(password)
-      ]);  
+      ]);
       await this.setSellectiveSyncFilterInternal(sphincs_pub, (accList.length === 0));
       return sphincs_pub;
     } finally {
@@ -537,7 +537,7 @@ export default class QuantumPurse {
     try {
       if (!this.client) throw new Error("Light client not initialized");
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      
+
       const spxPubKeyList = await this.keyVault.recover_accounts(password, count);
       const startBlocksPromises = spxPubKeyList.map(async (spxPub) => {
         const lock = this.getLock(spxPub);
@@ -546,7 +546,7 @@ export default class QuantumPurse {
           script: lock,
           scriptSearchMode: "prefix",
         };
-  
+
         const response = await this.client?.getTransactions(searchKey, "asc", 1);
         let startBlock = BigInt(0);
         if (response && response.transactions && response.transactions.length > 0) {
@@ -554,7 +554,7 @@ export default class QuantumPurse {
         }
         return startBlock;
       });
-      
+
       const startBlocks = await Promise.all(startBlocksPromises);
       await this.setSellectiveSyncFilter(spxPubKeyList, startBlocks, LightClientSetScriptsCommand.All);
     } finally {
@@ -618,7 +618,7 @@ export default class QuantumPurse {
           collectedCells.push(cell);
           inputCapacity += BigInt(cell.cellOutput.capacity as string);
         }
-      } catch(error) {
+      } catch (error) {
         // error likely from getCells. todo check
         console.error("Failed to fetch cells:", error);
         break cellCollecting;
@@ -628,7 +628,7 @@ export default class QuantumPurse {
     if (inputCapacity < requiredCapacity)
       throw new Error("Insufficient balance!");
 
-    let inputCells:Cell[] = collectedCells.map(item => ({
+    let inputCells: Cell[] = collectedCells.map(item => ({
       cellOutput: {
         ...item.cellOutput,
         capacity: "0x" + item.cellOutput.capacity.toString(16)

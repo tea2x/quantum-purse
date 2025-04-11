@@ -17,9 +17,9 @@ use ckb_fips205_utils::{
 };
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction};
 use fips205::{
-    slh_dsa_sha2_128f, slh_dsa_sha2_128s, slh_dsa_sha2_192f, slh_dsa_sha2_192s,
-    slh_dsa_sha2_256f, slh_dsa_sha2_256s, slh_dsa_shake_128f, slh_dsa_shake_128s,
-    slh_dsa_shake_192f, slh_dsa_shake_192s, slh_dsa_shake_256f, slh_dsa_shake_256s,
+    slh_dsa_sha2_128f, slh_dsa_sha2_128s, slh_dsa_sha2_192f, slh_dsa_sha2_192s, slh_dsa_sha2_256f,
+    slh_dsa_sha2_256s, slh_dsa_shake_128f, slh_dsa_shake_128s, slh_dsa_shake_192f,
+    slh_dsa_shake_192s, slh_dsa_shake_256f, slh_dsa_shake_256s,
     traits::{SerDes, Signer},
 };
 use getrandom_v03;
@@ -144,13 +144,13 @@ struct ScryptParam {
 }
 
 // Constants
-const SALT_LENGTH: usize = 16; // 128-bit salt
-const IV_LENGTH: usize = 12; // 96-bit IV for AES-GCM
-const DB_NAME: &str = "quantum_purse";
-const SEED_PHRASE_KEY: &str = "seed_phrase";
-const SEED_PHRASE_STORE: &str = "seed_phrase_store";
-const CHILD_KEYS_STORE: &str = "child_keys_store";
-const KDF_PATH_PREFIX: &str = "ckb/quantum-purse/sphincs-plus/";
+const SALT_LENGTH: usize        = 16; // 128-bit salt
+const IV_LENGTH: usize          = 12; // 96-bit IV for AES-GCM
+const DB_NAME: &str             = "quantum_purse";
+const SEED_PHRASE_KEY: &str     = "seed_phrase";
+const SEED_PHRASE_STORE: &str   = "seed_phrase_store";
+const CHILD_KEYS_STORE: &str    = "child_keys_store";
+const KDF_PATH_PREFIX: &str     = "ckb/quantum-purse/sphincs-plus/";
 /// The following scrypt param is used together with a very high entropy source - a 256 bit mnemonic seephrase to serve as QuantumPurse KDF.
 /// Security level for the derived keys isn't upgraded with Scrypt, each attacker's guess simply gets longer to run.
 /// TODO: Adjust scrypt parameters for security/performance
@@ -618,19 +618,33 @@ impl KeyVault {
                 .expect("Slice with incorrect length"),
         );
 
-        sphincs_keygen!(self.sphincs_plus_variant, &mut rng,
-            SphincsVariant::Sha2128S, slh_dsa_sha2_128s,
-            SphincsVariant::Sha2128F, slh_dsa_sha2_128f,
-            SphincsVariant::Shake128S, slh_dsa_shake_128s,
-            SphincsVariant::Shake128F, slh_dsa_shake_128f,
-            SphincsVariant::Sha2192S, slh_dsa_sha2_192s,
-            SphincsVariant::Sha2192F, slh_dsa_sha2_192f,
-            SphincsVariant::Shake192S, slh_dsa_shake_192s,
-            SphincsVariant::Shake192F, slh_dsa_shake_192f,
-            SphincsVariant::Sha2256S, slh_dsa_sha2_256s,
-            SphincsVariant::Sha2256F, slh_dsa_sha2_256f,
-            SphincsVariant::Shake256S, slh_dsa_shake_256s,
-            SphincsVariant::Shake256F, slh_dsa_shake_256f
+        sphincs_keygen!(
+            self.sphincs_plus_variant,
+            &mut rng,
+            SphincsVariant::Sha2128S,
+            slh_dsa_sha2_128s,
+            SphincsVariant::Sha2128F,
+            slh_dsa_sha2_128f,
+            SphincsVariant::Shake128S,
+            slh_dsa_shake_128s,
+            SphincsVariant::Shake128F,
+            slh_dsa_shake_128f,
+            SphincsVariant::Sha2192S,
+            slh_dsa_sha2_192s,
+            SphincsVariant::Sha2192F,
+            slh_dsa_sha2_192f,
+            SphincsVariant::Shake192S,
+            slh_dsa_shake_192s,
+            SphincsVariant::Shake192F,
+            slh_dsa_shake_192f,
+            SphincsVariant::Sha2256S,
+            slh_dsa_sha2_256s,
+            SphincsVariant::Sha2256F,
+            slh_dsa_sha2_256f,
+            SphincsVariant::Shake256S,
+            slh_dsa_shake_256s,
+            SphincsVariant::Shake256F,
+            slh_dsa_shake_256f
         )
     }
 
@@ -743,10 +757,7 @@ impl KeyVault {
     ///
     /// **Async**: Yes
     #[wasm_bindgen]
-    pub async fn gen_new_key_pair(
-        &self,
-        password: Uint8Array,
-    ) -> Result<String, JsValue> {
+    pub async fn gen_new_key_pair(&self, password: Uint8Array) -> Result<String, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
 
         // Get and decrypt the mnemonic seed phrase
@@ -757,7 +768,8 @@ impl KeyVault {
         let seed = decrypt(&password, payload)?;
 
         let index = Self::get_all_sphincs_pub().await?.len() as u32;
-        let (pub_key, pri_key) = self.derive_sphincs_key(&seed, index)
+        let (pub_key, pri_key) = self
+            .derive_sphincs_key(&seed, index)
             .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
 
         let encrypted_pri = encrypt(&password, &pri_key)?;
@@ -856,20 +868,34 @@ impl KeyVault {
         let pri_key = decrypt(&password, pair.pri_enc)?;
         let message_vec = message.to_vec();
 
-        // Use the sphincs_sign! macro to handle all 12 variants
-        sphincs_sign!(self.sphincs_plus_variant, pri_key, &message_vec,
-            SphincsVariant::Sha2128S, slh_dsa_sha2_128s,
-            SphincsVariant::Sha2128F, slh_dsa_sha2_128f,
-            SphincsVariant::Shake128S, slh_dsa_shake_128s,
-            SphincsVariant::Shake128F, slh_dsa_shake_128f,
-            SphincsVariant::Sha2192S, slh_dsa_sha2_192s,
-            SphincsVariant::Sha2192F, slh_dsa_sha2_192f,
-            SphincsVariant::Shake192S, slh_dsa_shake_192s,
-            SphincsVariant::Shake192F, slh_dsa_shake_192f,
-            SphincsVariant::Sha2256S, slh_dsa_sha2_256s,
-            SphincsVariant::Sha2256F, slh_dsa_sha2_256f,
-            SphincsVariant::Shake256S, slh_dsa_shake_256s,
-            SphincsVariant::Shake256F, slh_dsa_shake_256f
+        sphincs_sign!(
+            self.sphincs_plus_variant,
+            pri_key,
+            &message_vec,
+            SphincsVariant::Sha2128S,
+            slh_dsa_sha2_128s,
+            SphincsVariant::Sha2128F,
+            slh_dsa_sha2_128f,
+            SphincsVariant::Shake128S,
+            slh_dsa_shake_128s,
+            SphincsVariant::Shake128F,
+            slh_dsa_shake_128f,
+            SphincsVariant::Sha2192S,
+            slh_dsa_sha2_192s,
+            SphincsVariant::Sha2192F,
+            slh_dsa_sha2_192f,
+            SphincsVariant::Shake192S,
+            slh_dsa_shake_192s,
+            SphincsVariant::Shake192F,
+            slh_dsa_shake_192f,
+            SphincsVariant::Sha2256S,
+            slh_dsa_sha2_256s,
+            SphincsVariant::Sha2256F,
+            slh_dsa_sha2_256f,
+            SphincsVariant::Shake256S,
+            slh_dsa_shake_256s,
+            SphincsVariant::Shake256F,
+            slh_dsa_shake_256f
         )
     }
 
@@ -899,7 +925,8 @@ impl KeyVault {
         let seed = decrypt(&password, payload)?;
         let mut pub_keys: Vec<String> = Vec::new();
         for i in start_index..(start_index + count) {
-            let (pub_key, _) = self.derive_sphincs_key(&seed, i)
+            let (pub_key, _) = self
+                .derive_sphincs_key(&seed, i)
                 .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
             pub_keys.push(encode(pub_key.as_ref()));
         }
@@ -920,7 +947,7 @@ impl KeyVault {
     pub async fn recover_accounts(
         &self,
         password: Uint8Array,
-        count: u32
+        count: u32,
     ) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
@@ -931,7 +958,8 @@ impl KeyVault {
         let mut pub_keys: Vec<String> = Vec::new();
         let seed = decrypt(&password, payload)?;
         for i in 0..count {
-            let (pub_key, pri_key) = self.derive_sphincs_key(&seed, i)
+            let (pub_key, pri_key) = self
+                .derive_sphincs_key(&seed, i)
                 .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
 
             // let pub_key_clone = pub_key.clone();
