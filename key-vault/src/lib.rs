@@ -6,324 +6,45 @@
 //! the BIP39 mnemonic and derived SPHINCS+ private keys, is encrypted and stored in the browser via
 //! IndexedDB, with access authenticated by user-provided passwords.
 
-use aes_gcm::{
-    aead::{Aead, KeyInit},
-    Aes256Gcm, Key, Nonce,
-};
 use bip39::{Language, Mnemonic};
+use ckb_fips205_utils::{
+    ckb_tx_message_all_from_mock_tx::{generate_ckb_tx_message_all_from_mock_tx, ScriptOrIndex},
+    Hasher,
+};
+use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction};
 use fips205::{
     traits::{SerDes, Signer},
     *,
 };
-use getrandom_v03;
-use hex::{decode, encode};
+use hex::encode;
 use indexed_db_futures::{
-    database::Database, error::Error as DBError, iter::ArrayMapIter, prelude::*,
-    transaction::TransactionMode,
+    error::Error as DBError, iter::ArrayMapIter, prelude::*, transaction::TransactionMode,
 };
 use rand_chacha::rand_core::SeedableRng;
-use scrypt::{scrypt, Params};
 use serde_wasm_bindgen;
 use wasm_bindgen::{prelude::*, JsValue};
 use web_sys::js_sys::Uint8Array;
 use zeroize::Zeroize;
 
 mod constants;
-mod errors;
+mod db;
 mod macros;
 mod secure_vec;
-#[cfg(test)]
-mod tests;
 mod types;
 mod utilities;
 
-use crate::constants::*;
-use errors::KeyVaultError;
+use crate::constants::{CHILD_KEYS_STORE, KDF_PATH_PREFIX, KDF_SCRYPT, SEED_PHRASE_STORE};
+use db::*;
 use secure_vec::SecureVec;
 use types::*;
+use utilities::*;
 
+////////////////////////////////////////////////////////////////////////////////
+///  Key-vault functions
+////////////////////////////////////////////////////////////////////////////////
 #[wasm_bindgen]
 pub struct KeyVault {
     pub sphincs_plus_variant: SphincsVariant,
-}
-
-/// Opens the IndexedDB database, creating object stores if necessary.
-///
-/// **Returns**:
-/// - `Result<Database, KeyVaultError>` - The opened database on success, or an error if the operation fails.
-///
-/// **Async**: Yes
-async fn open_db() -> Result<Database, KeyVaultError> {
-    Database::open(DB_NAME)
-        .with_version(1u8)
-        .with_on_blocked(|_event| Ok(()))
-        .with_on_upgrade_needed(|_event, db| {
-            if !db
-                .object_store_names()
-                .any(|name| name == SEED_PHRASE_STORE)
-            {
-                db.create_object_store(SEED_PHRASE_STORE).build()?;
-            }
-            if !db.object_store_names().any(|name| name == CHILD_KEYS_STORE) {
-                db.create_object_store(CHILD_KEYS_STORE).build()?;
-            }
-            Ok(())
-        })
-        .await
-        .map_err(|e| KeyVaultError::DatabaseError(format!("Failed to open IndexedDB: {}", e)))
-}
-
-/// Stores the encrypted mnemonic phrase in the database.
-///
-/// **Parameters**:
-/// - `payload: CipherPayload` - The encrypted mnemonic phrase data to store.
-///
-/// **Returns**:
-/// - `Result<(), KeyVaultError>` - Ok on success, or an error if storage fails.
-///
-/// **Async**: Yes
-///
-/// **Warning**: This method overwrites the existing mnemonic phrase in the database.
-async fn set_encrypted_mnemonic_phrase(payload: CipherPayload) -> Result<(), KeyVaultError> {
-    let db = open_db().await?;
-    let tx = db
-        .transaction(SEED_PHRASE_STORE)
-        .with_mode(TransactionMode::Readwrite)
-        .build()?;
-    let store = tx.object_store(SEED_PHRASE_STORE)?;
-
-    let js_value = serde_wasm_bindgen::to_value(&payload)?;
-
-    store.put(&js_value).with_key(SEED_PHRASE_KEY).await?;
-    tx.commit().await?;
-    Ok(())
-}
-
-/// Retrieves the encrypted mnemonic phrase from the database.
-///
-/// **Returns**:
-/// - `Result<Option<CipherPayload>, KeyVaultError>` - The encrypted mnemonic phrase if it exists, `None` if not found, or an error if retrieval fails.
-///
-/// **Async**: Yes
-async fn get_encrypted_mnemonic_phrase() -> Result<Option<CipherPayload>, KeyVaultError> {
-    let db = open_db().await?;
-    let tx = db
-        .transaction(SEED_PHRASE_STORE)
-        .with_mode(TransactionMode::Readonly)
-        .build()?;
-    let store = tx.object_store(SEED_PHRASE_STORE)?;
-
-    if let Some(js_value) = store
-        .get(SEED_PHRASE_KEY)
-        .await
-        .map_err(|e| KeyVaultError::DatabaseError(e.to_string()))?
-    {
-        let payload: CipherPayload = serde_wasm_bindgen::from_value(js_value)?;
-        Ok(Some(payload))
-    } else {
-        Ok(None)
-    }
-}
-
-/// Stores a child key (SPHINCS+ key pair) in the database.
-///
-/// **Parameters**:
-/// - `pair: SphincsPlusKeyPair` - The SPHINCS+ key pair to store.
-///
-/// **Returns**:
-/// - `Result<(), KeyVaultError>` - Ok on success, or an error if storage fails.
-///
-/// **Async**: Yes
-async fn add_key_pair(mut pair: SphincsPlusKeyPair) -> Result<(), KeyVaultError> {
-    let db = open_db().await?;
-    let tx = db
-        .transaction(CHILD_KEYS_STORE)
-        .with_mode(TransactionMode::Readwrite)
-        .build()?;
-    let store = tx.object_store(CHILD_KEYS_STORE)?;
-    let count = store.count().await?;
-    pair.index = count as u32;
-    let js_value = serde_wasm_bindgen::to_value(&pair)?;
-
-    match store.add(js_value).with_key(pair.pub_key).build() {
-        Ok(_) => {
-            tx.commit().await?;
-            Ok(())
-        }
-        Err(e) => {
-            if let DBError::DomException(dom_err) = e {
-                if dom_err.name() == "ConstraintError" {
-                    // Key already exists, skip
-                    Ok(())
-                } else {
-                    Err(KeyVaultError::DatabaseError(dom_err.to_string()))
-                }
-            } else {
-                Err(KeyVaultError::DatabaseError(e.to_string()))
-            }
-        }
-    }
-}
-
-/// Retrieves a child key pair by its public key from the database.
-///
-/// **Parameters**:
-/// - `pub_key: &str` - The hex-encoded public key of the child key to retrieve.
-///
-/// **Returns**:
-/// - `Result<Option<SphincsPlusKeyPair>, KeyVaultError>` - The child key if found, `None` if not found, or an error if retrieval fails.
-///
-/// **Async**: Yes
-pub async fn get_key_pair(pub_key: &str) -> Result<Option<SphincsPlusKeyPair>, KeyVaultError> {
-    let db = open_db().await?;
-    let tx = db
-        .transaction(CHILD_KEYS_STORE)
-        .with_mode(TransactionMode::Readonly)
-        .build()?;
-    let store = tx.object_store(CHILD_KEYS_STORE)?;
-
-    if let Some(js_value) = store
-        .get(pub_key)
-        .await
-        .map_err(|e| KeyVaultError::DatabaseError(e.to_string()))?
-    {
-        let pair: SphincsPlusKeyPair = serde_wasm_bindgen::from_value(js_value)?;
-        Ok(Some(pair))
-    } else {
-        Ok(None)
-    }
-}
-
-/// Clears a specific object store in the database.
-///
-/// **Parameters**:
-/// - `db: &Database` - The database instance to operate on.
-/// - `store_name: &str` - The name of the object store to clear.
-///
-/// **Returns**:
-/// - `Result<(), KeyVaultError>` - Ok on success, or an error if the operation fails.
-///
-/// **Async**: Yes
-async fn clear_object_store(db: &Database, store_name: &str) -> Result<(), KeyVaultError> {
-    let tx = db
-        .transaction(store_name)
-        .with_mode(TransactionMode::Readwrite)
-        .build()
-        .map_err(|e| {
-            KeyVaultError::DatabaseError(format!(
-                "Error starting transaction for {}: {}",
-                store_name, e
-            ))
-        })?;
-    let store = tx.object_store(store_name).map_err(|e| {
-        KeyVaultError::DatabaseError(format!("Error getting object store {}: {}", store_name, e))
-    })?;
-    store.clear().map_err(|e| {
-        KeyVaultError::DatabaseError(format!("Error clearing object store {}: {}", store_name, e))
-    })?;
-    tx.commit().await.map_err(|e| {
-        KeyVaultError::DatabaseError(format!(
-            "Error committing transaction for {}: {}",
-            store_name, e
-        ))
-    })?;
-    Ok(())
-}
-
-/// Generates random bytes for cryptographic use.
-///
-/// **Parameters**:
-/// - `length: usize` - The number of random bytes to generate.
-///
-/// **Returns**:
-/// - `Result<SecureVec, String>` - A Secure vector of random bytes on success, or an error message on failure.
-fn get_random_bytes(length: usize) -> Result<SecureVec, getrandom_v03::Error> {
-    let mut buffer = SecureVec::new_with_length(length);
-    getrandom_v03::fill(&mut buffer)?;
-    Ok(buffer)
-}
-
-/// Derive scrypt key.
-///
-/// **Parameters**:
-/// - `password: &[u8]` - The password from which the scrypt key is derived.
-/// - `salt: &Vec<u8>` - Salt.
-///
-/// **Returns**:
-/// - `Result<SecureVec, String>` - Scrypt key on success, or an error message on failure.
-///
-/// Warning: Proper zeroization of passwords is the responsibility of the caller.
-fn derive_scrypt_key(
-    password: &[u8],
-    salt: &Vec<u8>,
-    param: ScryptParam,
-) -> Result<SecureVec, String> {
-    let mut scrypt_key = SecureVec::new_with_length(32);
-    let scrypt_param = Params::new(param.log_n, param.r, param.p, param.len).unwrap();
-    scrypt(password, &salt, &scrypt_param, &mut scrypt_key)
-        .map_err(|e| format!("Scrypt error: {:?}", e))?;
-    Ok(scrypt_key)
-}
-
-/// Encrypts data using AES-GCM with a password-derived key.
-///
-/// **Parameters**:
-/// - `password: &[u8]` - The password used to derive the encryption key.
-/// - `input: &[u8]` - The plaintext data to encrypt.
-///
-/// **Returns**:
-/// - `Result<CipherPayload, String>` - A `CipherPayload` containing the encrypted data, salt, and IV on success, or an error message on failure.
-///
-/// Warning: Proper zeroization of passwords and inputs is the responsibility of the caller.
-fn encrypt(password: &[u8], input: &[u8]) -> Result<CipherPayload, String> {
-    let mut salt = vec![0u8; SALT_LENGTH];
-    let mut iv = vec![0u8; IV_LENGTH];
-    let random_bytes = get_random_bytes(SALT_LENGTH + IV_LENGTH).map_err(|e| e.to_string())?;
-    salt.copy_from_slice(&random_bytes[0..SALT_LENGTH]);
-    iv.copy_from_slice(&random_bytes[SALT_LENGTH..]);
-
-    let scrypt_key = derive_scrypt_key(password, &salt, ENC_SCRYPT)?;
-    let aes_key: &Key<Aes256Gcm> = Key::<Aes256Gcm>::from_slice(&scrypt_key);
-    let cipher = Aes256Gcm::new(aes_key);
-    let nonce = Nonce::from_slice(&iv);
-    let cipher_text = cipher
-        .encrypt(nonce, input)
-        .map_err(|e| format!("Encryption error: {:?}", e))?;
-
-    Ok(CipherPayload {
-        salt: encode(salt),
-        iv: encode(iv),
-        cipher_text: encode(cipher_text),
-    })
-}
-
-/// Decrypts data using AES-GCM with a password-derived key.
-///
-/// **Parameters**:
-/// - `password: &[u8]` - The password used to derive the decryption key.
-/// - `payload: CipherPayload` - The encrypted data payload containing salt, IV, and ciphertext.
-///
-/// **Returns**:
-/// - `Result<Vec<u8>, String>` - The decrypted plaintext on success, or an error message on failure.
-///
-/// Warning: Proper zeroization of passwords and inputs is the responsibility of the caller.
-fn decrypt(password: &[u8], payload: CipherPayload) -> Result<SecureVec, String> {
-    let salt = decode(payload.salt).map_err(|e| format!("Salt decode error: {:?}", e))?;
-    let iv = decode(payload.iv).map_err(|e| format!("IV decode error: {:?}", e))?;
-    let cipher_text =
-        decode(payload.cipher_text).map_err(|e| format!("Ciphertext decode error: {:?}", e))?;
-
-    let scrypt_key = derive_scrypt_key(password, &salt, ENC_SCRYPT)?;
-    let aes_key: &Key<Aes256Gcm> = Key::<Aes256Gcm>::from_slice(&scrypt_key);
-    let cipher = Aes256Gcm::new(aes_key);
-    let nonce = Nonce::from_slice(&iv);
-    let mut decipher = cipher
-        .decrypt(nonce, cipher_text.as_ref())
-        .map_err(|e| format!("Decryption error: {:?}", e))?;
-
-    let secure_decipher = SecureVec::from_slice(&decipher);
-    decipher.zeroize();
-    Ok(secure_decipher)
 }
 
 #[wasm_bindgen]
@@ -719,5 +440,142 @@ impl KeyVault {
             add_key_pair(pair).await.map_err(|e| e.to_jsvalue())?;
         }
         Ok(pub_keys)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///  Key-vault utility functions
+////////////////////////////////////////////////////////////////////////////////
+#[wasm_bindgen]
+pub struct Util;
+
+#[wasm_bindgen]
+impl Util {
+    /// https://github.com/xxuejie/rfcs/blob/cighash-all/rfcs/0000-ckb-tx-message-all/0000-ckb-tx-message-all.md.
+    ///
+    /// **Parameters**:
+    /// - `serialized_mock_tx: Uint8Array` - serialized CKB mock transaction.
+    ///
+    /// **Returns**:
+    /// - `Result<Uint8Array, JsValue>` - The CKB transaction message all hash digest as a `Uint8Array` on success,
+    ///   or a JavaScript error on failure.
+    ///
+    /// **Async**: no
+    #[wasm_bindgen]
+    pub fn get_ckb_tx_message_all(serialized_mock_tx: Uint8Array) -> Result<Uint8Array, JsValue> {
+        let serialized_bytes = serialized_mock_tx.to_vec();
+        let repr_mock_tx: ReprMockTransaction = serde_json::from_slice(&serialized_bytes)
+            .map_err(|e| JsValue::from_str(&format!("Deserialization error: {}", e)))?;
+        let mock_tx: MockTransaction = repr_mock_tx.into();
+        let mut message_hasher = Hasher::message_hasher();
+        let _ = generate_ckb_tx_message_all_from_mock_tx(
+            &mock_tx,
+            ScriptOrIndex::Index(0),
+            &mut message_hasher,
+        )
+        .map_err(|e| JsValue::from_str(&format!("CKB_TX_MESSAGE_ALL error: {:?}", e)))?;
+        let message = message_hasher.hash();
+        Ok(Uint8Array::from(message.as_slice()))
+    }
+
+    /// Measure bit strength of a password
+    ///
+    /// **Parameters**:
+    /// - `password: Uint8Array` - utf8 serialized password.
+    ///
+    /// **Returns**:
+    /// - `Result<u16, JsValue>` - The strength of the password measured in bit on success,
+    ///   or a JavaScript error on failure.
+    ///
+    /// **Async**: no
+    #[wasm_bindgen]
+    pub fn password_checker(password: Uint8Array) -> Result<u32, JsValue> {
+        let password = SecureVec::from_slice(&password.to_vec());
+        let password_str =
+            std::str::from_utf8(&password).map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        if password_str.is_empty() {
+            return Ok(0);
+        }
+
+        let mut has_lowercase = false;
+        let mut has_uppercase = false;
+        let mut has_digit = false;
+        let mut has_punctuation = false;
+        let mut has_space = false;
+        let mut has_other = false;
+
+        for c in password_str.chars() {
+            if c == ' ' {
+                has_space = true;
+            } else if c.is_ascii_lowercase() {
+                has_lowercase = true;
+            } else if c.is_ascii_uppercase() {
+                has_uppercase = true;
+            } else if c.is_ascii_digit() {
+                has_digit = true;
+            } else if c.is_ascii_punctuation() {
+                has_punctuation = true;
+            } else {
+                has_other = true;
+            }
+        }
+
+        if !has_uppercase {
+            return Err(JsValue::from_str(
+                "Password must contain at least one uppercase letter!",
+            ));
+        }
+        if !has_lowercase {
+            return Err(JsValue::from_str(
+                "Password must contain at least one lowercase letter!",
+            ));
+        }
+        if !has_digit {
+            return Err(JsValue::from_str(
+                "Password must contain at least one digit!",
+            ));
+        }
+        if !has_punctuation {
+            return Err(JsValue::from_str(
+                "Password must contain at least one symbol!",
+            ));
+        }
+
+        let character_set_size = if has_other {
+            256
+        } else {
+            let mut size = 0;
+            if has_lowercase {
+                size += 26;
+            } // a-z
+            if has_uppercase {
+                size += 26;
+            } // A-Z
+            if has_digit {
+                size += 10;
+            } // 0-9
+            if has_punctuation {
+                size += 32;
+            } // ASCII punctuation
+            if has_space {
+                size += 1;
+            } // Space character
+            size
+        };
+
+        if character_set_size == 0 {
+            return Ok(0);
+        }
+
+        let entropy = (password_str.len() as f64) * (character_set_size as f64).log2();
+        let rounded_entropy = entropy.round() as u32;
+
+        if rounded_entropy < 256 {
+            return Err(JsValue::from_str(
+                "Password entropy must be at least 256 bit. Consider lengthening your password!",
+            ));
+        }
+        Ok(rounded_entropy)
     }
 }
