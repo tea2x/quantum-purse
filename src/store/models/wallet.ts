@@ -107,8 +107,7 @@ export const wallet = createModel<RootModel>()({
       quantum = await Quantum.getInstance();
 
       try {
-        await quantum.initWasmBindgen();
-        await quantum.initLightClient();
+        await quantum.initBackgroundServices();
         
         // when refreshed, keyvault needs sphincs+ param set chosen by user
         const paramSet = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);

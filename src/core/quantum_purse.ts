@@ -53,8 +53,21 @@ export default class QuantumPurse {
   }
 
   /* init code for wasm-bindgen module */
-  public async initWasmBindgen(): Promise<void> {
+  private async initWasmBindgen(): Promise<void> {
     await __wbg_init();
+  }
+
+  /* init light client and status worker */
+  private async initLightClient(): Promise<void> {
+    await this.startLightClient();
+    await this.fetchSphincsPlusCellDeps();
+    this.startClientSyncStatusWorker();
+  }
+
+  /* init background service as wasm code and light client*/
+  public async initBackgroundServices(): Promise<void> {
+    await this.initWasmBindgen();
+    await this.initLightClient();
   }
 
   /* init keyVault module with the input sphincs+ variant */
@@ -474,13 +487,6 @@ export default class QuantumPurse {
     } finally {
       password.fill(0);
     }
-  }
-
-  /* init light client and status worker */
-  public async initLightClient(): Promise<void> {
-    await this.startLightClient();
-    await this.fetchSphincsPlusCellDeps();
-    this.startClientSyncStatusWorker();
   }
 
   /**
