@@ -57,22 +57,6 @@ export default class QuantumPurse {
     this.sphincsLock = { codeHash: sphincsCodeHash, hashType: sphincsHashType };
   }
 
-  /**
-   * Gets the singleton instance of QuantumPurse.
-   * It seems key-vault initialization should be placed in a different init function.
-   * But Keyvault is too fused to QuantumPurse so for convenience, it is placed here.
-   * @returns The singleton instance of QuantumPurse.
-   */
-  public static getInstance() {
-    if (!QuantumPurse.instance) {
-      QuantumPurse.instance = new QuantumPurse(
-        SPHINCSPLUS_LOCK.codeHash,
-        SPHINCSPLUS_LOCK.hashType as HashType
-      );
-    }
-    return QuantumPurse.instance;
-  }
-
   /* init code for wasm-bindgen module */
   private async initWasmBindgen(): Promise<void> {
     await __wbg_init();
@@ -233,6 +217,22 @@ export default class QuantumPurse {
   private async fetchSphincsPlusCellDeps() {
     if (!this.client) throw new Error("Light client not initialized");
     await this.client.fetchTransaction(SPHINCSPLUS_LOCK.outPoint.txHash);
+  }
+
+  /**
+   * Gets the singleton instance of QuantumPurse.
+   * It seems key-vault initialization should be placed in a different init function.
+   * But Keyvault is too fused to QuantumPurse so for convenience, it is placed here.
+   * @returns The singleton instance of QuantumPurse.
+   */
+  public static getInstance() {
+    if (!QuantumPurse.instance) {
+      QuantumPurse.instance = new QuantumPurse(
+        SPHINCSPLUS_LOCK.codeHash,
+        SPHINCSPLUS_LOCK.hashType as HashType
+      );
+    }
+    return QuantumPurse.instance;
   }
 
   /* init background service as wasm code and light client*/

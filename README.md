@@ -34,8 +34,8 @@ All 12 SPHINCS+ parameter sets approved by NIST is supported by Quantum Purse. A
 - 3 security levels: `128 bit`, `192 bit`, `256 bit`
 - 2 optimization method: `s`(small signature), `f`(fast signature generation)
 
-For CKB, `Sha2-128s` and `Sha2-256s` are recommended because:
-- 's' variant is on-chain friendly as it's fast and light weight. Tradeoff is that signature generation on QuantumPurse takes longer (~ 10 sec).
+For CKB, `Sha2-128s`, `Sha-192s` and `Sha2-256s` are recommended because:
+- 's' variant is on-chain friendly as it's fast and light weight. The tradeoff here is that signature generation on QuantumPurse takes longer.
 - `Sha2` is faster than `Shake`.
 
 If you're all for security, `Sha2-256s` is good to start with.
@@ -61,7 +61,7 @@ Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetw
 
 When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 10 consecutive empty accounts (i.e., accounts with no transaction history).
 
-**Important:** Currently, recovering wallet on a newly setup Quantum Purse will result in only the first account being created because Light Client is too slow for this process. In such case, create accounts then set starting blocks manually! This will be improved in the next release.
+**Important:** Currently, recovering wallet on a newly setup Quantum Purse will result in only the first account being created because Light Client is too slow for this process. In such case, create accounts then set starting blocks manually.
 
 ## How to use
 
@@ -108,7 +108,7 @@ npm run test
 # Run in development env
 npm run start
 
-# Deploy the web app to your GitHub Page
+# Deploy the web app to your GitHub Page (NOT WORKING ON LTS)
 npm run deploy
 ```
 
