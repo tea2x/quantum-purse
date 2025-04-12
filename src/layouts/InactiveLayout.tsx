@@ -8,7 +8,8 @@ import styles from "./Layout.module.scss";
 type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement>;
 
 const InactiveLayout: React.FC<AuthLayoutProps> = ({ ...rest }) => {
-  const { loading, wallet } = useSelector((state: RootState) => state);
+  const wallet = useSelector((state: RootState) => state.wallet);
+  const loading = useSelector((state: RootState) => state.loading);
   const { global: loadingGlobal } = loading;
 
   if (wallet.current.address && !loadingGlobal) {

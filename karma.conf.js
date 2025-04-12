@@ -42,10 +42,7 @@ module.exports = function (config) {
         ],
       },
       resolve: {
-        extensions: [".ts", ".js"],
-        alias: {
-          'ckb-light-client-js': path.resolve(__dirname, 'tests/mock.ckb-light-client.js')
-        }
+        extensions: [".ts", ".js"]
       },
     },
     mime: {

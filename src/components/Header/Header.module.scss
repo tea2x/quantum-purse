@@ -35,12 +35,20 @@
       }
     }
 
+    // copy from header-left
+    .header-center {
+      color: var(--white);
+      text-transform: uppercase;
+      font-family: "Quantico", sans-serif;
+      font-size: 2rem;
+    }
+
     .header-right {
       display: flex;
       align-items: center;
       gap: 1rem;
 
-      // just copy from header-left
+      // copy from header-left
       color: var(--white);
       text-transform: uppercase;
       font-family: "Quantico", sans-serif;
@@ -50,5 +58,21 @@
         color: var(--white);
       }
     }
+  }
+}
+
+.blinker {
+  animation: blinking 1s steps(30, start) infinite;
+}
+
+@keyframes blinking {
+  0% {
+    color: var(--white);
+  }
+  50% {
+    color: transparent;
+  }
+  100% {
+    color: var(--white);
   }
 }

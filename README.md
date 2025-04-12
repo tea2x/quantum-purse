@@ -1,7 +1,7 @@
 # Quantum Purse
 
 > ⚠️ **Warning:**  
-> <span style="background-color:yellow; padding:3px; border-radius:3px;">For the moment, please be sure to see your PEERS value > 0 (your light node connections) before creating your wallet! See more details in the [Light Client](#light-client) section.</span>
+> <span style="background-color:yellow; padding:3px; border-radius:3px;">For the moment, please be sure to see your PEERS value > 0 (your light node connections) before creating your wallet! See more details in the [Light Client](#light-client) section. This will be improved in the next release!</span>
 
 
 Quantum Purse is a quantum-safe wallet for CKB in the form of a static web application. There's only code that runs in the browser. Any deployment mentioned after this only means serving Quantum Purse code for your browser remotely!
@@ -21,23 +21,29 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 | **Key derivation** | Scrypt |
 | **Authentication** | Password |
 | **Password hashing** | Scrypt |
-| **Lock script** | [CKB Quantum-Resistant Lock Script](https://github.com/cryptape/quantum-resistant-lock-script) |
-| **RPC endpoint** | No |
-| **Light Client** | Chrome based, Safari |
-| **Nervos DAO** | is coming! |
+| **RPC endpoint** | Not required |
+| **Light Client** | Supported (Chrome-based & Safari) |
+| **Nervos DAO** | Is coming! |
 
 ###### Overview
 <img width="628" alt="overview" src="https://github.com/user-attachments/assets/433a25dd-2845-4384-b9a3-e2374aac3227" />
 
-###### Indexed DB store model
-```
-- Single encrypted master seed phrase
-- Multiple encrypted SPHINCS+ key pairs
-```
+## Sha2-256s / Sha2-128s
+All 12 SPHINCS+ parameter sets approved by NIST is supported by Quantum Purse. All 12 parameters are the combinational results of:
+- 2 hashing algorithm: `Sha2`, `Shake`
+- 3 security levels: `128 bit`, `192 bit`, `256 bit`
+- 2 optimization method: `s`(small signature), `f`(fast signature generation)
 
-## Wallet recovery
+For CKB, `Sha2-128s` and `Sha2-256s` are recommended because:
+- 's' variant is on-chain friendly as it's fast and light weight. Tradeoff is that signature generation on QuantumPurse takes longer (~ 10 sec).
+- `Sha2` is faster than `Shake`.
 
-When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 10 consecutive empty accounts (i.e., accounts with no transaction history). At that point, the total number of recovered wallets will be equal to the highest index of a non-empty wallet.
+If you're all for security, `Sha2-256s` is good to start with.
+
+## 73 CKB
+Due to the larger size of the quantum lock script:
+- Minimum CKB per Quantum Purse cell is 73 CKB
+- Smaller transfers will be rejected by the chain
 
 ## Light client
 
@@ -45,20 +51,30 @@ Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetw
 
 <img width="258" alt="header-right" src="https://github.com/user-attachments/assets/3a53afb8-2f38-43cd-866b-15ef603fa89e" />
 
-**Important:** Ensure your PEERS value is greater than 0 before creating your wallet. This will be improved in the next release!
+**Important:**
+- It takes 5-10 seconds to establish connections to other nodes.
+- Another 10 - 40 seconds to fully sync a newly added account.
+- For a smooth experience, ensure your PEERS value is greater than 0 before creating your wallet.
+- If you don't? no worries. In such case you'd notice that sync percentage grows very slowly and may want to set `starting block` for each account manually after creating wallet successfully.
+
+## Wallet recovery
+
+When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 10 consecutive empty accounts (i.e., accounts with no transaction history).
+
+**Important:** Currently, recovering wallet on a newly setup Quantum Purse will result in only the first account being created because Light Client is too slow for this process. In such case, create accounts then set starting blocks manually! This will be improved in the next release.
 
 ## How to use
 
-The following are the recommended ways to use this software, ranked from most to least preferred:
-1. Serve locally with webpack via `npm run start` (**recommended**). You can find other ways to serve the built `dist/` folder locally too.
+Currently, the following are the recommended ways to use this software, ranked from most to least preferred:
+1. Serve locally with webpack via `npm run start` (**recommended**). To use the wallet this way, refer to [Geting started](#getting-started) section. You can find other ways to serve the built `dist/` folder locally too.
 2. Though you can deploy this app on remote servers for example using `npm run deploy` for github pages, this is **not recommended** due to security reasons.
 
 ###### <u>Restrictions</u>
 GitHub Pages [does not support custom headers for cross-origin isolation](https://github.com/orgs/community/discussions/13309), which the light client depends on. Therefore, the light client will not work if deployed on GitHub Pages. You have two options:
 1. Deploy to Vercel.
-2. Stick with GitHub Pages but use a version that utilizes an RPC endpoint, like [this one](https://github.com/tea2x/quantum-purse-web-static/releases/tag/v1.0.0-rc1).
+2. Stick with GitHub Pages but use a version that utilizes an RPC endpoint, like [this one](https://github.com/tea2x/quantum-purse-web-static/releases/tag/v0.0.1-rc1).
 
-## Give a try?
+## Demo
 I deployed 2 versions of this app and serve in 2 links below. Github pages' or Vercel role here is only to serve the app build(source code, instructions) for the app to intepret data from your local browser's indexedDB. You can definitely serve it on your github/vercel account (refer to command list) or best, serve it locally via `npm run start`!
 
 ###### <u>Gh-pages</u>:
@@ -67,14 +83,13 @@ I deployed 2 versions of this app and serve in 2 links below. Github pages' or V
 
 ###### <u>Vercel</u>:
 - https://quantum-purse-vercel.vercel.app/
-**Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">With Light Client but only Chrome based, Safari are supported. Check [Light Client](#light-client) section for details.</span>
+**Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">With Light Client but only Chrome based, Safari are supported. Check [Light Client](#light-client) section for more details.</span>
 
-## Contribute
+## Getting started
 ###### <u>Dependencies</u>
 1. Rust and Cargo.
 2. wasm-pack.
-3. Docker Engine/Desktop (currently skipped).
-4. Node ^20.
+3. Node >=20.
 
 ###### <u>Command list</u>
 ```shell
@@ -97,15 +112,17 @@ npm run start
 npm run deploy
 ```
 
+## Contribution
+Any PR to develop branch is welcomed. Have an idea? Feel free to open a github issue.
+
 ## Notes
 
 1. As of 2025, quantum resistance is still experimental. Use this software at your own risk.
-2. Back up your seed phrases. Losing them means losing access to your wallet.
+2. Back up your seed phrases-loss means loss of funds
 3. Quantum Purse does NOT store your passwords. Passwords are used only temporarily to encrypt and decrypt your secret data.
 4. IndexedDB stores only public data (e.g., SPHINCS+ public keys) and encrypted secret data. Your SPHINCS+ private keys remain protected.
 5. Forgot your password? Recover access by importing your seed phrase and setting a new password instantly.
 6. Need help? Report issues on GitHub or contact us on Telegram: @quantumpurse.
-7. Nervos DAO is coming!
 
 ## Commentary
 
@@ -128,9 +145,8 @@ Until a proper SPHINCS+ hardware wallet is available for secure key management, 
 
 While Quantum Purse is not yet optimized for air-gapped usage, implementing this functionality would require minimal effort. If you're interested, open an issue to let me know what you need!
 
-Lastly, if you'd like to support my work and help me create more projects like this, consider buying me a coffee—every contribution counts!
-
-<u>**Address**(to be a quantum-safe address soon!):</u> **_ckb1qrgqep8saj8agswr30pls73hra28ry8jlnlc3ejzh3dl2ju7xxpjxqgqqxeu0ghthh9tw5lllkw7hajcv5r5gj094q8u7dpk_**
+If you'd like to support my work, below is my CKB address:
+**_ckb1qrgqep8saj8agswr30pls73hra28ry8jlnlc3ejzh3dl2ju7xxpjxqgqqxeu0ghthh9tw5lllkw7hajcv5r5gj094q8u7dpk_**
 
 <img width="200" alt="tungpham bit" src="https://github.com/user-attachments/assets/269fe4f6-827d-41b4-9806-1c962a439517" />
 

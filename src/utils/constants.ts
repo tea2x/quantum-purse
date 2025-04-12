@@ -39,14 +39,14 @@ export const CKB_EXPLORER_URL = IS_MAIN_NET
 
 export const STORAGE_KEYS = {
   WALLET_STEP: "wallet-step",
-  CURRENT_ACCOUNT_SPHINC: "current-account-sphinc",
+  CURRENT_ACCOUNT_SPHINC: "account-pointer",
+  SPHINCS_PLUS_PARAM_SET: "sphincs-plus-param-set-id",
 };
 
 export const WALLET_STEP = {
   PASSWORD: 1,
   SRP: 2,
 };
-export const FIND_ACCOUNT_MAX_RETRIES = 20;
 export const FIND_ACCOUNT_THRESHOLD = 10;
 
 export type WalletStepEnum = (typeof WALLET_STEP)[keyof typeof WALLET_STEP];

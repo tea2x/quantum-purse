@@ -106,48 +106,54 @@ export const wallet = createModel<RootModel>()({
       isInitializing = true;
       quantum = await Quantum.getInstance();
 
-      // Get the pending step from local storage
-      const step = localStorage.getItem(STORAGE_KEYS.WALLET_STEP);
-      if (step) {
-        isInitializing = false;
-        throw new Error(
-          JSON.stringify({
-            code: "WALLET_NOT_READY",
-            step,
-            message: "Wallet is not ready to use",
-          })
-        );
-      }
-
       try {
-        await quantum.initLightClient();
+        await quantum.initBackgroundServices();
+        
+        // when refreshed, keyvault needs sphincs+ param set chosen by user
+        const paramSet = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
+        paramSet && quantum.initKeyVault(Number(paramSet));
+
         // Setup listener for the light client status worker
         syncStatusListener = (status) => {
           this.setSyncStatus(status);
         };
         quantum.addSyncStatusListener(syncStatusListener);
 
-        const accountsData: any = await this.loadAccounts();
-
-        const preservedAccountSphincsPlusPubKey = localStorage.getItem(
-          STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC
-        );
-
-        if (preservedAccountSphincsPlusPubKey) {
-          await quantum.setAccPointer(preservedAccountSphincsPlusPubKey);
-        } else {
-          localStorage.setItem(
-            STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC,
-            accountsData[0].sphincsPlusPubKey
+        // Get the pending step from local storage
+        const step = localStorage.getItem(STORAGE_KEYS.WALLET_STEP);
+        if (step) {
+          isInitializing = false;
+          throw new Error(
+            JSON.stringify({
+              code: "WALLET_NOT_READY",
+              step,
+              message: "Wallet is not ready",
+            })
           );
-          await quantum.setAccPointer(accountsData[0].sphincsPlusPubKey);
         }
 
-        this.setActive(true);
-
+        const accountsData: any = await this.loadAccounts();
+        if (accountsData && accountsData.length !== 0) {
+          const preservedAccountSphincsPlusPubKey = localStorage.getItem(
+            STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC
+          );
+  
+          if (preservedAccountSphincsPlusPubKey) {
+            await quantum.setAccPointer(preservedAccountSphincsPlusPubKey);
+          } else {
+            localStorage.setItem(
+              STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC,
+              accountsData[0].sphincsPlusPubKey
+            );
+            await quantum.setAccPointer(accountsData[0].sphincsPlusPubKey);
+          }
+          this.setActive(true);
+        } else {
+          this.setActive(false);
+        }
       } catch (error) {
         this.setActive(false);
-        // throw error;
+        throw error;
       } finally {
         isInitializing = false;
       }
@@ -279,10 +285,10 @@ export const wallet = createModel<RootModel>()({
 
         let accountsLength = 1;
 
-        const checkAccount = async (offset: number, limit: number) => {
+        const checkAccount = async (startIndex: number, limit: number) => {
           const accounts = await quantum.genAccountInBatch(
             utf8ToBytes(password),
-            offset,
+            startIndex,
             limit
           );
 
@@ -302,7 +308,7 @@ export const wallet = createModel<RootModel>()({
           );
 
           if (lastAccountWithBalance !== -1) {
-            accountsLength = offset + lastAccountWithBalance + 1;
+            accountsLength = startIndex + lastAccountWithBalance + 1;
             await checkAccount(accountsLength + 1, limit);
           }
         };

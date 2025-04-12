@@ -8,8 +8,13 @@ import Icon from "../Icon/Icon";
 import styles from "./Header.module.scss";
 import { useSelector } from 'react-redux';
 import { RootState } from "../../store";
+import { STORAGE_KEYS } from "../../utils/constants";
 
 const { useBreakpoint } = Grid;
+
+const PeerValue: React.FC<{ value: number }> = ({ value }) => (
+  <span className={styles.blinker}>{value}</span>
+);
 
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -30,14 +35,31 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   return (
     <header className={cx(styles.header, className)} {...rest}>
       <div className="header-left">
-        <Icon.Chip color="var(--white)" onClick={() => navigate(ROUTES.HOME)} />
-        <p className={styles.text}>Quantum Purse</p>
+        <Icon.Chip
+          color="var(--white)"
+          onClick={() => {
+            const step = localStorage.getItem(STORAGE_KEYS.WALLET_STEP);
+            if (!step) {
+              navigate(ROUTES.HOME)
+            }
+          }}
+        />
+        {screens.md && <p className={styles.text}>Quantum Purse</p>}
       </div>
+
+      <div className="header-center">
+        {!screens.md && syncStatus && (
+          <span>
+            Peers: <PeerValue value={parseInt(syncStatus.connections.toString())} /> | Sync: {syncStatus.syncedStatus.toFixed(2)}%
+          </span>
+        )}
+      </div>
+
       <div className="header-right">
-        {syncStatus && (
-          <div>
-            Peers: {parseInt(syncStatus.connections.toString())} | Sync: {syncStatus.syncedStatus.toFixed(1)}%
-          </div>
+        {screens.md && syncStatus && (
+          <span>
+            Peers connected: <PeerValue value={parseInt(syncStatus.connections.toString())} /> | Sync: {syncStatus.syncedStatus.toFixed(2)}%
+          </span>
         )}
         {!screens.md && (
           <Button

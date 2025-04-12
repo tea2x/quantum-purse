@@ -21,7 +21,6 @@ import { Dispatch, RootState } from "../../store";
 import { CKB_DECIMALS, CKB_UNIT } from "../../utils/constants";
 import { cx, formatBalance, formatError } from "../../utils/methods";
 import styles from "./Send.module.scss";
-import { quantum } from "../../store/models/wallet";
 
 const Send: React.FC = () => {
   const [form] = Form.useForm();
@@ -29,7 +28,8 @@ const Send: React.FC = () => {
   const [submittable, setSubmittable] = useState(false);
   const dispatch = useDispatch<Dispatch>();
   const authenticationRef = useRef<AuthenticationRef>(null);
-  const { wallet, loading } = useSelector((state: RootState) => state);
+  const wallet = useSelector((state: RootState) => state.wallet);
+  const loading = useSelector((state: RootState) => state.loading);
   const { getAccountBalance: loadingGetAccountBalance } =
     loading.effects.wallet;
   const { send: loadingSend } = useSelector(
