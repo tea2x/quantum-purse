@@ -9,7 +9,7 @@ const ParamSet: React.FC = () => {
         <span>
           Parameter set
           <Tooltip
-            title="The 's' variant (e.g., sha2-256s) produces smaller signatures and fast vericication (CKB friendly) but require longer signing time.
+            title="The 's' variant (e.g., sha2-256s) produces smaller signatures and fast verification (CKB friendly) but require longer signing time.
                     The 'f' variant (e.g., sha2-256f) delivers faster signing at the expense of larger signatures and longer verification.
                     For CKB, we recommend:
                     Sha2-128s/sha2-192s when security is a lower priority and Sha2-256s when higher security is needed."
