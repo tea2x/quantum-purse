@@ -39,7 +39,8 @@ export const CKB_EXPLORER_URL = IS_MAIN_NET
 
 export const STORAGE_KEYS = {
   WALLET_STEP: "wallet-step",
-  CURRENT_ACCOUNT_SPHINC: "current-account-sphinc",
+  CURRENT_ACCOUNT_SPHINC: "account-pointer",
+  SPHINCS_PLUS_PARAM_SET: "sphincs-plus-param-set-id",
 };
 
 export const WALLET_STEP = {

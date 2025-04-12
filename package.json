@@ -8,6 +8,7 @@
     "build:wasm": "cd key-vault && wasm-pack build --release --target web",
     "build:webpack": "webpack --config ./webpack/webpack.prod.js",
     "build": "npm run build:wasm && npm run build:webpack",
+    "rebuild": "rm -rf target/ dist/ key-vault/pkg && npm run build",
     "test:rust": "cargo test",
     "test:js": "npx karma start",
     "test": "npm run test:rust && npm run test:js",

@@ -21,15 +21,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { Dispatch, RootState } from "../../store";
-import { WalletStepEnum } from "../../utils/constants";
+import { WalletStepEnum, STORAGE_KEYS } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./ImportWallet.module.scss";
+import ParamSetSelector from "../../components/SphincsParamSet/Selector";
+import QuantumPurse, { SphincsVariant } from "../../core/quantum_purse";
 
 interface ImportWalletContext {
   currentStep?: WalletStepEnum;
   next: () => void;
   prev: () => void;
 }
+
+const wallet = QuantumPurse.getInstance();
 
 const ImportWalletContext = createContext<ImportWalletContext>({
   currentStep: undefined,
@@ -86,7 +90,9 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
 
   return (
     <div className={styles.stepCreatePassword}>
-      <h2>Create password</h2>
+      <h2>Wallet Type & Password</h2>
+
+      <ParamSetSelector/>
 
       <Form.Item name="password" label="Password" rules={passwordRules}>
         <Input.Password size="large" />
@@ -110,6 +116,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
       >
         <Input.Password size="large" />
       </Form.Item>
+
       <Form.Item
         name="passwordAwareness"
         valuePropName="checked"
@@ -127,7 +134,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         ]}
       >
         <Checkbox>
-          I understand that Quantum Purse cannot recover this password for me.
+          I understand that 1) the parameter set I choose must matches with the one I backed up with the seed phrase and 2) Quantum Purse cannot recover this password.
         </Checkbox>
       </Form.Item>
       <Flex align="center" justify="center" gap={16}>
@@ -225,7 +232,13 @@ const ImportWalletContent: React.FC = () => {
   const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
 
-  const onFinish = async () => {
+  const onFinish = async ({parameterSet}:{parameterSet: SphincsVariant}) => {
+    if (parameterSet) {
+      wallet.initKeyVault(parameterSet);
+    }
+    // store chosen param set to storage, so wallet type retains when refreshed
+    localStorage.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+
     const { srp, password } = values;
 
     try {
@@ -260,8 +273,8 @@ const ImportWalletContent: React.FC = () => {
       },
       {
         key: STEP.PASSWORD,
-        title: "Create password",
-        description: "Create a secure password for your wallet",
+        title: "Wallet Type & Password",
+        description: "Create password and choose SPHINCS+ algorithm",
         icon: loadingImportWallet ? <LoadingOutlined /> : <KeyOutlined />,
         content: <StepCreatePassword form={form} />,
       },

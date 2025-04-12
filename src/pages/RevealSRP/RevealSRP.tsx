@@ -3,6 +3,9 @@ import { SrpTextBox } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { cx } from "../../utils/methods";
 import styles from "./RevealSRP.module.scss";
+import QuantumPurse, {SphincsVariant} from "../../core/quantum_purse";
+
+const wallet = QuantumPurse.getInstance();
 
 const RevealSRP: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
@@ -10,6 +13,8 @@ const RevealSRP: React.FC = () => {
 
   const exportSrpHandler = async (password: string) =>
     await dispatch.wallet.exportSRP({ password });
+
+  const description = `Back it up with your current SPHINCS+ variant: ${wallet.getSphincsPlusParamSet()}`;
 
   return (
     <section className={cx(styles.revealSRP, "panel")}>
@@ -22,7 +27,7 @@ const RevealSRP: React.FC = () => {
             dispatch.wallet.resetSRP();
           }}
           title="Your Secret Recovery Phrase"
-          description="Keep this phrase safe. It's the only way to recover your wallet if you lose access."
+          description={description}
         />
       </div>
     </section>

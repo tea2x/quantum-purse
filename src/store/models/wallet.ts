@@ -107,7 +107,11 @@ export const wallet = createModel<RootModel>()({
       quantum = await Quantum.getInstance();
 
       try {
-        await quantum.initLightClient();
+        await quantum.initBackgroundServices();
+        
+        // when refreshed, keyvault needs sphincs+ param set chosen by user
+        const paramSet = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
+        paramSet && quantum.initKeyVault(Number(paramSet));
 
         // Setup listener for the light client status worker
         syncStatusListener = (status) => {

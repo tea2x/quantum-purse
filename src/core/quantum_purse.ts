@@ -6,7 +6,7 @@ import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { Script, HashType, Address, Transaction, DepType, Cell } from "@ckb-lumos/base";
 import { TransactionSkeletonType, TransactionSkeleton, sealTransaction, addressToScript } from "@ckb-lumos/helpers";
 import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from "./utils";
-import keyVaultWasmInit, { KeyVault, Util as KeyVaultUtil } from "../../key-vault/pkg/key_vault";
+import __wbg_init, { KeyVault, Util as KeyVaultUtil, SphincsVariant } from "../../key-vault/pkg/key_vault";
 import { LightClient, randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex, ScriptStatus } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import testnetConfig from "../../light-client/network.test.toml";
@@ -14,19 +14,22 @@ import mainnetConfig from "../../light-client/network.main.toml";
 import { ClientIndexerSearchKeyLike, Hex } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
 
+export { SphincsVariant } from "../../key-vault/pkg/key_vault";
+
 /**
  * Manages a wallet using the SPHINCS+ post-quantum signature scheme (shake-128f simple)
  * on the Nervos CKB blockchain. This class provides functionality for generating accounts, signing transactions,
  * managing seed phrases, and interacting with the blockchain.
  */
 export default class QuantumPurse {
+  //**************************************************************************************//
+  //*********************************** ATRIBUTES ****************************************//
+  //**************************************************************************************//
   /* All in one lock script configuration */
-  private static readonly MULTISIG_ID = "80";
+  private static readonly MULTISIG_ID     = "80";
   private static readonly REQUIRE_FISRT_N = "00";
-  private static readonly THRESHOLD = "01";
-  private static readonly PUBKEY_NUM = "01";
-  private static readonly LOCK_FLAGS = "6d"; // [0110110]|[1]: [shake128f-id]|[signature-flag]
-  private static readonly SPX_SIG_LEN: number = 17088;
+  private static readonly THRESHOLD       = "01";
+  private static readonly PUBKEY_NUM      = "01";
   private static instance?: QuantumPurse;
   /* CKB light client status worker */
   private worker: Worker | undefined;
@@ -39,13 +42,16 @@ export default class QuantumPurse {
   > = new Map();
   private client?: LightClient;
   private syncStatusListeners: Set<(status: any) => void> = new Set();
-
   private static readonly CLIENT_SECRET = "ckb-light-client-wasm-secret-key";
-  private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
+  private static readonly START_BLOCK   = "ckb-light-client-wasm-start-block";
   /* Account management */
-  public accountPointer?: string; // Is a sphincs+ public key
+  private keyVault?: KeyVault;
   private sphincsLock: { codeHash: string; hashType: HashType };
+  public accountPointer?: string; // Is a sphincs+ public key
 
+  //**************************************************************************************//
+  //*************************************** METHODS **************************************//
+  //**************************************************************************************//
   /** Constructor that takes sphincs+ on-chain binary deployment info */
   private constructor(sphincsCodeHash: string, sphincsHashType: HashType) {
     this.sphincsLock = { codeHash: sphincsCodeHash, hashType: sphincsHashType };
@@ -57,15 +63,26 @@ export default class QuantumPurse {
    * But Keyvault is too fused to QuantumPurse so for convenience, it is placed here.
    * @returns The singleton instance of QuantumPurse.
    */
-  public static async getInstance(): Promise<QuantumPurse> {
+  public static getInstance() {
     if (!QuantumPurse.instance) {
-      await keyVaultWasmInit();
       QuantumPurse.instance = new QuantumPurse(
         SPHINCSPLUS_LOCK.codeHash,
         SPHINCSPLUS_LOCK.hashType as HashType
       );
     }
     return QuantumPurse.instance;
+  }
+
+  /* init code for wasm-bindgen module */
+  private async initWasmBindgen(): Promise<void> {
+    await __wbg_init();
+  }
+
+  /* init light client and status worker */
+  private async initLightClient(): Promise<void> {
+    await this.startLightClient();
+    await this.fetchSphincsPlusCellDeps();
+    this.startClientSyncStatusWorker();
   }
 
   /** Conjugate the first 4 bytes of the witness.lock for the hasher */
@@ -76,15 +93,6 @@ export default class QuantumPurse {
       QuantumPurse.THRESHOLD +
       QuantumPurse.PUBKEY_NUM
     );
-  }
-
-  /* Method to add a listener */
-  public addSyncStatusListener(listener: (status: any) => void): void {
-    this.syncStatusListeners.add(listener);
-  }
-  /* Method to remove a listener */
-  public removeSyncStatusListener(listener: (status: any) => void): void {
-    this.syncStatusListeners.delete(listener);
   }
 
   /** Initialize web worker to poll the sync status from the ckb light client */
@@ -124,18 +132,6 @@ export default class QuantumPurse {
     });
   }
 
-  /**
-   * Send the signed transaction via the light client.
-   * @param signedTx The signed CKB transaction
-   * @returns The transaction hash(id).
-   * @throws Error light client is not initialized.
-   */
-  public async sendTransaction(signedTx: Transaction): Promise<string> {
-    if (!this.client) throw new Error("Light client not initialized");
-    const txid = this.client.sendTransaction(signedTx);
-    return txid;
-  }
-
   /* Helper to infer start block set in the light client
   When querying status, if no data in DB is detected, start is inferred as 0 to not mis relevant data */
   private inferStartBlock(storeKey: string): bigint {
@@ -160,41 +156,13 @@ export default class QuantumPurse {
     const lock = this.getLock(spxPubKey);
     const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKey;
     let startingBlock: bigint = (await this.client!.getTipHeader()).number;
-    
+
     localStorage.setItem(storageKey, startingBlock.toString());
-    
+
     await this.client.setScripts(
       [{ blockNumber: startingBlock, script: lock, scriptType: "lock" }],
       firstAccount ? LightClientSetScriptsCommand.All : LightClientSetScriptsCommand.Partial
     );
-  }
-
-  /**
-   * Helper function tells the light client which account and from what block they start making transactions.
-   * @param spxPubKeys The sphincs+ publickey array representing sphincs+ accounts in your DB.
-   * @param startingBlocks The starting block array corresponding to the spxPubKeys to be set.
-   * @param setMode The mode to set the scripts (All, Partial, Delete).
-   * @throws Error light client is not initialized.
-   */
-  public async setSellectiveSyncFilter(spxPubKeys: string[], startingBlocks: bigint[], setMode: LightClientSetScriptsCommand) {
-    if (!this.client) throw new Error("Light client not initialized");
-
-    if (spxPubKeys.length !== startingBlocks.length) {
-      throw new Error("Length of spxPubKeys and startingBlocks must be the same");
-    }
-
-    for (let i = 0; i < spxPubKeys.length; i++) {
-      const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKeys[i];
-      localStorage.setItem(storageKey, startingBlocks[i].toString());
-    }
-
-    const filters:ScriptStatus[] = spxPubKeys.map((spxPubKey, index) => ({
-      blockNumber: startingBlocks[index],
-      script: this.getLock(spxPubKey),
-      scriptType: "lock"
-    }));
-    
-    await this.client.setScripts(filters, setMode);
   }
 
   /* Calculate sync status */
@@ -223,8 +191,8 @@ export default class QuantumPurse {
     const startBlock = Number(this.inferStartBlock(storeKey));
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
-    const syncedStatus = tipBlock > startBlock 
-      ? ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100 
+    const syncedStatus = tipBlock > startBlock
+      ? ((syncedBlock - startBlock) / (tipBlock - startBlock)) * 100
       : 0;
 
     return {
@@ -251,8 +219,8 @@ export default class QuantumPurse {
     }
 
     this.client = new LightClient();
-    const config = IS_MAIN_NET 
-      ? await (await fetch(mainnetConfig)).text() 
+    const config = IS_MAIN_NET
+      ? await (await fetch(mainnetConfig)).text()
       : await (await fetch(testnetConfig)).text();
     await this.client.start(
       { type: IS_MAIN_NET ? "MainNet" : "TestNet", config },
@@ -265,6 +233,73 @@ export default class QuantumPurse {
   private async fetchSphincsPlusCellDeps() {
     if (!this.client) throw new Error("Light client not initialized");
     await this.client.fetchTransaction(SPHINCSPLUS_LOCK.outPoint.txHash);
+  }
+
+  /* init background service as wasm code and light client*/
+  public async initBackgroundServices(): Promise<void> {
+    await this.initWasmBindgen();
+    await this.initLightClient();
+  }
+
+  /* init keyVault module with the input sphincs+ variant */
+  public initKeyVault(variant: SphincsVariant) {
+    this.keyVault = new KeyVault(variant);
+  }
+
+  /* get the name of sphincs+ paramset of choice*/
+  public getSphincsPlusParamSet(): string {
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+    return SphincsVariant[this.keyVault.sphincs_plus_variant];
+  }
+
+  /* Method to add a listener */
+  public addSyncStatusListener(listener: (status: any) => void): void {
+    this.syncStatusListeners.add(listener);
+  }
+  
+  /* Method to remove a listener */
+  public removeSyncStatusListener(listener: (status: any) => void): void {
+    this.syncStatusListeners.delete(listener);
+  }
+
+  /**
+   * Send the signed transaction via the light client.
+   * @param signedTx The signed CKB transaction
+   * @returns The transaction hash(id).
+   * @throws Error light client is not initialized.
+   */
+  public async sendTransaction(signedTx: Transaction): Promise<string> {
+    if (!this.client) throw new Error("Light client not initialized");
+    const txid = this.client.sendTransaction(signedTx);
+    return txid;
+  }
+
+  /**
+   * Helper function tells the light client which account and from what block they start making transactions.
+   * @param spxPubKeys The sphincs+ publickey array representing sphincs+ accounts in your DB.
+   * @param startingBlocks The starting block array corresponding to the spxPubKeys to be set.
+   * @param setMode The mode to set the scripts (All, Partial, Delete).
+   * @throws Error light client is not initialized.
+   */
+  public async setSellectiveSyncFilter(spxPubKeys: string[], startingBlocks: bigint[], setMode: LightClientSetScriptsCommand) {
+    if (!this.client) throw new Error("Light client not initialized");
+
+    if (spxPubKeys.length !== startingBlocks.length) {
+      throw new Error("Length of spxPubKeys and startingBlocks must be the same");
+    }
+
+    for (let i = 0; i < spxPubKeys.length; i++) {
+      const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKeys[i];
+      localStorage.setItem(storageKey, startingBlocks[i].toString());
+    }
+
+    const filters: ScriptStatus[] = spxPubKeys.map((spxPubKey, index) => ({
+      blockNumber: startingBlocks[index],
+      script: this.getLock(spxPubKey),
+      scriptType: "lock"
+    }));
+
+    await this.client.setScripts(filters, setMode);
   }
 
   /**
@@ -280,14 +315,12 @@ export default class QuantumPurse {
       throw new Error("Account pointer not available!");
     }
 
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+
+    // recreating on-chain lock script procedure
     const hasher = new CKBSphincsPlusHasher();
     hasher.update("0x" + this.spxAllInOneSetupHashInput());
-    hasher.update(
-      "0x" +
-        ((parseInt(QuantumPurse.LOCK_FLAGS, 16) >> 1) << 1)
-          .toString(16)
-          .padStart(2, "0")
-    );
+    hasher.update("0x" + (this.keyVault.sphincs_plus_variant << 1).toString(16));
     hasher.update("0x" + accPointer);
 
     return {
@@ -347,15 +380,16 @@ export default class QuantumPurse {
         throw new Error("Account pointer not available!");
       }
 
-      const witnessLen = QuantumPurse.SPX_SIG_LEN + hexToByteArray(accPointer).length;
-      tx = insertWitnessPlaceHolder(tx, witnessLen);
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+
+      tx = insertWitnessPlaceHolder(tx);
       tx = prepareSigningEntries(tx);
       const entry = tx.get("signingEntries").toArray();
-      const spxSig = await KeyVault.sign(password, accPointer, hexToByteArray(entry[0].message));
+      const spxSig = await this.keyVault.sign(password, accPointer, hexToByteArray(entry[0].message));
       const spxSigHex = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
       const fullCkbQrSig =
         this.spxAllInOneSetupHashInput() +
-        QuantumPurse.LOCK_FLAGS +
+        ((this.keyVault.sphincs_plus_variant << 1) | 1).toString(16) +
         accPointer +
         spxSigHex.replace(/^0x/, "");
 
@@ -375,7 +409,7 @@ export default class QuantumPurse {
     await Promise.all([
       KeyVault.clear_database(),
       // this.client!.stop();
-    ]);  
+    ]);
   }
 
   /**
@@ -388,10 +422,11 @@ export default class QuantumPurse {
    */
   public async genAccount(password: Uint8Array): Promise<string> {
     try {
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
       const [accList, sphincs_pub] = await Promise.all([
         this.getAllAccounts(),
-        KeyVault.gen_new_key_pair(password)
-      ]);  
+        this.keyVault.gen_new_key_pair(password)
+      ]);
       await this.setSellectiveSyncFilterInternal(sphincs_pub, (accList.length === 0));
       return sphincs_pub;
     } finally {
@@ -459,13 +494,6 @@ export default class QuantumPurse {
     }
   }
 
-  /* init light client and status worker */
-  public async initLightClient(): Promise<void> {
-    await this.startLightClient();
-    await this.fetchSphincsPlusCellDeps();
-    this.startClientSyncStatusWorker();
-  }
-
   /**
    * initialize a master seedphrase in DB.
    * @param password - The password to encrypt the master seed phrase.
@@ -501,7 +529,8 @@ export default class QuantumPurse {
     count: number
   ): Promise<string[]> {
     try {
-      const list = await KeyVault.gen_account_batch(password, startIndex, count);
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      const list = await this.keyVault.gen_account_batch(password, startIndex, count);
       return list;
     } finally {
       password.fill(0);
@@ -518,8 +547,9 @@ export default class QuantumPurse {
   public async recoverAccounts(password: Uint8Array, count: number): Promise<void> {
     try {
       if (!this.client) throw new Error("Light client not initialized");
-  
-      const spxPubKeyList = await KeyVault.recover_accounts(password, count);
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+
+      const spxPubKeyList = await this.keyVault.recover_accounts(password, count);
       const startBlocksPromises = spxPubKeyList.map(async (spxPub) => {
         const lock = this.getLock(spxPub);
         const searchKey: ClientIndexerSearchKeyLike = {
@@ -527,7 +557,7 @@ export default class QuantumPurse {
           script: lock,
           scriptSearchMode: "prefix",
         };
-  
+
         const response = await this.client?.getTransactions(searchKey, "asc", 1);
         let startBlock = BigInt(0);
         if (response && response.transactions && response.transactions.length > 0) {
@@ -535,7 +565,7 @@ export default class QuantumPurse {
         }
         return startBlock;
       });
-      
+
       const startBlocks = await Promise.all(startBlocksPromises);
       await this.setSellectiveSyncFilter(spxPubKeyList, startBlocks, LightClientSetScriptsCommand.All);
     } finally {
@@ -564,7 +594,7 @@ export default class QuantumPurse {
     initializeConfig(configuration);
 
     let txSkeleton = new TransactionSkeleton();
-    const transactionFee = BigInt(20000); // 20_000 shannons
+    const transactionFee = BigInt(60000); // 60_000 shannons
     const outputCapacity = BigInt(amount) * BigInt(1e8);
     const minimalSphincsPlusCapacity = BigInt(73) * BigInt(1e8);
     const requiredCapacity = transactionFee + outputCapacity + minimalSphincsPlusCapacity;
@@ -599,7 +629,7 @@ export default class QuantumPurse {
           collectedCells.push(cell);
           inputCapacity += BigInt(cell.cellOutput.capacity as string);
         }
-      } catch(error) {
+      } catch (error) {
         // error likely from getCells. todo check
         console.error("Failed to fetch cells:", error);
         break cellCollecting;
@@ -609,7 +639,7 @@ export default class QuantumPurse {
     if (inputCapacity < requiredCapacity)
       throw new Error("Insufficient balance!");
 
-    let inputCells:Cell[] = collectedCells.map(item => ({
+    let inputCells: Cell[] = collectedCells.map(item => ({
       cellOutput: {
         ...item.cellOutput,
         capacity: "0x" + item.cellOutput.capacity.toString(16)

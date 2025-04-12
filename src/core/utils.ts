@@ -77,13 +77,11 @@ export function fetch(
 /**
  * Inserts placeholder witnesses into a transaction skeleton for SPHINCS+ signatures.
  * @param transaction - The transaction skeleton to modify.
- * @param spSigSize - The size of the SPHINCS+ signature in bytes.
  * @returns The modified transaction skeleton.
  * @throws {Error} If the transaction already has witnesses.
  */
 export function insertWitnessPlaceHolder(
-  transaction: TransactionSkeletonType,
-  spSigSize: number
+  transaction: TransactionSkeletonType
 ): TransactionSkeletonType {
   if (transaction.witnesses.size !== 0)
     throw new Error(
@@ -101,7 +99,7 @@ export function insertWitnessPlaceHolder(
         input.cellOutput.lock.hashType === SPHINCSPLUS_LOCK.hashType &&
         input.cellOutput.lock.codeHash === SPHINCSPLUS_LOCK.codeHash
       )
-        witness = "0x" + "0".repeat(spSigSize * 2); //todo check with msg hash all
+        witness = "0x";
     }
 
     witness = bytes.hexify(blockchain.WitnessArgs.pack({ lock: witness }));
