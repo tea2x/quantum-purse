@@ -13,14 +13,14 @@ use ckb_fips205_utils::{
 };
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction};
 use fips205::{
-    traits::{SerDes, Signer},
+    traits::{KeyGen, SerDes, Signer},
     *,
 };
 use hex::encode;
 use indexed_db_futures::{
     error::Error as DBError, iter::ArrayMapIter, prelude::*, transaction::TransactionMode,
 };
-use rand_chacha::rand_core::SeedableRng;
+// use rand_chacha::rand_core::SeedableRng;
 use serde_wasm_bindgen;
 use wasm_bindgen::{prelude::*, JsValue};
 use web_sys::js_sys::Uint8Array;
@@ -33,7 +33,7 @@ mod secure_vec;
 mod types;
 mod utilities;
 
-use crate::constants::{CHILD_KEYS_STORE, KDF_PATH_PREFIX, KDF_SCRYPT, SEED_PHRASE_STORE};
+use crate::constants::{CHILD_KEYS_STORE, KDF_PATH_PREFIX, SEED_PHRASE_STORE};
 use db::*;
 use secure_vec::SecureVec;
 use types::*;
@@ -44,7 +44,7 @@ use utilities::*;
 ////////////////////////////////////////////////////////////////////////////////
 #[wasm_bindgen]
 pub struct KeyVault {
-    pub sphincs_plus_variant: SphincsVariant,
+    pub variant: SphincsVariant,
 }
 
 #[wasm_bindgen]
@@ -56,61 +56,35 @@ impl KeyVault {
     #[wasm_bindgen(constructor)]
     pub fn new(variant: SphincsVariant) -> Self {
         KeyVault {
-            sphincs_plus_variant: variant,
+            variant: variant,
         }
     }
 
     /// To derive Sphincs key pair. One master mnemonic seed phrase can derive multiple child index-based sphincs+ key pairs on demand.
     ///
     /// **Parameters**:
-    /// - `seed: &[u8]` - The master mnemonic seed phrase from which the child sphincs+ key is derived.
+    /// - `seed: &[u8]` - The master mnemonic seed phrase from which the child sphincs+ key is derived. MUST carry at least N*3 bytes of entropy.
     /// - `index: u32` - The index of the child sphincs+ key to be derived.
     ///
     /// **Returns**:
     /// - `Result<SecureVec, String>` - Scrypt key on success, or an error message on failure.
     ///
     /// Warning: Proper zeroization of the input seed is the responsibility of the caller.
-    fn derive_sphincs_key(
-        &self,
-        seed: &[u8],
-        index: u32,
-    ) -> Result<(SecureVec, SecureVec), String> {
-        let path = format!("{}{}", KDF_PATH_PREFIX, index);
-        let sphincs_seed = derive_scrypt_key(seed, &path.as_bytes().to_vec(), KDF_SCRYPT)?;
-        let mut rng = rand_chacha::ChaCha8Rng::from_seed(
-            (&*sphincs_seed)
-                .try_into()
-                .expect("Slice with incorrect length"),
-        );
-
-        sphincs_keygen!(
-            self.sphincs_plus_variant,
-            &mut rng,
-            SphincsVariant::Sha2128S,
-            slh_dsa_sha2_128s,
-            SphincsVariant::Sha2128F,
-            slh_dsa_sha2_128f,
-            SphincsVariant::Shake128S,
-            slh_dsa_shake_128s,
-            SphincsVariant::Shake128F,
-            slh_dsa_shake_128f,
-            SphincsVariant::Sha2192S,
-            slh_dsa_sha2_192s,
-            SphincsVariant::Sha2192F,
-            slh_dsa_sha2_192f,
-            SphincsVariant::Shake192S,
-            slh_dsa_shake_192s,
-            SphincsVariant::Shake192F,
-            slh_dsa_shake_192f,
-            SphincsVariant::Sha2256S,
-            slh_dsa_sha2_256s,
-            SphincsVariant::Sha2256F,
-            slh_dsa_sha2_256f,
-            SphincsVariant::Shake256S,
-            slh_dsa_shake_256s,
-            SphincsVariant::Shake256F,
-            slh_dsa_shake_256f
-        )
+    fn derive_sphincs_key(&self, seed: &[u8], index: u32) -> Result<(SecureVec, SecureVec), String> {
+        match self.variant {
+            SphincsVariant::Sha2128S => sphincs_keygen!(slh_dsa_sha2_128s::KG, slh_dsa_sha2_128s::N, seed, index),
+            SphincsVariant::Sha2128F => sphincs_keygen!(slh_dsa_sha2_128f::KG, slh_dsa_sha2_128f::N, seed, index),
+            SphincsVariant::Sha2192S => sphincs_keygen!(slh_dsa_sha2_192s::KG, slh_dsa_sha2_192s::N, seed, index),
+            SphincsVariant::Sha2192F => sphincs_keygen!(slh_dsa_sha2_192f::KG, slh_dsa_sha2_192f::N, seed, index),
+            SphincsVariant::Sha2256S => sphincs_keygen!(slh_dsa_sha2_256s::KG, slh_dsa_sha2_256s::N, seed, index),
+            SphincsVariant::Sha2256F => sphincs_keygen!(slh_dsa_sha2_256f::KG, slh_dsa_sha2_256f::N, seed, index),
+            SphincsVariant::Shake128S => sphincs_keygen!(slh_dsa_shake_128s::KG, slh_dsa_shake_128s::N, seed, index),
+            SphincsVariant::Shake128F => sphincs_keygen!(slh_dsa_shake_128f::KG, slh_dsa_shake_128f::N, seed, index),
+            SphincsVariant::Shake192S => sphincs_keygen!(slh_dsa_shake_192s::KG, slh_dsa_shake_192s::N, seed, index),
+            SphincsVariant::Shake192F => sphincs_keygen!(slh_dsa_shake_192f::KG, slh_dsa_shake_192f::N, seed, index),
+            SphincsVariant::Shake256S => sphincs_keygen!(slh_dsa_shake_256s::KG, slh_dsa_shake_256s::N, seed, index),
+            SphincsVariant::Shake256F => sphincs_keygen!(slh_dsa_shake_256f::KG, slh_dsa_shake_256f::N, seed, index),
+        }
     }
 
     /// Clears all data in the `seed_phrase_store` and `child_keys_store` in IndexedDB.
@@ -185,29 +159,33 @@ impl KeyVault {
     ///
     /// **Note**: Only effective when the mnemonic phrase is not yet set.
     #[wasm_bindgen]
-    pub async fn init_seed_phrase(password: Uint8Array) -> Result<(), JsValue> {
+    pub async fn init_seed_phrase(&self, password: Uint8Array) -> Result<(), JsValue> {
         let stored_seed = get_encrypted_mnemonic_phrase()
             .await
             .map_err(|e| e.to_jsvalue())?;
         if stored_seed.is_some() {
             debug!("\x1b[37;44m INFO \x1b[0m \x1b[1mkey-vault\x1b[0m: mnemonic phrase exists");
-            Ok(())
-        } else {
-            let entropy = get_random_bytes(32).unwrap(); // 256-bit entropy
-            let mut mnemonic = Mnemonic::from_entropy_in(Language::English, &entropy).unwrap();
-
-            // let mut seed = mnemonic.to_seed("");
-            let password = SecureVec::from_slice(&password.to_vec());
-            let encrypted_seed = encrypt(&password, mnemonic.to_string().as_bytes())
-                .map_err(|e| JsValue::from_str(&format!("Encryption error: {}", e)))?;
-
-            mnemonic.zeroize(); // TODO verify zeroize on drop
-
-            set_encrypted_mnemonic_phrase(encrypted_seed)
-                .await
-                .map_err(|e| e.to_jsvalue())?;
-            Ok(())
+            return Ok(());
         }
+
+        let size = self.variant.entropy_size();
+        let entropy = get_random_bytes(size).unwrap();
+        let chunks = entropy.chunks(32);
+        let mut mnemonics = Vec::new();
+        
+        for chunk in chunks {
+            let mnemonic = Mnemonic::from_entropy_in(Language::English, chunk).unwrap();
+            mnemonics.push(mnemonic.to_string());
+        }
+        let combined_mnemonics = mnemonics.join(" ");
+        let password = SecureVec::from_slice(&password.to_vec());
+        let encrypted_seed = encrypt(&password, combined_mnemonics.as_bytes())
+            .map_err(|e| JsValue::from_str(&format!("Encryption error: {}", e)))?;
+    
+        set_encrypted_mnemonic_phrase(encrypted_seed)
+            .await
+            .map_err(|e| e.to_jsvalue())?;
+        Ok(())
     }
 
     /// Generates a new SPHINCS+ key pair - a SPHINCS+ child key pair derived from the mnemonic phrase,
@@ -329,39 +307,24 @@ impl KeyVault {
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Key pair not found"))?;
-
+    
         let pri_key = decrypt(&password, pair.pri_enc)?;
         let message_vec = message.to_vec();
-
-        sphincs_sign!(
-            self.sphincs_plus_variant,
-            pri_key,
-            &message_vec,
-            SphincsVariant::Sha2128S,
-            slh_dsa_sha2_128s,
-            SphincsVariant::Sha2128F,
-            slh_dsa_sha2_128f,
-            SphincsVariant::Shake128S,
-            slh_dsa_shake_128s,
-            SphincsVariant::Shake128F,
-            slh_dsa_shake_128f,
-            SphincsVariant::Sha2192S,
-            slh_dsa_sha2_192s,
-            SphincsVariant::Sha2192F,
-            slh_dsa_sha2_192f,
-            SphincsVariant::Shake192S,
-            slh_dsa_shake_192s,
-            SphincsVariant::Shake192F,
-            slh_dsa_shake_192f,
-            SphincsVariant::Sha2256S,
-            slh_dsa_sha2_256s,
-            SphincsVariant::Sha2256F,
-            slh_dsa_sha2_256f,
-            SphincsVariant::Shake256S,
-            slh_dsa_shake_256s,
-            SphincsVariant::Shake256F,
-            slh_dsa_shake_256f
-        )
+    
+        match self.variant {
+            SphincsVariant::Sha2128S => sphincs_sign!(slh_dsa_sha2_128s, pri_key, &message_vec),
+            SphincsVariant::Sha2128F => sphincs_sign!(slh_dsa_sha2_128f, pri_key, &message_vec),
+            SphincsVariant::Shake128S => sphincs_sign!(slh_dsa_shake_128s, pri_key, &message_vec),
+            SphincsVariant::Shake128F => sphincs_sign!(slh_dsa_shake_128f, pri_key, &message_vec),
+            SphincsVariant::Sha2192S => sphincs_sign!(slh_dsa_sha2_192s, pri_key, &message_vec),
+            SphincsVariant::Sha2192F => sphincs_sign!(slh_dsa_sha2_192f, pri_key, &message_vec),
+            SphincsVariant::Shake192S => sphincs_sign!(slh_dsa_shake_192s, pri_key, &message_vec),
+            SphincsVariant::Shake192F => sphincs_sign!(slh_dsa_shake_192f, pri_key, &message_vec),
+            SphincsVariant::Sha2256S => sphincs_sign!(slh_dsa_sha2_256s, pri_key, &message_vec),
+            SphincsVariant::Sha2256F => sphincs_sign!(slh_dsa_sha2_256f, pri_key, &message_vec),
+            SphincsVariant::Shake256S => sphincs_sign!(slh_dsa_shake_256s, pri_key, &message_vec),
+            SphincsVariant::Shake256F => sphincs_sign!(slh_dsa_shake_256f, pri_key, &message_vec),
+        }
     }
 
     /// Supporting wallet recovery - derives a list of public keys from the seed phrase starting from a given index.

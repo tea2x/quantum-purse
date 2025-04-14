@@ -53,3 +53,12 @@ pub enum SphincsVariant {
     Shake256F,
     Shake256S,
 }
+
+impl SphincsVariant {
+    pub fn entropy_size(&self) -> usize {
+        match self {
+            Self::Sha2256F | Self::Sha2256S | Self::Shake256F | Self::Shake256S => 96,
+            _ => 64,
+        }
+    }
+}

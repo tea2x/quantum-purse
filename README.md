@@ -14,7 +14,7 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 
 | Feature            | Details |
 |--------------------|---------|
-| **Signature type** | SPHINCS+ SHAKE128F SIMPLE |
+| **Signature type** | SPHINCS+ |
 | **Store model**    | Indexed DB |
 | **Mnemonic standard**| BIP39 24 words - 256 bit secure |
 | **Local encryption** | AES256 |
@@ -29,10 +29,10 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 <img width="628" alt="overview" src="https://github.com/user-attachments/assets/433a25dd-2845-4384-b9a3-e2374aac3227" />
 
 ## Sha2-256s / Sha2-128s
-All 12 SPHINCS+ parameter sets approved by NIST is supported by Quantum Purse. All 12 parameters are the combinational results of:
+All 12 SPHINCS+ parameter sets approved by NIST is supported by Quantum Purse. These parameters are the combinational results of:
 - 2 hashing algorithm: `Sha2`, `Shake`
 - 3 security levels: `128 bit`, `192 bit`, `256 bit`
-- 2 optimization method: `s`(small signature), `f`(fast signature generation)
+- 2 optimization methods: `s`(small signature), `f`(fast signature generation)
 
 For CKB, `Sha2-128s`, `Sha-192s` and `Sha2-256s` are recommended because:
 - 's' variant is on-chain friendly as it's fast and light weight. The tradeoff here is that signature generation on QuantumPurse takes longer.
@@ -59,7 +59,7 @@ Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetw
 
 ## Wallet recovery
 
-When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 10 consecutive empty accounts (i.e., accounts with no transaction history).
+When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 5 consecutive empty accounts (i.e., accounts with no transaction history).
 
 **Important:** Currently, recovering wallet on a newly setup Quantum Purse will result in only the first account being created because Light Client is too slow for this process. In such case, create accounts then set starting blocks manually.
 

@@ -3,34 +3,34 @@ use serde_wasm_bindgen::Error as SerdeError;
 use std::fmt;
 
 #[derive(Debug)]
-pub enum KeyVaultError {
+pub enum KeyVaultDBError {
     SerializationError(String),
     DatabaseError(String),
 }
 
-impl fmt::Display for KeyVaultError {
+impl fmt::Display for KeyVaultDBError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            KeyVaultError::SerializationError(msg) => write!(f, "Serialization error: {}", msg),
-            KeyVaultError::DatabaseError(msg) => write!(f, "Database error: {}", msg),
+            KeyVaultDBError::SerializationError(msg) => write!(f, "Serialization error: {}", msg),
+            KeyVaultDBError::DatabaseError(msg) => write!(f, "Database error: {}", msg),
         }
     }
 }
 
-impl KeyVaultError {
+impl KeyVaultDBError {
     pub fn to_jsvalue(&self) -> wasm_bindgen::JsValue {
         wasm_bindgen::JsValue::from_str(&self.to_string())
     }
 }
 
-impl From<DBError> for KeyVaultError {
+impl From<DBError> for KeyVaultDBError {
     fn from(e: DBError) -> Self {
-        KeyVaultError::DatabaseError(e.to_string())
+        KeyVaultDBError::DatabaseError(e.to_string())
     }
 }
 
-impl From<SerdeError> for KeyVaultError {
+impl From<SerdeError> for KeyVaultDBError {
     fn from(e: SerdeError) -> Self {
-        KeyVaultError::SerializationError(e.to_string())
+        KeyVaultDBError::SerializationError(e.to_string())
     }
 }

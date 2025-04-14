@@ -9,7 +9,7 @@ describe("Quantum Purse Basics", () => {
   let wallet: QuantumPurse;
   let passwordStr: string = "my password is easy to crack. D0n't use this!";
   let seedPhrase1: string =
-    "ball slush siren skirt local odor gather settle green remind orphan keep vapor comfort hen wave conduct phrase torch address hungry clerk caught vessel";
+    "uncover behind cargo satoshi tail answer liar success snap explain trigger brush cube mountain friend damp empty nose plastic huge pave enter wolf hazard miracle helmet trend connect bench battle diagram person uniform bike bottom negative glove vague diagram never float peace pride ivory banner say safe mesh";
   let seedPhrase2: string =
     "multiply supreme one syrup crash pact cinnamon meat foot together group improve assist nuclear vacuum pelican gain rely behind hedgehog arrest firm blossom anxiety";
 

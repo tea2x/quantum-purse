@@ -1,6 +1,6 @@
 mod errors;
 
-use errors::KeyVaultError;
+use errors::KeyVaultDBError;
 use crate::constants::{
     CHILD_KEYS_STORE, DB_NAME, SEED_PHRASE_KEY, SEED_PHRASE_STORE,
 };
@@ -13,10 +13,10 @@ use indexed_db_futures::{
 /// Opens the IndexedDB database, creating object stores if necessary.
 ///
 /// **Returns**:
-/// - `Result<Database, KeyVaultError>` - The opened database on success, or an error if the operation fails.
+/// - `Result<Database, KeyVaultDBError>` - The opened database on success, or an error if the operation fails.
 ///
 /// **Async**: Yes
-pub async fn open_db() -> Result<Database, KeyVaultError> {
+pub async fn open_db() -> Result<Database, KeyVaultDBError> {
     Database::open(DB_NAME)
         .with_version(1u8)
         .with_on_blocked(|_event| Ok(()))
@@ -33,7 +33,7 @@ pub async fn open_db() -> Result<Database, KeyVaultError> {
             Ok(())
         })
         .await
-        .map_err(|e| KeyVaultError::DatabaseError(format!("Failed to open IndexedDB: {}", e)))
+        .map_err(|e| KeyVaultDBError::DatabaseError(format!("Failed to open IndexedDB: {}", e)))
 }
 
 /// Stores the encrypted mnemonic phrase in the database.
@@ -42,12 +42,12 @@ pub async fn open_db() -> Result<Database, KeyVaultError> {
 /// - `payload: CipherPayload` - The encrypted mnemonic phrase data to store.
 ///
 /// **Returns**:
-/// - `Result<(), KeyVaultError>` - Ok on success, or an error if storage fails.
+/// - `Result<(), KeyVaultDBError>` - Ok on success, or an error if storage fails.
 ///
 /// **Async**: Yes
 ///
 /// **Warning**: This method overwrites the existing mnemonic phrase in the database.
-pub async fn set_encrypted_mnemonic_phrase(payload: CipherPayload) -> Result<(), KeyVaultError> {
+pub async fn set_encrypted_mnemonic_phrase(payload: CipherPayload) -> Result<(), KeyVaultDBError> {
     let db = open_db().await?;
     let tx = db
         .transaction(SEED_PHRASE_STORE)
@@ -65,10 +65,10 @@ pub async fn set_encrypted_mnemonic_phrase(payload: CipherPayload) -> Result<(),
 /// Retrieves the encrypted mnemonic phrase from the database.
 ///
 /// **Returns**:
-/// - `Result<Option<CipherPayload>, KeyVaultError>` - The encrypted mnemonic phrase if it exists, `None` if not found, or an error if retrieval fails.
+/// - `Result<Option<CipherPayload>, KeyVaultDBError>` - The encrypted mnemonic phrase if it exists, `None` if not found, or an error if retrieval fails.
 ///
 /// **Async**: Yes
-pub async fn get_encrypted_mnemonic_phrase() -> Result<Option<CipherPayload>, KeyVaultError> {
+pub async fn get_encrypted_mnemonic_phrase() -> Result<Option<CipherPayload>, KeyVaultDBError> {
     let db = open_db().await?;
     let tx = db
         .transaction(SEED_PHRASE_STORE)
@@ -79,7 +79,7 @@ pub async fn get_encrypted_mnemonic_phrase() -> Result<Option<CipherPayload>, Ke
     if let Some(js_value) = store
         .get(SEED_PHRASE_KEY)
         .await
-        .map_err(|e| KeyVaultError::DatabaseError(e.to_string()))?
+        .map_err(|e| KeyVaultDBError::DatabaseError(e.to_string()))?
     {
         let payload: CipherPayload = serde_wasm_bindgen::from_value(js_value)?;
         Ok(Some(payload))
@@ -94,10 +94,10 @@ pub async fn get_encrypted_mnemonic_phrase() -> Result<Option<CipherPayload>, Ke
 /// - `pair: SphincsPlusKeyPair` - The SPHINCS+ key pair to store.
 ///
 /// **Returns**:
-/// - `Result<(), KeyVaultError>` - Ok on success, or an error if storage fails.
+/// - `Result<(), KeyVaultDBError>` - Ok on success, or an error if storage fails.
 ///
 /// **Async**: Yes
-pub async fn add_key_pair(mut pair: SphincsPlusKeyPair) -> Result<(), KeyVaultError> {
+pub async fn add_key_pair(mut pair: SphincsPlusKeyPair) -> Result<(), KeyVaultDBError> {
     let db = open_db().await?;
     let tx = db
         .transaction(CHILD_KEYS_STORE)
@@ -119,10 +119,10 @@ pub async fn add_key_pair(mut pair: SphincsPlusKeyPair) -> Result<(), KeyVaultEr
                     // Key already exists, skip
                     Ok(())
                 } else {
-                    Err(KeyVaultError::DatabaseError(dom_err.to_string()))
+                    Err(KeyVaultDBError::DatabaseError(dom_err.to_string()))
                 }
             } else {
-                Err(KeyVaultError::DatabaseError(e.to_string()))
+                Err(KeyVaultDBError::DatabaseError(e.to_string()))
             }
         }
     }
@@ -134,10 +134,10 @@ pub async fn add_key_pair(mut pair: SphincsPlusKeyPair) -> Result<(), KeyVaultEr
 /// - `pub_key: &str` - The hex-encoded public key of the child key to retrieve.
 ///
 /// **Returns**:
-/// - `Result<Option<SphincsPlusKeyPair>, KeyVaultError>` - The child key if found, `None` if not found, or an error if retrieval fails.
+/// - `Result<Option<SphincsPlusKeyPair>, KeyVaultDBError>` - The child key if found, `None` if not found, or an error if retrieval fails.
 ///
 /// **Async**: Yes
-pub async fn get_key_pair(pub_key: &str) -> Result<Option<SphincsPlusKeyPair>, KeyVaultError> {
+pub async fn get_key_pair(pub_key: &str) -> Result<Option<SphincsPlusKeyPair>, KeyVaultDBError> {
     let db = open_db().await?;
     let tx = db
         .transaction(CHILD_KEYS_STORE)
@@ -148,7 +148,7 @@ pub async fn get_key_pair(pub_key: &str) -> Result<Option<SphincsPlusKeyPair>, K
     if let Some(js_value) = store
         .get(pub_key)
         .await
-        .map_err(|e| KeyVaultError::DatabaseError(e.to_string()))?
+        .map_err(|e| KeyVaultDBError::DatabaseError(e.to_string()))?
     {
         let pair: SphincsPlusKeyPair = serde_wasm_bindgen::from_value(js_value)?;
         Ok(Some(pair))
@@ -164,28 +164,28 @@ pub async fn get_key_pair(pub_key: &str) -> Result<Option<SphincsPlusKeyPair>, K
 /// - `store_name: &str` - The name of the object store to clear.
 ///
 /// **Returns**:
-/// - `Result<(), KeyVaultError>` - Ok on success, or an error if the operation fails.
+/// - `Result<(), KeyVaultDBError>` - Ok on success, or an error if the operation fails.
 ///
 /// **Async**: Yes
-pub async fn clear_object_store(db: &Database, store_name: &str) -> Result<(), KeyVaultError> {
+pub async fn clear_object_store(db: &Database, store_name: &str) -> Result<(), KeyVaultDBError> {
     let tx = db
         .transaction(store_name)
         .with_mode(TransactionMode::Readwrite)
         .build()
         .map_err(|e| {
-            KeyVaultError::DatabaseError(format!(
+            KeyVaultDBError::DatabaseError(format!(
                 "Error starting transaction for {}: {}",
                 store_name, e
             ))
         })?;
     let store = tx.object_store(store_name).map_err(|e| {
-        KeyVaultError::DatabaseError(format!("Error getting object store {}: {}", store_name, e))
+        KeyVaultDBError::DatabaseError(format!("Error getting object store {}: {}", store_name, e))
     })?;
     store.clear().map_err(|e| {
-        KeyVaultError::DatabaseError(format!("Error clearing object store {}: {}", store_name, e))
+        KeyVaultDBError::DatabaseError(format!("Error clearing object store {}: {}", store_name, e))
     })?;
     tx.commit().await.map_err(|e| {
-        KeyVaultError::DatabaseError(format!(
+        KeyVaultDBError::DatabaseError(format!(
             "Error committing transaction for {}: {}",
             store_name, e
         ))

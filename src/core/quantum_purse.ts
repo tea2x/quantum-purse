@@ -249,7 +249,7 @@ export default class QuantumPurse {
   /* get the name of sphincs+ paramset of choice*/
   public getSphincsPlusParamSet(): string {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
-    return SphincsVariant[this.keyVault.sphincs_plus_variant];
+    return SphincsVariant[this.keyVault.variant];
   }
 
   /* Method to add a listener */
@@ -320,7 +320,7 @@ export default class QuantumPurse {
     // recreating on-chain lock script procedure
     const hasher = new CKBSphincsPlusHasher();
     hasher.update("0x" + this.spxAllInOneSetupHashInput());
-    hasher.update("0x" + (this.keyVault.sphincs_plus_variant << 1).toString(16));
+    hasher.update("0x" + (this.keyVault.variant << 1).toString(16));
     hasher.update("0x" + accPointer);
 
     return {
@@ -389,7 +389,7 @@ export default class QuantumPurse {
       const spxSigHex = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
       const fullCkbQrSig =
         this.spxAllInOneSetupHashInput() +
-        ((this.keyVault.sphincs_plus_variant << 1) | 1).toString(16) +
+        ((this.keyVault.variant << 1) | 1).toString(16) +
         accPointer +
         spxSigHex.replace(/^0x/, "");
 
@@ -501,7 +501,8 @@ export default class QuantumPurse {
    */
   public async initSeedPhrase(password: Uint8Array): Promise<void> {
     try {
-      await KeyVault.init_seed_phrase(password);
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      await this.keyVault.init_seed_phrase(password);
     } finally {
       password.fill(0);
     }
