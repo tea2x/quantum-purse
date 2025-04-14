@@ -171,7 +171,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
         label: (
           <p className="menu-item">
             <QrcodeOutlined />
-            View Details
+            Details
           </p>
         ),
         onClick: () => setIsModalOpen(true),
