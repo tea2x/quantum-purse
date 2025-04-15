@@ -57,7 +57,7 @@ Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetw
 
 When you import your seed phrase into Quantum Purse, it automatically restores your wallets by generating child keys sequentially, starting from index 1. The recovery process continues until it encounters 5 consecutive empty accounts (i.e., accounts with no transaction history).
 
-**Important:** Currently, recovering wallet on a newly setup Quantum Purse will result in only the first account being created because Light Client is too slow for this process. In such case, create accounts then set starting blocks manually.
+**Important:** Currently, recovering wallet on a newly setup Quantum Purse will result in only the first account being created because Light Client is too slow for this process. In such case, create accounts, determine starting block via ckb explorer then set starting blocks manually via each account's context menu.
 
 ## How to use
 

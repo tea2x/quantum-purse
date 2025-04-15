@@ -169,8 +169,7 @@ describe("Quantum Purse Basics", () => {
     }
   });
 
-  // skipped due to conflicts between shared QuantumPurse instance and 1-time init of keyVault. Run separately
-  it.skip("Should throw when use 48 word seed phrase for 256/(same 192) sphincs+ variants", async () => {
+  it("Should throw when use 48 word seed phrase for 256/(same 192) sphincs+ variants", async () => {
     wallet.initKeyVault(SphincsVariant.Sha2256S);
     const seedPhraseHandler = utf8ToBytes(seedPhrase48);
     const passwordStrHandler = utf8ToBytes(passwordStr);
