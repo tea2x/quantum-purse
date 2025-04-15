@@ -241,9 +241,15 @@ export default class QuantumPurse {
     await this.initLightClient();
   }
 
-  /* init keyVault module with the input sphincs+ variant */
+  /**
+   * Fresh start a key-vault instance with a pre-determined SPHINCS variant.
+   * @param variant The SPHINCS+ parameter set to start with
+   * @returns void.
+   */
   public initKeyVault(variant: SphincsVariant) {
-    if (this.keyVault) return;
+    if (this.keyVault) {
+      this.keyVault.free();
+    }
     this.keyVault = new KeyVault(variant);
   }
 
