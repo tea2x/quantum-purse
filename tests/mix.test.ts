@@ -8,10 +8,16 @@ import { dummyTx } from "./dummy_tx";
 describe("Quantum Purse Basics", () => {
   let wallet: QuantumPurse;
   let passwordStr: string = "my password is easy to crack. D0n't use this!";
-  let seedPhrase1: string =
+  let seedPhrase48: string =
     "uncover behind cargo satoshi tail answer liar success snap explain trigger brush cube mountain friend damp empty nose plastic huge pave enter wolf hazard miracle helmet trend connect bench battle diagram person uniform bike bottom negative glove vague diagram never float peace pride ivory banner say safe mesh";
-  let seedPhrase2: string =
+  let seedPhrase72: string =
     "seed boss famous insane stick below swap almost treat suit snake bracket scale kiwi unlock wood repeat cart crawl require duty call fit uncle scale color rhythm please file family example ripple flat embody library usual kind razor erode payment next alpha chapter excuse quote couple easily bus update planet raise treat critic depart river wealth science exchange chief angle wrist second thank razor supply mean nice aware rotate lady repair wine";
+  let seedPhraseInvalidLength24: string =
+    "multiply supreme one syrup crash pact cinnamon meat foot together group improve assist nuclear vacuum pelican gain rely behind hedgehog arrest firm blossom anxiety";
+  let seedPhraseInvalidChecksum: string =
+    "seed boss famous insane stick below swap almost treat suit snake bracket scale kiwi unlock wood repeat cart crawl require duty call fit uncle scale color rhythm please file family example ripple flat embody library usual kind razor erode payment next alpha chapter excuse quote couple easily bus update planet raise treat critic depart river wealth science exchange chief angle wrist second thank razor supply mean nice aware rotate lady repair what";
+  let seedPhraseContainInvalidWords: string =
+    "seed boss famous insane stick below swap almost treat suit snake bracket scale kiwi unlock wood repeat cart crawl require duty call fit uncle scale color rhythm please file family example ripple flat embody library usual kind razor erode payment next alpha chapter excuse quote couple easily bus update planet raise treat critic depart river wealth science exchange chief angle wrist second thank razor supply mean nice aware rotate lady repair thisisnotaword";
 
   before(async () => {
     // Manually initialize Wasm with Karma-served file
@@ -28,13 +34,13 @@ describe("Quantum Purse Basics", () => {
 
   it("Should export the exact seed imported", async () => {
     await wallet.importSeedPhrase(
-      utf8ToBytes(seedPhrase1),
+      utf8ToBytes(seedPhrase48),
       utf8ToBytes(passwordStr)
     );
     const exportedSeedPhrase = await wallet.exportSeedPhrase(
       utf8ToBytes(passwordStr)
     );
-    expect(bytesToUtf8(exportedSeedPhrase)).to.eq(seedPhrase1);
+    expect(bytesToUtf8(exportedSeedPhrase)).to.eq(seedPhrase48);
   });
 
   it("Should zeroize password after wallet init", async () => {
@@ -55,7 +61,7 @@ describe("Quantum Purse Basics", () => {
   });
 
   it("Should zeroize seed phrase and password after importing a new seed phrase", async () => {
-    const seedPhraseHandler = utf8ToBytes(seedPhrase1);
+    const seedPhraseHandler = utf8ToBytes(seedPhrase48);
     const passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
     expect(seedPhraseHandler.every((byte) => byte === 0)).to.be.true;
@@ -73,7 +79,7 @@ describe("Quantum Purse Basics", () => {
 
   it("Should zeroize password after signing a transaction", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
-    const seedPhraseHandler = utf8ToBytes(seedPhrase1);
+    const seedPhraseHandler = utf8ToBytes(seedPhrase48);
     await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
 
     // Mocking lightClient related function
@@ -103,7 +109,7 @@ describe("Quantum Purse Basics", () => {
   });
 
   it("Should zeroize password after recovering accounts", async () => {
-    const seedPhraseHandler = utf8ToBytes(seedPhrase2);
+    const seedPhraseHandler = utf8ToBytes(seedPhrase72);
     let passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
 
@@ -125,5 +131,55 @@ describe("Quantum Purse Basics", () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
     await QuantumPurse.checkPassword(passwordStrHandler);
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
+  });
+
+  it("Should throw when importing seedphrase that's of different length than 48/72", async () => {
+    const seedPhraseHandler = utf8ToBytes(seedPhraseInvalidLength24);
+    const passwordStrHandler = utf8ToBytes(passwordStr);
+    try {
+      await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
+      expect.fail("Expected an error to be thrown");
+    } catch (error) {
+      console.error(error)
+      expect(error).to.equal('Mnemonic must have 48 or 72 words');
+    }
+  });
+
+  it("Should throw when importing seedphrase with invalid check sum", async () => {
+    const seedPhraseHandler = utf8ToBytes(seedPhraseInvalidChecksum);
+    const passwordStrHandler = utf8ToBytes(passwordStr);
+    try {
+      await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
+      expect.fail("Expected an error to be thrown");
+    } catch (error) {
+      console.error(error)
+      expect(error).to.equal("Invalid mnemonic chunk: the mnemonic has an invalid checksum");
+    }
+  });
+
+  it("Should throw when importing seedphrase with invalid words", async () => {
+    const seedPhraseHandler = utf8ToBytes(seedPhraseContainInvalidWords);
+    const passwordStrHandler = utf8ToBytes(passwordStr);
+    try {
+      await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
+      expect.fail("Expected an error to be thrown");
+    } catch (error) {
+      console.error(error)
+      expect(error).to.contain("Invalid mnemonic chunk: mnemonic contains an unknown word");
+    }
+  });
+
+  // skipped due to conflicts between shared QuantumPurse instance and 1-time init of keyVault. Run separately
+  it.skip("Should throw when use 48 word seed phrase for 256/(same 192) sphincs+ variants", async () => {
+    wallet.initKeyVault(SphincsVariant.Sha2256S);
+    const seedPhraseHandler = utf8ToBytes(seedPhrase48);
+    const passwordStrHandler = utf8ToBytes(passwordStr);
+    try {
+      await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
+      expect.fail("Expected an error to be thrown");
+    } catch (error) {
+      console.error(error)
+      expect(error).to.contain("Insufficient entropy: the input seed phrase got");
+    }
   });
 });

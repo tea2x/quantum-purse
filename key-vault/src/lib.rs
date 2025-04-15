@@ -43,6 +43,7 @@ use utilities::*;
 ////////////////////////////////////////////////////////////////////////////////
 #[wasm_bindgen]
 pub struct KeyVault {
+    /// The one parameter set chosen for QuantumPurse KeyVault setup in all 12 NIST-approved SPHINCS+ FIPS205 variants
     pub variant: SphincsVariant,
 }
 

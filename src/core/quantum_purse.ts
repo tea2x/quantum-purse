@@ -243,6 +243,7 @@ export default class QuantumPurse {
 
   /* init keyVault module with the input sphincs+ variant */
   public initKeyVault(variant: SphincsVariant) {
+    if (this.keyVault) return;
     this.keyVault = new KeyVault(variant);
   }
 
