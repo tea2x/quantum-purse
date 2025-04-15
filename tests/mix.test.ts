@@ -11,7 +11,7 @@ describe("Quantum Purse Basics", () => {
   let seedPhrase1: string =
     "uncover behind cargo satoshi tail answer liar success snap explain trigger brush cube mountain friend damp empty nose plastic huge pave enter wolf hazard miracle helmet trend connect bench battle diagram person uniform bike bottom negative glove vague diagram never float peace pride ivory banner say safe mesh";
   let seedPhrase2: string =
-    "multiply supreme one syrup crash pact cinnamon meat foot together group improve assist nuclear vacuum pelican gain rely behind hedgehog arrest firm blossom anxiety";
+    "seed boss famous insane stick below swap almost treat suit snake bracket scale kiwi unlock wood repeat cart crawl require duty call fit uncle scale color rhythm please file family example ripple flat embody library usual kind razor erode payment next alpha chapter excuse quote couple easily bus update planet raise treat critic depart river wealth science exchange chief angle wrist second thank razor supply mean nice aware rotate lady repair wine";
 
   before(async () => {
     // Manually initialize Wasm with Karma-served file

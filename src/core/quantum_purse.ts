@@ -471,7 +471,8 @@ export default class QuantumPurse {
     password: Uint8Array
   ): Promise<void> {
     try {
-      await KeyVault.import_seed_phrase(seedPhrase, password);
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      await this.keyVault.import_seed_phrase(seedPhrase, password);
     } finally {
       password.fill(0);
       seedPhrase.fill(0);

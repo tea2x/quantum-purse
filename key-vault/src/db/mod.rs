@@ -47,7 +47,7 @@ pub async fn open_db() -> Result<Database, KeyVaultDBError> {
 /// **Async**: Yes
 ///
 /// **Warning**: This method overwrites the existing mnemonic phrase in the database.
-pub async fn set_encrypted_mnemonic_phrase(payload: CipherPayload) -> Result<(), KeyVaultDBError> {
+pub async fn set_encrypted_mnemonic_seed(payload: CipherPayload) -> Result<(), KeyVaultDBError> {
     let db = open_db().await?;
     let tx = db
         .transaction(SEED_PHRASE_STORE)
@@ -68,7 +68,7 @@ pub async fn set_encrypted_mnemonic_phrase(payload: CipherPayload) -> Result<(),
 /// - `Result<Option<CipherPayload>, KeyVaultDBError>` - The encrypted mnemonic phrase if it exists, `None` if not found, or an error if retrieval fails.
 ///
 /// **Async**: Yes
-pub async fn get_encrypted_mnemonic_phrase() -> Result<Option<CipherPayload>, KeyVaultDBError> {
+pub async fn get_encrypted_mnemonic_seed() -> Result<Option<CipherPayload>, KeyVaultDBError> {
     let db = open_db().await?;
     let tx = db
         .transaction(SEED_PHRASE_STORE)

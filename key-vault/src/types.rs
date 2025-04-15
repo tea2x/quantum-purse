@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use wasm_bindgen::prelude::*;
 
 /// Scrypt param structure.
@@ -55,10 +56,37 @@ pub enum SphincsVariant {
 }
 
 impl SphincsVariant {
-    pub fn entropy_size(&self) -> usize {
+    /// BIP39 accepts entropy level that is a multiple of 32 bytes.
+    /// Here're the entropy level Quantum Purse chooses for all SPHINCS+ param sets that's BIP39 compatible:
+    ///     - For 128* variant, 48 bytes entropy required so 64(2*32) bytes is chosen (~ 48 words).
+    ///     - For 192* variant, 72 bytes entropy required so 96(3*32) bytes is chosen (~ 72 words).
+    ///     - For 256* variant, 96 bytes entropy required so 96(3*32) bytes is chosen (~ 72 words).
+    /// Extra bytes are truncated in case of 128* and 192* variants.
+    ///
+    pub fn bip39_compatible_entropy_size(&self) -> usize {
         match self {
-            Self::Sha2256F | Self::Sha2256S | Self::Shake256F | Self::Shake256S => 96,
-            _ => 64,
+            Self::Sha2128F | Self::Sha2128S | Self::Shake128F | Self::Shake128S => 2 * 32,
+            _ => 3 * 32,
         }
+    }
+}
+
+impl fmt::Display for SphincsVariant {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            SphincsVariant::Sha2128F => "Sha2128F",
+            SphincsVariant::Sha2128S => "Sha2128S",
+            SphincsVariant::Sha2192F => "Sha2192F",
+            SphincsVariant::Sha2192S => "Sha2192S",
+            SphincsVariant::Sha2256F => "Sha2256F",
+            SphincsVariant::Sha2256S => "Sha2256S",
+            SphincsVariant::Shake128F => "Shake128F",
+            SphincsVariant::Shake128S => "Shake128S",
+            SphincsVariant::Shake192F => "Shake192F",
+            SphincsVariant::Shake192S => "Shake192S",
+            SphincsVariant::Shake256F => "Shake256F",
+            SphincsVariant::Shake256S => "Shake256S",
+        };
+        write!(f, "{}", s)
     }
 }

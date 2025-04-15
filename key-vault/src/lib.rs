@@ -20,7 +20,6 @@ use hex::encode;
 use indexed_db_futures::{
     error::Error as DBError, iter::ArrayMapIter, prelude::*, transaction::TransactionMode,
 };
-// use rand_chacha::rand_core::SeedableRng;
 use serde_wasm_bindgen;
 use wasm_bindgen::{prelude::*, JsValue};
 use web_sys::js_sys::Uint8Array;
@@ -55,22 +54,24 @@ impl KeyVault {
     /// - `KeyVault` - A new instance of the struct.
     #[wasm_bindgen(constructor)]
     pub fn new(variant: SphincsVariant) -> Self {
-        KeyVault {
-            variant: variant,
-        }
+        KeyVault { variant: variant }
     }
 
     /// To derive Sphincs key pair. One master mnemonic seed phrase can derive multiple child index-based sphincs+ key pairs on demand.
     ///
     /// **Parameters**:
-    /// - `seed: &[u8]` - The master mnemonic seed phrase from which the child sphincs+ key is derived. MUST carry at least N*3 bytes of entropy.
+    /// - `seed: &[u8]` - The master mnemonic seed phrase from which the child sphincs+ key is derived. MUST carry at least N*3 bytes of entropy or panics.
     /// - `index: u32` - The index of the child sphincs+ key to be derived.
     ///
     /// **Returns**:
     /// - `Result<SecureVec, String>` - Scrypt key on success, or an error message on failure.
     ///
     /// Warning: Proper zeroization of the input seed is the responsibility of the caller.
-    fn derive_sphincs_key(&self, seed: &[u8], index: u32) -> Result<(SecureVec, SecureVec), String> {
+    fn derive_sphincs_key(
+        &self,
+        seed: &[u8],
+        index: u32,
+    ) -> Result<(SecureVec, SecureVec), String> {
         match self.variant {
             SphincsVariant::Sha2128S => sphincs_keygen!(slh_dsa_sha2_128s::KG, slh_dsa_sha2_128s::N, seed, index),
             SphincsVariant::Sha2128F => sphincs_keygen!(slh_dsa_sha2_128f::KG, slh_dsa_sha2_128f::N, seed, index),
@@ -160,7 +161,7 @@ impl KeyVault {
     /// **Note**: Only effective when the mnemonic phrase is not yet set.
     #[wasm_bindgen]
     pub async fn init_seed_phrase(&self, password: Uint8Array) -> Result<(), JsValue> {
-        let stored_seed = get_encrypted_mnemonic_phrase()
+        let stored_seed = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?;
         if stored_seed.is_some() {
@@ -168,21 +169,13 @@ impl KeyVault {
             return Ok(());
         }
 
-        let size = self.variant.entropy_size();
+        let size = self.variant.bip39_compatible_entropy_size();
         let entropy = get_random_bytes(size).unwrap();
-        let chunks = entropy.chunks(32);
-        let mut mnemonics = Vec::new();
-        
-        for chunk in chunks {
-            let mnemonic = Mnemonic::from_entropy_in(Language::English, chunk).unwrap();
-            mnemonics.push(mnemonic.to_string());
-        }
-        let combined_mnemonics = mnemonics.join(" ");
         let password = SecureVec::from_slice(&password.to_vec());
-        let encrypted_seed = encrypt(&password, combined_mnemonics.as_bytes())
+        let encrypted_seed = encrypt(&password, entropy.as_ref())
             .map_err(|e| JsValue::from_str(&format!("Encryption error: {}", e)))?;
-    
-        set_encrypted_mnemonic_phrase(encrypted_seed)
+
+        set_encrypted_mnemonic_seed(encrypted_seed)
             .await
             .map_err(|e| e.to_jsvalue())?;
         Ok(())
@@ -204,7 +197,7 @@ impl KeyVault {
         let password = SecureVec::from_slice(&password.to_vec());
 
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_phrase()
+        let payload = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
@@ -243,17 +236,47 @@ impl KeyVault {
     ///
     /// **Async**: Yes
     ///
-    /// **Warning**: This method is not recommended as it may expose the mnemonic in JavaScript.
+    /// **Warning**: Handle the mnemonic in JavaScript side carefully.
     #[wasm_bindgen]
     pub async fn import_seed_phrase(
+        &self,
         seed_phrase: Uint8Array,
         password: Uint8Array,
     ) -> Result<(), JsValue> {
-        // TODO verify valid seed/ or do it in js side
         let password = SecureVec::from_slice(&password.to_vec());
-        let mnemonic = SecureVec::from_slice(&seed_phrase.to_vec());
-        let encrypted_seed = encrypt(&password, &mnemonic)?;
-        set_encrypted_mnemonic_phrase(encrypted_seed)
+
+        let seed_phrase_bytes = seed_phrase.to_vec();
+        let seed_phrase_str = String::from_utf8(seed_phrase_bytes)
+            .map_err(|e| JsValue::from_str(&format!("Invalid UTF-8: {}", e)))?;
+
+        let words: Vec<&str> = seed_phrase_str.split_whitespace().collect();
+        let word_count = words.len();
+        if word_count != 48 && word_count != 72 {
+            return Err(JsValue::from_str("Mnemonic must have 48 or 72 words"));
+        }
+
+        let mut combined_entropy = Vec::new();
+        for chunk in words.chunks(24) {
+            let chunk_str = chunk.join(" ");
+            let mnemonic = Mnemonic::parse_in(Language::English, &chunk_str)
+                .map_err(|e| JsValue::from_str(&format!("Invalid mnemonic chunk: {}", e)))?;
+            let entropy = mnemonic.to_entropy();
+            combined_entropy.extend_from_slice(&entropy);
+        }
+
+        if combined_entropy.len() < self.variant.bip39_compatible_entropy_size() {
+            return Err(JsValue::from(
+                format!(
+                    "Insufficient entropy: the input seed phrase got {} bytes, but at least {} bytes are required for the chosen SPHINCS+ parameter set {}.",
+                    combined_entropy.len(),
+                    self.variant.bip39_compatible_entropy_size(),
+                    self.variant
+                )
+            ));
+        }
+
+        let encrypted_seed = encrypt(&password, &combined_entropy)?;
+        set_encrypted_mnemonic_seed(encrypted_seed)
             .await
             .map_err(|e| e.to_jsvalue())?;
         Ok(())
@@ -275,12 +298,21 @@ impl KeyVault {
     #[wasm_bindgen]
     pub async fn export_seed_phrase(password: Uint8Array) -> Result<Uint8Array, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
-        let payload = get_encrypted_mnemonic_phrase()
+        let payload = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
-        let mnemonic = decrypt(&password, payload)?;
-        Ok(Uint8Array::from(mnemonic.as_ref()))
+
+        let entropy = decrypt(&password, payload)?;
+        let chunks = entropy.chunks(32);
+        let mut mnemonics = Vec::new();
+        for chunk in chunks {
+            let mnemonic = Mnemonic::from_entropy_in(Language::English, chunk).unwrap();
+            mnemonics.push(mnemonic.to_string());
+        }
+        let combined_mnemonics = mnemonics.join(" ");
+
+        Ok(Uint8Array::from(combined_mnemonics.as_ref()))
     }
 
     /// Signs a message using the SPHINCS+ private key after decrypting it with the provided password.
@@ -307,10 +339,10 @@ impl KeyVault {
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Key pair not found"))?;
-    
+
         let pri_key = decrypt(&password, pair.pri_enc)?;
         let message_vec = message.to_vec();
-    
+
         match self.variant {
             SphincsVariant::Sha2128S => sphincs_sign!(slh_dsa_sha2_128s, pri_key, &message_vec),
             SphincsVariant::Sha2128F => sphincs_sign!(slh_dsa_sha2_128f, pri_key, &message_vec),
@@ -346,7 +378,7 @@ impl KeyVault {
     ) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_phrase()
+        let payload = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
@@ -379,7 +411,7 @@ impl KeyVault {
     ) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_phrase()
+        let payload = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;

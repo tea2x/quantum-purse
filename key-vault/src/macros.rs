@@ -19,9 +19,8 @@ macro_rules! sphincs_keygen {
             len: N,
         };
         let path = format!("{}{}", KDF_PATH_PREFIX, $index);
-        
         let sk_seed: &[u8; N] = $seed[0..N].try_into().expect("Invalid seed length");
-        let sk_prf:  &[u8; N] = $seed[N..2 * N].try_into().expect("Invalid seed length");
+        let sk_prf: &[u8; N] = $seed[N..2 * N].try_into().expect("Invalid seed length");
         let pk_seed: &[u8; N] = $seed[2 * N..3 * N].try_into().expect("Invalid seed length");
 
         let sk_seed_kd: SecureVec = derive_scrypt_key(sk_seed, &path.as_bytes().to_vec(), &param)?;
@@ -32,11 +31,7 @@ macro_rules! sphincs_keygen {
         let sk_prf_kd_ref: &[u8; N] = sk_prf_kd.as_ref().try_into().map_err(|_| "Invalid seed length")?;
         let pk_seed_kd_ref: &[u8; N] = pk_seed_kd.as_ref().try_into().map_err(|_| "Invalid seed length")?;
 
-        let (pub_key, pri_key) = <$kg>::keygen_with_seeds(
-            sk_seed_kd_ref,
-            sk_prf_kd_ref,
-            pk_seed_kd_ref
-        );
+        let (pub_key, pri_key) = <$kg>::keygen_with_seeds(sk_seed_kd_ref,sk_prf_kd_ref,pk_seed_kd_ref);
 
         Ok((
             SecureVec::from_slice(&pub_key.into_bytes()),
