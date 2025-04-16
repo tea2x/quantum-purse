@@ -4,9 +4,9 @@ use aes_gcm::{
 };
 use crate::secure_vec::SecureVec;
 use scrypt::{scrypt, Params};
-use hex::{decode, encode};
 use super::types::{CipherPayload, ScryptParam};
 use super::constants::{ENC_SCRYPT, SALT_LENGTH, IV_LENGTH};
+use hex::{decode, encode};
 use zeroize::Zeroize;
 #[cfg(test)]
 mod tests;
@@ -37,9 +37,9 @@ pub fn get_random_bytes(length: usize) -> Result<SecureVec, getrandom_v03::Error
 pub fn derive_scrypt_key(
     password: &[u8],
     salt: &Vec<u8>,
-    param: ScryptParam,
+    param: &ScryptParam,
 ) -> Result<SecureVec, String> {
-    let mut scrypt_key = SecureVec::new_with_length(32);
+    let mut scrypt_key = SecureVec::new_with_length(param.len);
     let scrypt_param = Params::new(param.log_n, param.r, param.p, param.len).unwrap();
     scrypt(password, &salt, &scrypt_param, &mut scrypt_key)
         .map_err(|e| format!("Scrypt error: {:?}", e))?;
@@ -63,7 +63,7 @@ pub fn encrypt(password: &[u8], input: &[u8]) -> Result<CipherPayload, String> {
     salt.copy_from_slice(&random_bytes[0..SALT_LENGTH]);
     iv.copy_from_slice(&random_bytes[SALT_LENGTH..]);
 
-    let scrypt_key = derive_scrypt_key(password, &salt, ENC_SCRYPT)?;
+    let scrypt_key = derive_scrypt_key(password, &salt, &ENC_SCRYPT)?;
     let aes_key: &Key<Aes256Gcm> = Key::<Aes256Gcm>::from_slice(&scrypt_key);
     let cipher = Aes256Gcm::new(aes_key);
     let nonce = Nonce::from_slice(&iv);
@@ -94,7 +94,7 @@ pub fn decrypt(password: &[u8], payload: CipherPayload) -> Result<SecureVec, Str
     let cipher_text =
         decode(payload.cipher_text).map_err(|e| format!("Ciphertext decode error: {:?}", e))?;
 
-    let scrypt_key = derive_scrypt_key(password, &salt, ENC_SCRYPT)?;
+    let scrypt_key = derive_scrypt_key(password, &salt, &ENC_SCRYPT)?;
     let aes_key: &Key<Aes256Gcm> = Key::<Aes256Gcm>::from_slice(&scrypt_key);
     let cipher = Aes256Gcm::new(aes_key);
     let nonce = Nonce::from_slice(&iv);

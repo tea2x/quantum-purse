@@ -24,14 +24,18 @@
     }
 
     button {
-      width: fit-content;
+      width: 20rem;
+      text-align: center;
       border-radius: 99rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 1rem 2rem;
+      font-size: 1.4rem;
       &:hover {
         background-color: var(--teal-1);
         color: var(--white);
       }
       + button {
-        margin-top: 0.8rem;
+        margin-top: 1.6rem;
       }
     }
   }

@@ -13,14 +13,13 @@ use ckb_fips205_utils::{
 };
 use ckb_mock_tx_types::{MockTransaction, ReprMockTransaction};
 use fips205::{
-    traits::{SerDes, Signer},
+    traits::{KeyGen, SerDes, Signer},
     *,
 };
 use hex::encode;
 use indexed_db_futures::{
     error::Error as DBError, iter::ArrayMapIter, prelude::*, transaction::TransactionMode,
 };
-use rand_chacha::rand_core::SeedableRng;
 use serde_wasm_bindgen;
 use wasm_bindgen::{prelude::*, JsValue};
 use web_sys::js_sys::Uint8Array;
@@ -33,7 +32,7 @@ mod secure_vec;
 mod types;
 mod utilities;
 
-use crate::constants::{CHILD_KEYS_STORE, KDF_PATH_PREFIX, KDF_SCRYPT, SEED_PHRASE_STORE};
+use crate::constants::{CHILD_KEYS_STORE, KDF_PATH_PREFIX, SEED_PHRASE_STORE};
 use db::*;
 use secure_vec::SecureVec;
 use types::*;
@@ -44,7 +43,8 @@ use utilities::*;
 ////////////////////////////////////////////////////////////////////////////////
 #[wasm_bindgen]
 pub struct KeyVault {
-    pub sphincs_plus_variant: SphincsVariant,
+    /// The one parameter set chosen for QuantumPurse KeyVault setup in all 12 NIST-approved SPHINCS+ FIPS205 variants
+    pub variant: SphincsVariant,
 }
 
 #[wasm_bindgen]
@@ -55,15 +55,13 @@ impl KeyVault {
     /// - `KeyVault` - A new instance of the struct.
     #[wasm_bindgen(constructor)]
     pub fn new(variant: SphincsVariant) -> Self {
-        KeyVault {
-            sphincs_plus_variant: variant,
-        }
+        KeyVault { variant: variant }
     }
 
     /// To derive Sphincs key pair. One master mnemonic seed phrase can derive multiple child index-based sphincs+ key pairs on demand.
     ///
     /// **Parameters**:
-    /// - `seed: &[u8]` - The master mnemonic seed phrase from which the child sphincs+ key is derived.
+    /// - `seed: &[u8]` - The master mnemonic seed phrase from which the child sphincs+ key is derived. MUST carry at least N*3 bytes of entropy or panics.
     /// - `index: u32` - The index of the child sphincs+ key to be derived.
     ///
     /// **Returns**:
@@ -75,42 +73,20 @@ impl KeyVault {
         seed: &[u8],
         index: u32,
     ) -> Result<(SecureVec, SecureVec), String> {
-        let path = format!("{}{}", KDF_PATH_PREFIX, index);
-        let sphincs_seed = derive_scrypt_key(seed, &path.as_bytes().to_vec(), KDF_SCRYPT)?;
-        let mut rng = rand_chacha::ChaCha8Rng::from_seed(
-            (&*sphincs_seed)
-                .try_into()
-                .expect("Slice with incorrect length"),
-        );
-
-        sphincs_keygen!(
-            self.sphincs_plus_variant,
-            &mut rng,
-            SphincsVariant::Sha2128S,
-            slh_dsa_sha2_128s,
-            SphincsVariant::Sha2128F,
-            slh_dsa_sha2_128f,
-            SphincsVariant::Shake128S,
-            slh_dsa_shake_128s,
-            SphincsVariant::Shake128F,
-            slh_dsa_shake_128f,
-            SphincsVariant::Sha2192S,
-            slh_dsa_sha2_192s,
-            SphincsVariant::Sha2192F,
-            slh_dsa_sha2_192f,
-            SphincsVariant::Shake192S,
-            slh_dsa_shake_192s,
-            SphincsVariant::Shake192F,
-            slh_dsa_shake_192f,
-            SphincsVariant::Sha2256S,
-            slh_dsa_sha2_256s,
-            SphincsVariant::Sha2256F,
-            slh_dsa_sha2_256f,
-            SphincsVariant::Shake256S,
-            slh_dsa_shake_256s,
-            SphincsVariant::Shake256F,
-            slh_dsa_shake_256f
-        )
+        match self.variant {
+            SphincsVariant::Sha2128S => sphincs_keygen!(slh_dsa_sha2_128s::KG, slh_dsa_sha2_128s::N, seed, index),
+            SphincsVariant::Sha2128F => sphincs_keygen!(slh_dsa_sha2_128f::KG, slh_dsa_sha2_128f::N, seed, index),
+            SphincsVariant::Sha2192S => sphincs_keygen!(slh_dsa_sha2_192s::KG, slh_dsa_sha2_192s::N, seed, index),
+            SphincsVariant::Sha2192F => sphincs_keygen!(slh_dsa_sha2_192f::KG, slh_dsa_sha2_192f::N, seed, index),
+            SphincsVariant::Sha2256S => sphincs_keygen!(slh_dsa_sha2_256s::KG, slh_dsa_sha2_256s::N, seed, index),
+            SphincsVariant::Sha2256F => sphincs_keygen!(slh_dsa_sha2_256f::KG, slh_dsa_sha2_256f::N, seed, index),
+            SphincsVariant::Shake128S => sphincs_keygen!(slh_dsa_shake_128s::KG, slh_dsa_shake_128s::N, seed, index),
+            SphincsVariant::Shake128F => sphincs_keygen!(slh_dsa_shake_128f::KG, slh_dsa_shake_128f::N, seed, index),
+            SphincsVariant::Shake192S => sphincs_keygen!(slh_dsa_shake_192s::KG, slh_dsa_shake_192s::N, seed, index),
+            SphincsVariant::Shake192F => sphincs_keygen!(slh_dsa_shake_192f::KG, slh_dsa_shake_192f::N, seed, index),
+            SphincsVariant::Shake256S => sphincs_keygen!(slh_dsa_shake_256s::KG, slh_dsa_shake_256s::N, seed, index),
+            SphincsVariant::Shake256F => sphincs_keygen!(slh_dsa_shake_256f::KG, slh_dsa_shake_256f::N, seed, index),
+        }
     }
 
     /// Clears all data in the `seed_phrase_store` and `child_keys_store` in IndexedDB.
@@ -185,29 +161,25 @@ impl KeyVault {
     ///
     /// **Note**: Only effective when the mnemonic phrase is not yet set.
     #[wasm_bindgen]
-    pub async fn init_seed_phrase(password: Uint8Array) -> Result<(), JsValue> {
-        let stored_seed = get_encrypted_mnemonic_phrase()
+    pub async fn init_seed_phrase(&self, password: Uint8Array) -> Result<(), JsValue> {
+        let stored_seed = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?;
         if stored_seed.is_some() {
             debug!("\x1b[37;44m INFO \x1b[0m \x1b[1mkey-vault\x1b[0m: mnemonic phrase exists");
-            Ok(())
-        } else {
-            let entropy = get_random_bytes(32).unwrap(); // 256-bit entropy
-            let mut mnemonic = Mnemonic::from_entropy_in(Language::English, &entropy).unwrap();
-
-            // let mut seed = mnemonic.to_seed("");
-            let password = SecureVec::from_slice(&password.to_vec());
-            let encrypted_seed = encrypt(&password, mnemonic.to_string().as_bytes())
-                .map_err(|e| JsValue::from_str(&format!("Encryption error: {}", e)))?;
-
-            mnemonic.zeroize(); // TODO verify zeroize on drop
-
-            set_encrypted_mnemonic_phrase(encrypted_seed)
-                .await
-                .map_err(|e| e.to_jsvalue())?;
-            Ok(())
+            return Ok(());
         }
+
+        let size = self.variant.bip39_compatible_entropy_size();
+        let entropy = get_random_bytes(size).unwrap();
+        let password = SecureVec::from_slice(&password.to_vec());
+        let encrypted_seed = encrypt(&password, entropy.as_ref())
+            .map_err(|e| JsValue::from_str(&format!("Encryption error: {}", e)))?;
+
+        set_encrypted_mnemonic_seed(encrypted_seed)
+            .await
+            .map_err(|e| e.to_jsvalue())?;
+        Ok(())
     }
 
     /// Generates a new SPHINCS+ key pair - a SPHINCS+ child key pair derived from the mnemonic phrase,
@@ -226,7 +198,7 @@ impl KeyVault {
         let password = SecureVec::from_slice(&password.to_vec());
 
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_phrase()
+        let payload = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
@@ -265,17 +237,47 @@ impl KeyVault {
     ///
     /// **Async**: Yes
     ///
-    /// **Warning**: This method is not recommended as it may expose the mnemonic in JavaScript.
+    /// **Warning**: Handle the mnemonic in JavaScript side carefully.
     #[wasm_bindgen]
     pub async fn import_seed_phrase(
+        &self,
         seed_phrase: Uint8Array,
         password: Uint8Array,
     ) -> Result<(), JsValue> {
-        // TODO verify valid seed/ or do it in js side
         let password = SecureVec::from_slice(&password.to_vec());
-        let mnemonic = SecureVec::from_slice(&seed_phrase.to_vec());
-        let encrypted_seed = encrypt(&password, &mnemonic)?;
-        set_encrypted_mnemonic_phrase(encrypted_seed)
+
+        let seed_phrase_bytes = seed_phrase.to_vec();
+        let seed_phrase_str = String::from_utf8(seed_phrase_bytes)
+            .map_err(|e| JsValue::from_str(&format!("Invalid UTF-8: {}", e)))?;
+
+        let words: Vec<&str> = seed_phrase_str.split_whitespace().collect();
+        let word_count = words.len();
+        if word_count != 48 && word_count != 72 {
+            return Err(JsValue::from_str("Mnemonic must have 48 or 72 words"));
+        }
+
+        let mut combined_entropy = Vec::new();
+        for chunk in words.chunks(24) {
+            let chunk_str = chunk.join(" ");
+            let mnemonic = Mnemonic::parse_in(Language::English, &chunk_str)
+                .map_err(|e| JsValue::from_str(&format!("Invalid mnemonic chunk: {}", e)))?;
+            let entropy = mnemonic.to_entropy();
+            combined_entropy.extend_from_slice(&entropy);
+        }
+
+        if combined_entropy.len() < self.variant.bip39_compatible_entropy_size() {
+            return Err(JsValue::from(
+                format!(
+                    "Insufficient entropy: the input seed phrase got {} bytes, but at least {} bytes are required for the chosen SPHINCS+ parameter set {}.",
+                    combined_entropy.len(),
+                    self.variant.bip39_compatible_entropy_size(),
+                    self.variant
+                )
+            ));
+        }
+
+        let encrypted_seed = encrypt(&password, &combined_entropy)?;
+        set_encrypted_mnemonic_seed(encrypted_seed)
             .await
             .map_err(|e| e.to_jsvalue())?;
         Ok(())
@@ -297,12 +299,21 @@ impl KeyVault {
     #[wasm_bindgen]
     pub async fn export_seed_phrase(password: Uint8Array) -> Result<Uint8Array, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
-        let payload = get_encrypted_mnemonic_phrase()
+        let payload = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
-        let mnemonic = decrypt(&password, payload)?;
-        Ok(Uint8Array::from(mnemonic.as_ref()))
+
+        let entropy = decrypt(&password, payload)?;
+        let chunks = entropy.chunks(32);
+        let mut mnemonics = Vec::new();
+        for chunk in chunks {
+            let mnemonic = Mnemonic::from_entropy_in(Language::English, chunk).unwrap();
+            mnemonics.push(mnemonic.to_string());
+        }
+        let combined_mnemonics = mnemonics.join(" ");
+
+        Ok(Uint8Array::from(combined_mnemonics.as_ref()))
     }
 
     /// Signs a message using the SPHINCS+ private key after decrypting it with the provided password.
@@ -333,35 +344,20 @@ impl KeyVault {
         let pri_key = decrypt(&password, pair.pri_enc)?;
         let message_vec = message.to_vec();
 
-        sphincs_sign!(
-            self.sphincs_plus_variant,
-            pri_key,
-            &message_vec,
-            SphincsVariant::Sha2128S,
-            slh_dsa_sha2_128s,
-            SphincsVariant::Sha2128F,
-            slh_dsa_sha2_128f,
-            SphincsVariant::Shake128S,
-            slh_dsa_shake_128s,
-            SphincsVariant::Shake128F,
-            slh_dsa_shake_128f,
-            SphincsVariant::Sha2192S,
-            slh_dsa_sha2_192s,
-            SphincsVariant::Sha2192F,
-            slh_dsa_sha2_192f,
-            SphincsVariant::Shake192S,
-            slh_dsa_shake_192s,
-            SphincsVariant::Shake192F,
-            slh_dsa_shake_192f,
-            SphincsVariant::Sha2256S,
-            slh_dsa_sha2_256s,
-            SphincsVariant::Sha2256F,
-            slh_dsa_sha2_256f,
-            SphincsVariant::Shake256S,
-            slh_dsa_shake_256s,
-            SphincsVariant::Shake256F,
-            slh_dsa_shake_256f
-        )
+        match self.variant {
+            SphincsVariant::Sha2128S => sphincs_sign!(slh_dsa_sha2_128s, pri_key, &message_vec),
+            SphincsVariant::Sha2128F => sphincs_sign!(slh_dsa_sha2_128f, pri_key, &message_vec),
+            SphincsVariant::Shake128S => sphincs_sign!(slh_dsa_shake_128s, pri_key, &message_vec),
+            SphincsVariant::Shake128F => sphincs_sign!(slh_dsa_shake_128f, pri_key, &message_vec),
+            SphincsVariant::Sha2192S => sphincs_sign!(slh_dsa_sha2_192s, pri_key, &message_vec),
+            SphincsVariant::Sha2192F => sphincs_sign!(slh_dsa_sha2_192f, pri_key, &message_vec),
+            SphincsVariant::Shake192S => sphincs_sign!(slh_dsa_shake_192s, pri_key, &message_vec),
+            SphincsVariant::Shake192F => sphincs_sign!(slh_dsa_shake_192f, pri_key, &message_vec),
+            SphincsVariant::Sha2256S => sphincs_sign!(slh_dsa_sha2_256s, pri_key, &message_vec),
+            SphincsVariant::Sha2256F => sphincs_sign!(slh_dsa_sha2_256f, pri_key, &message_vec),
+            SphincsVariant::Shake256S => sphincs_sign!(slh_dsa_shake_256s, pri_key, &message_vec),
+            SphincsVariant::Shake256F => sphincs_sign!(slh_dsa_shake_256f, pri_key, &message_vec),
+        }
     }
 
     /// Supporting wallet recovery - derives a list of public keys from the seed phrase starting from a given index.
@@ -383,7 +379,7 @@ impl KeyVault {
     ) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_phrase()
+        let payload = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
@@ -416,7 +412,7 @@ impl KeyVault {
     ) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_phrase()
+        let payload = get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;

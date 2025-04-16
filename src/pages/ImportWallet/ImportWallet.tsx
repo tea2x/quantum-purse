@@ -134,9 +134,31 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         ]}
       >
         <Checkbox>
-          I understand that 1) the parameter set I choose must matches with the one I backed up with the seed phrase and 2) Quantum Purse cannot recover this password.
+          I understand that the parameter set must match with the one I backed up with the seed phrase previously.
         </Checkbox>
       </Form.Item>
+
+      <Form.Item
+        name="passwordAwareness"
+        valuePropName="checked"
+        rules={[
+          {
+            validator: (_, value) => {
+              if (value) {
+                return Promise.resolve();
+              }
+              return Promise.reject(
+                new Error("You must acknowledge this statement!")
+              );
+            },
+          },
+        ]}
+      >
+        <Checkbox>
+          I understand that Quantum Purse cannot recover this password if lost.
+        </Checkbox>
+      </Form.Item>
+
       <Flex align="center" justify="center" gap={16}>
         <Form.Item>
           <Button
@@ -191,9 +213,9 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
             validator: (_, value) => {
               if (!value) return Promise.resolve();
               const words = value.trim().split(/\s+/);
-              if (words.length !== 24) {
+              if (words.length !== 48 && words.length !== 72) {
                 return Promise.reject(
-                  new Error("Seed phrase must be exactly 24 words")
+                  new Error(`Invalid word count: ${words.length}. Expect 48 or 72 words only.`)
                 );
               }
               return Promise.resolve();
@@ -274,7 +296,7 @@ const ImportWalletContent: React.FC = () => {
       {
         key: STEP.PASSWORD,
         title: "Wallet Type & Password",
-        description: "Create password and choose SPHINCS+ algorithm",
+        description: "Choose SPHINCS+ variant and create password",
         icon: loadingImportWallet ? <LoadingOutlined /> : <KeyOutlined />,
         content: <StepCreatePassword form={form} />,
       },

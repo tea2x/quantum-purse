@@ -23,7 +23,7 @@ import { CreateWalletContextType } from "./interface";
 import ParamSetSelectorForm from "../../components/SphincsParamSet/Selector";
 import QuantumPurse, { SphincsVariant } from "../../core/quantum_purse";
 
-const wallet = QuantumPurse.getInstance();
+const quantumPurse = QuantumPurse.getInstance();
 
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: WALLET_STEP.PASSWORD,
@@ -148,7 +148,7 @@ export const StepCreatePassword: React.FC = () => {
     { password, parameterSet }: { password: string, parameterSet: SphincsVariant }
   ) => {
     if (parameterSet) {
-      wallet.initKeyVault(parameterSet);
+      quantumPurse.initKeyVault(parameterSet);
     }
     // store chosen param set to storage, so wallet type retains when refreshed
     localStorage.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
@@ -171,6 +171,7 @@ export const StepCreatePassword: React.FC = () => {
     <div className={styles.stepCreatePassword}>
       <h2>Wallet Type & Password</h2>
       <Form form={form} layout="vertical" onFinish={onFinish}>
+        
         <ParamSetSelectorForm />
 
         <Form.Item name="password" label="Password" rules={passwordRules}>
@@ -197,6 +198,21 @@ export const StepCreatePassword: React.FC = () => {
         </Form.Item>
 
         <Form.Item
+          name="walletTypeBackup"
+          valuePropName="checked"
+          rules={[
+            {
+              validator: (_, value) =>
+                value
+                  ? Promise.resolve()
+                  : Promise.reject(new Error("You must agree to the terms!")),
+            },
+          ]}
+        >
+          <Checkbox>I understand I must back up my parameter set with the seed phrase next.</Checkbox>
+        </Form.Item>
+
+        <Form.Item
           name="passwordAwareness"
           valuePropName="checked"
           rules={[
@@ -206,16 +222,15 @@ export const StepCreatePassword: React.FC = () => {
                   return Promise.resolve();
                 }
                 return Promise.reject(
-                  new Error("You must acknowledge this statement!")
+                  new Error("You must agree to the terms!")
                 );
               },
             },
           ]}
         >
-          <Checkbox>
-            I understand that 1) I must backup the parameter set with the Mnemonic Seed Phrase in the next step and 2) Quantum Purse cannot recover this password.
-          </Checkbox>
+          <Checkbox>I understand that Quantum Purse cannot recover this password if lost.</Checkbox>
         </Form.Item>
+
         <Flex align="center" justify="center" gap={16}>
           <Form.Item>
             <Button
@@ -259,7 +274,7 @@ const StepSecureSRP: React.FC = () => {
       title={"Secure Secret Recovery Phrase"}
       description={
         srp
-          ? "Your secret recovery phrase is a list of 24 words that you can use to recover your wallet. Keep it safe!"
+          ? "IMPORTANT! Back up your chosen SPHINCS+ variant " + quantumPurse.getSphincsPlusParamSet() + " with the mnemonic seed below."
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process."
       }
       exportSrpHandler={exportSrpHandler}
