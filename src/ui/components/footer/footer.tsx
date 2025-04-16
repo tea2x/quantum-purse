@@ -1,6 +1,6 @@
 import { GithubOutlined } from "@ant-design/icons";
 import { REPOSITORY_URL } from "../../utils/constants";
-import styles from "./Footer.module.scss";
+import styles from "./footer.module.scss";
 const Footer: React.FC = () => {
   return (
     <div className={styles.footer}>

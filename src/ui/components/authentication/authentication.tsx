@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { Dispatch } from "../../store";
 import { ROUTES } from "../../utils/constants";
-import styles from "./Authentication.module.scss";
+import styles from "./authentication.module.scss";
 
 export interface AuthenticationRef {
   open: () => void;

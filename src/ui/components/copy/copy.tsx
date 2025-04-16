@@ -1,6 +1,6 @@
 import { message } from "antd";
 import { cx } from "../../utils/methods";
-import styles from "./Copy.module.scss";
+import styles from "./copy.module.scss";
 
 interface CopyProps extends React.HTMLAttributes<HTMLDivElement> {
   value: string;

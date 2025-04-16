@@ -5,7 +5,7 @@ import LayoutCtx from "../../context/layout_ctx";
 import { ROUTES } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import Icon from "../icon/icon";
-import styles from "./Header.module.scss";
+import styles from "./header.module.scss";
 import { useSelector } from 'react-redux';
 import { RootState } from "../../store";
 import { STORAGE_KEYS } from "../../utils/constants";
