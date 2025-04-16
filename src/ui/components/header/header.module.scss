@@ -128,3 +128,16 @@
 .spinHarmonic {
   animation: harmonicSpin 2s ease-in-out infinite;
 }
+
+.zoomInOut {
+  animation: zoom 1s ease-in-out infinite;
+}
+
+@keyframes zoom {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
