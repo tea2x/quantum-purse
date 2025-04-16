@@ -6,7 +6,7 @@ import { RootState } from "../../store";
 import { ROUTES } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import CurrentAccount from "../current-account/current_account";
-import styles from "./Sidebar.module.scss";
+import styles from "./sidebar.module.scss";
 
 type MenuItem = Required<MenuProps>["items"][number];
 const items: MenuItem[] = [
