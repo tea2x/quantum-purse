@@ -29,7 +29,7 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account }) => {
           <CopyOutlined />
         </Flex>
       </Copy>
-      <Divider style={{ margin: '4px 0'}}>{"Current start block: " + syncStatus.startBlock.toString()}</Divider>
+      <Divider style={{ margin: '4px 0'}}>Set start block</Divider>
       <div className={styles.startingBlock}>
         <Flex align="center" gap={8}>
           <Input

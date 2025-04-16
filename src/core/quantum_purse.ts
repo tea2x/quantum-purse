@@ -163,6 +163,7 @@ export default class QuantumPurse {
     /* When wallet/accounts may not be created yet(accountPointer not available),
     light client connection and tipBlock can still be shown to let users know */
     if (!this.accountPointer) return {
+      nodeId: localNodeInfo.nodeId,
       connections: localNodeInfo.connections,
       syncedBlock: 0,
       tipBlock: tipBlock,
@@ -180,6 +181,7 @@ export default class QuantumPurse {
       : 0;
 
     return {
+      nodeId: localNodeInfo.nodeId,
       connections: localNodeInfo.connections,
       syncedBlock,
       tipBlock,

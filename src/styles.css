@@ -197,3 +197,7 @@ body {
     border-color: currentColor;
   }
 }
+
+.ant-btn, .ant-form-item, .ant-select, .ant-form-item-label, .ant-checkbox-wrapper, .ant-select-item-option, .ant-select-item-group {
+  font-family: "Quantico", sans-serif !important;
+}
