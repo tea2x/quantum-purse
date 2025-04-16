@@ -47,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         <p className={styles.text}>Quantum Purse</p>
       </div>
 
-      <div>
+      <div className="header-right">
         <Dropdown
           overlay={
             <div className={styles.syncStatusOverlay}>
@@ -56,18 +56,38 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               <br />
               <br />
               <h2>Peers Information</h2>
-              Connected: <PeerValue value={syncStatus && parseInt(syncStatus.connections.toString())}/> | Sync: {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
-              <br />
-              <br />
-              <h2>Network Status</h2>
-              Start: {syncStatus && syncStatus.startBlock.toLocaleString()} | Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()} | Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
+              Connected: <PeerValue value={syncStatus && parseInt(syncStatus.connections.toString())}/> &nbsp; &nbsp; Sync: {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
             </div>
           }
           trigger={["hover"]}
         >
-          <Icon.Connections className={styles.connectionsIcon} />
+          <Icon.Connections className={styles.spinAndPause} />
         </Dropdown>
 
+        <span className={styles.firstGlance}>
+          {syncStatus && parseInt(syncStatus.connections.toString())}
+        </span>
+        
+        <Dropdown
+          overlay={
+            <div className={styles.syncStatusOverlay}>
+              <h2>Node Id</h2>
+              {syncStatus && syncStatus.nodeId}
+              <br />
+              <br />
+              <h2>Network Status</h2>
+              Start: {syncStatus && syncStatus.startBlock.toLocaleString()} &nbsp; &nbsp; Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()} &nbsp; &nbsp; Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
+            </div>
+          }
+          trigger={["hover"]}
+        >
+          <Icon.Syncing className={styles.spinHarmonic}/>
+        </Dropdown>
+
+        <span className={styles.firstGlance}>
+          {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
+        </span>
+        
         {!screens.md && (
           <Button
             type="text"
@@ -76,6 +96,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           />
         )}
       </div>
+
     </header>
   );
 };

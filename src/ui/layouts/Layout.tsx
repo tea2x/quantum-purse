@@ -26,7 +26,7 @@ const Layout: React.FC<AuthLayoutProps> = ({
         if (error.message.includes("SharedArrayBuffer is not defined")) {
           notification.error({
             message: "Insecure browser context",
-            description: "You are accessing this site form an insecure context. Try localhost or https!",
+            description: "You are accessing this site from an insecure context. Try localhost or https!",
           });
         } else if (error.message.includes("WALLET_NOT_READY")) {
           const errorInfo = JSON.parse(error.message);

@@ -34,6 +34,22 @@
         letter-spacing: 0.15em;
       }
     }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      // copy from header-left
+      color: var(--white);
+      text-transform: uppercase;
+      font-family: "Quantico", sans-serif;
+      font-size: 2rem;
+
+      svg {
+        color: var(--white);
+      }
+    }
   }
 }
 
@@ -61,10 +77,54 @@
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   font-size: 14px;
-  font-family: "Quantico", sans-serif;
 }
 
-.connectionsIcon {
-  transform: translateY(0.5rem);
-  margin-right: 1rem;
+.firstGlance {
+  font-size: 2rem;
+  align-items: center;
+  margin-right: 2rem;
+  color: rgb(28, 28, 28);
+}
+
+
+@keyframes harmonicSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(90deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  75% {
+    transform: rotate(270deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinWithPause {
+  0% {
+    transform: rotate(0deg);
+  }
+  45% {
+    transform: rotate(180deg);
+  }
+  90% {
+    transform: rotate(360deg);
+  }
+  91%,
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinAndPause {
+  animation: spinWithPause 4s ease-in-out infinite;
+}
+
+.spinHarmonic {
+  animation: harmonicSpin 2s ease-in-out infinite;
 }
