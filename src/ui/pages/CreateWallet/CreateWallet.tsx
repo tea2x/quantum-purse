@@ -209,7 +209,7 @@ export const StepCreatePassword: React.FC = () => {
             },
           ]}
         >
-          <Checkbox>I understand I must back up my parameter set with the seed phrase next.</Checkbox>
+          <Checkbox>I understand I must back up my parameter set with the mnemonic seed next.</Checkbox>
         </Form.Item>
 
         <Form.Item

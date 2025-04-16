@@ -118,7 +118,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
       </Form.Item>
 
       <Form.Item
-        name="passwordAwareness"
+        name="walletTypeBackup"
         valuePropName="checked"
         rules={[
           {
@@ -133,9 +133,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
           },
         ]}
       >
-        <Checkbox>
-          I understand that the parameter set must match with the one I backed up with the seed phrase previously.
-        </Checkbox>
+        <Checkbox>I understand that the parameter set must match with the one I backed up with the mnemonic seed previously.</Checkbox>
       </Form.Item>
 
       <Form.Item
@@ -154,9 +152,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
           },
         ]}
       >
-        <Checkbox>
-          I understand that Quantum Purse cannot recover this password if lost.
-        </Checkbox>
+        <Checkbox>I understand that Quantum Purse cannot recover this password if lost.</Checkbox>
       </Form.Item>
 
       <Flex align="center" justify="center" gap={16}>
