@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
       <div className="header-left">
         <Icon.Chip
           className={styles.zoomInOut}
-          color="var(--black)"
+          color="var(--white)"
           onClick={() => {
             const step = localStorage.getItem(STORAGE_KEYS.WALLET_STEP);
             if (!step) {
