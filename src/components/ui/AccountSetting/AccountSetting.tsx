@@ -4,8 +4,8 @@ import { Copy } from "../..";
 import { IAccount } from "../../../store/models/interface";
 import { shortenAddress } from "../../../utils/methods";
 import styles from "./AccountSetting.module.scss";
-import { Button, Flex, Input } from "antd";
-import { useSelector } from 'react-redux';
+import { Button, Flex, Input, Divider } from "antd";
+import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import QuantumPurse from "../../../core/quantum_purse";
 import { LightClientSetScriptsCommand } from "ckb-light-client-js";
@@ -29,10 +29,9 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account }) => {
           <CopyOutlined />
         </Flex>
       </Copy>
-      
+      <Divider style={{ margin: '4px 0'}}>{"Current start block: " + syncStatus.startBlock.toString()}</Divider>
       <div className={styles.startingBlock}>
         <Flex align="center" gap={8}>
-          <span>Start Block:</span>
           <Input
             value={startingBlock}
             onChange={(e) => setStartingBlock(e.target.value)}
@@ -43,12 +42,16 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account }) => {
             type="primary"
             onClick={async () => {
               const wallet = await QuantumPurse.getInstance();
-              await wallet.setSellectiveSyncFilter([account.sphincsPlusPubKey], [BigInt(startingBlock)], LightClientSetScriptsCommand.Partial);
+              await wallet.setSellectiveSyncFilter(
+                [account.sphincsPlusPubKey],
+                [BigInt(startingBlock)],
+                LightClientSetScriptsCommand.Partial
+              );
               setStartingBlock("");
             }}
             disabled={!isValidStartingBlock}
           >
-            Set
+            Set start block
           </Button>
         </Flex>
       </div>
