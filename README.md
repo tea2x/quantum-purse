@@ -43,9 +43,9 @@ Due to the larger size of the quantum lock script:
 
 ## Light client
 
-Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetwork/ckb-light-client) directly in your browser. The light client sync status is displayed on the right side of the app's header:
+Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetwork/ckb-light-client) directly in your browser. The light client sync status such as peers connected and sync percentage are displayed on the right side of the app's header:
 
-<img width="258" alt="header-right" src="https://github.com/user-attachments/assets/3a53afb8-2f38-43cd-866b-15ef603fa89e" />
+<img width="240" alt="Screenshot 2025-04-16 at 5 58 02 PM" src="https://github.com/user-attachments/assets/c99c8750-ef1d-4416-8344-b79aefd5098b" />
 
 **Important:**
 - It takes 5-10 seconds to establish connections to other nodes.
