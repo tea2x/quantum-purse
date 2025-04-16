@@ -52,6 +52,7 @@ Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetw
 - Another 10 - 30 seconds to fully sync a newly added account.
 - For a smooth experience, ensure your PEERS value is greater than 0 before creating your wallet.
 - If you don't, no worries. In such case you'd notice that sync percentage grows very slowly and may want to set `starting block` for each account manually after creating wallet successfully.
+- One new account starts syncing at block 0 will render other accounts sync to wait until this account catches up. Provide proper starting blocks properly for a smooth experience.
 
 ## Wallet recovery
 
