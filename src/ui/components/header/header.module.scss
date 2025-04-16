@@ -34,30 +34,6 @@
         letter-spacing: 0.15em;
       }
     }
-
-    // copy from header-left
-    .header-center {
-      color: var(--white);
-      text-transform: uppercase;
-      font-family: "Quantico", sans-serif;
-      font-size: 2rem;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-
-      // copy from header-left
-      color: var(--white);
-      text-transform: uppercase;
-      font-family: "Quantico", sans-serif;
-      font-size: 2rem;
-
-      svg {
-        color: var(--white);
-      }
-    }
   }
 }
 
@@ -67,12 +43,28 @@
 
 @keyframes blinking {
   0% {
-    color: var(--white);
+    color: var(--black);
   }
   50% {
     color: transparent;
   }
   100% {
-    color: var(--white);
+    color: var(--black);
   }
+}
+
+.syncStatusOverlay {
+  text-align: center;
+  padding: 10px;
+  background-color: rgb(93, 149, 149);
+  color: var(--dark-gray);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+  font-family: "Quantico", sans-serif;
+}
+
+.connectionsIcon {
+  transform: translateY(0.5rem);
+  margin-right: 1rem;
 }

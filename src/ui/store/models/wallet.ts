@@ -17,6 +17,7 @@ interface IWallet {
   current: IAccount;
   accounts: IAccount[];
   syncStatus: {
+    nodeId: string;
     connections: number;
     syncedBlock: number;
     tipBlock: number;
@@ -42,6 +43,7 @@ const initState: StateType = {
   },
   accounts: [],
   syncStatus: {
+    nodeId: "[............................]",
     connections: 0,
     syncedBlock: 0,
     tipBlock: 0,
