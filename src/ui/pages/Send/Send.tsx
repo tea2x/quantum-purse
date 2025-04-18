@@ -83,9 +83,9 @@ const Send: React.FC = () => {
         (account) => account.address === values?.from
       );
 
-      if (fromAccount?.sphincsPlusPubKey) {
+      if (fromAccount?.spxLockArgs) {
         const balance = await dispatch.wallet.getAccountBalance({
-          sphincsPlusPubKey: fromAccount.sphincsPlusPubKey,
+          spxLockArgs: fromAccount.spxLockArgs,
         });
         setFromAccountBalance(balance);
       }

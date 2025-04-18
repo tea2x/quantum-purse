@@ -32,8 +32,10 @@ mod secure_vec;
 mod types;
 mod utilities;
 
-use crate::constants::{CHILD_KEYS_STORE, KDF_PATH_PREFIX, SEED_PHRASE_STORE, MULTISIG_RESERVED_FIELD_VALUE, REQUIRED_FIRST_N, THRESHOLD, PUBKEY_NUM};
-use db::*;
+use crate::constants::{
+    CHILD_KEYS_STORE, KDF_PATH_PREFIX, MULTISIG_RESERVED_FIELD_VALUE, PUBKEY_NUM, REQUIRED_FIRST_N,
+    SEED_PHRASE_STORE, THRESHOLD,
+};
 use secure_vec::SecureVec;
 use types::*;
 use utilities::*;
@@ -98,11 +100,11 @@ impl KeyVault {
     /// **Async**: Yes
     #[wasm_bindgen]
     pub async fn clear_database() -> Result<(), JsValue> {
-        let db = open_db().await.map_err(|e| e.to_jsvalue())?;
-        clear_object_store(&db, SEED_PHRASE_STORE)
+        let db = db::open_db().await.map_err(|e| e.to_jsvalue())?;
+        db::clear_object_store(&db, SEED_PHRASE_STORE)
             .await
             .map_err(|e| e.to_jsvalue())?;
-        clear_object_store(&db, CHILD_KEYS_STORE)
+        db::clear_object_store(&db, CHILD_KEYS_STORE)
             .await
             .map_err(|e| e.to_jsvalue())?;
         Ok(())
@@ -122,7 +124,7 @@ impl KeyVault {
             result.map_err(|e| JsValue::from_str(&format!("Database error: {}", e)))
         }
 
-        let db = open_db().await.map_err(|e| e.to_jsvalue())?;
+        let db = db::open_db().await.map_err(|e| e.to_jsvalue())?;
         let tx = map_db_error(
             db.transaction(CHILD_KEYS_STORE)
                 .with_mode(TransactionMode::Readonly)
@@ -143,7 +145,10 @@ impl KeyVault {
         accounts.sort_by_key(|account| account.index);
 
         // Extract lock args in sorted order
-        let lock_args_array: Vec<String> = accounts.into_iter().map(|account| account.lock_args).collect();
+        let lock_args_array: Vec<String> = accounts
+            .into_iter()
+            .map(|account| account.lock_args)
+            .collect();
 
         Ok(lock_args_array)
     }
@@ -162,7 +167,7 @@ impl KeyVault {
     /// **Note**: Only effective when the mnemonic phrase is not yet set.
     #[wasm_bindgen]
     pub async fn init_seed_phrase(&self, password: Uint8Array) -> Result<(), JsValue> {
-        let stored_seed = get_encrypted_mnemonic_seed()
+        let stored_seed = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?;
         if stored_seed.is_some() {
@@ -176,7 +181,7 @@ impl KeyVault {
         let encrypted_seed = encrypt(&password, entropy.as_ref())
             .map_err(|e| JsValue::from_str(&format!("Encryption error: {}", e)))?;
 
-        set_encrypted_mnemonic_seed(encrypted_seed)
+        db::set_encrypted_mnemonic_seed(encrypted_seed)
             .await
             .map_err(|e| e.to_jsvalue())?;
         Ok(())
@@ -198,7 +203,7 @@ impl KeyVault {
         let password = SecureVec::from_slice(&password.to_vec());
 
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_seed()
+        let payload = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
@@ -220,8 +225,8 @@ impl KeyVault {
             pri_enc: encrypted_pri,
         };
 
-        add_account(account).await.map_err(|e| e.to_jsvalue())?;
-        
+        db::add_account(account).await.map_err(|e| e.to_jsvalue())?;
+
         Ok(encode(lock_script_args))
     }
 
@@ -277,7 +282,7 @@ impl KeyVault {
         }
 
         let encrypted_seed = encrypt(&password, &combined_entropy)?;
-        set_encrypted_mnemonic_seed(encrypted_seed)
+        db::set_encrypted_mnemonic_seed(encrypted_seed)
             .await
             .map_err(|e| e.to_jsvalue())?;
         Ok(())
@@ -299,7 +304,7 @@ impl KeyVault {
     #[wasm_bindgen]
     pub async fn export_seed_phrase(password: Uint8Array) -> Result<Uint8Array, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
-        let payload = get_encrypted_mnemonic_seed()
+        let payload = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
@@ -336,7 +341,7 @@ impl KeyVault {
         message: Uint8Array,
     ) -> Result<Uint8Array, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
-        let account = get_account(&lock_args)
+        let account = db::get_account(&lock_args)
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Account not found"))?;
@@ -379,7 +384,7 @@ impl KeyVault {
     ) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_seed()
+        let payload = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
@@ -415,7 +420,7 @@ impl KeyVault {
     ) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_seed()
+        let payload = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
@@ -437,20 +442,25 @@ impl KeyVault {
             };
             lock_args_array.push(encode(lock_script_args));
 
-            add_account(account).await.map_err(|e| e.to_jsvalue())?;
+            db::add_account(account).await.map_err(|e| e.to_jsvalue())?;
         }
         Ok(lock_args_array)
     }
 
     /// Building CKB lockscript for SPHINCS+ public key
-    /// 
+    ///
     /// **Parameters**:
     /// - `public_key: &SecureVec` - The SPHINCS+ public key to be used in the lock script.
     ///
     /// **Returns**:
     /// - `[u8; 32]` - The lock script arguments as a byte array.
     fn get_lock_scrip_arg(&self, public_key: &SecureVec) -> [u8; 32] {
-        let all_in_one_config: [u8; 4] = [MULTISIG_RESERVED_FIELD_VALUE, REQUIRED_FIRST_N, THRESHOLD, PUBKEY_NUM];
+        let all_in_one_config: [u8; 4] = [
+            MULTISIG_RESERVED_FIELD_VALUE,
+            REQUIRED_FIRST_N,
+            THRESHOLD,
+            PUBKEY_NUM,
+        ];
         let sign_flag: u8 = self.variant << 1;
         let mut script_args_hasher = Hasher::script_args_hasher();
         script_args_hasher.update(&all_in_one_config);

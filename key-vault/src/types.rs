@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use std::ops::{Shl, Shr};
 use wasm_bindgen::prelude::*;
-use std::ops::{Shr, Shl};
 
 /// Scrypt param structure.
 pub struct ScryptParam {

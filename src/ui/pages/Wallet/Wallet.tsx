@@ -79,16 +79,16 @@ const Wallet: React.FC = () => {
 
     return (
       <ul className="account-list">
-        {filteredAccounts.map(({ address, name, sphincsPlusPubKey }, index) => (
-          <React.Fragment key={sphincsPlusPubKey}>
+        {filteredAccounts.map(({ address, name, spxLockArgs }, index) => (
+          <React.Fragment key={spxLockArgs}>
             {index > 0 && (
               <Divider className="divider" key={`divider-${index}`} />
             )}
             <AccountItem
-              key={sphincsPlusPubKey}
+              key={spxLockArgs}
               address={address!}
               name={name}
-              sphincsPlusPubKey={sphincsPlusPubKey}
+              spxLockArgs={spxLockArgs}
               isLoading={loadingSwitchAccount}
             />
           </React.Fragment>
@@ -141,7 +141,7 @@ const Wallet: React.FC = () => {
 interface AccountItemProps extends React.HTMLAttributes<HTMLLIElement> {
   address: string;
   name: string;
-  sphincsPlusPubKey: string;
+  spxLockArgs: string;
   hasTools?: boolean;
   copyable?: boolean;
   showBalance?: boolean;
@@ -151,7 +151,7 @@ interface AccountItemProps extends React.HTMLAttributes<HTMLLIElement> {
 export const AccountItem: React.FC<AccountItemProps> = ({
   address,
   name,
-  sphincsPlusPubKey,
+  spxLockArgs,
   hasTools = true,
   copyable = true,
   showBalance = false,
@@ -160,7 +160,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
 }) => {
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
-  const isActive = sphincsPlusPubKey === wallet.current.sphincsPlusPubKey;
+  const isActive = spxLockArgs === wallet.current.spxLockArgs;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSwitchAccountModalOpen, setIsSwitchAccountModalOpen] =
     useState(false);
@@ -186,7 +186,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
         ),
       },
     ],
-    [isActive, sphincsPlusPubKey, address, isLoading, dispatch]
+    [isActive, spxLockArgs, address, isLoading, dispatch]
   );
 
   return (
@@ -234,14 +234,14 @@ export const AccountItem: React.FC<AccountItemProps> = ({
         footer={null}
         centered
       >
-        <AccountSetting account={{ name, address, sphincsPlusPubKey }} />
+        <AccountSetting account={{ name, address, spxLockArgs }} />
       </Modal>
       {hasTools && (
         <Modal
           open={isSwitchAccountModalOpen && !isActive}
           onCancel={() => setIsSwitchAccountModalOpen(false)}
           onOk={() => {
-            dispatch.wallet.switchAccount({ sphincsPlusPubKey });
+            dispatch.wallet.switchAccount({ spxLockArgs });
             setIsSwitchAccountModalOpen(false);
           }}
           title="Switch Account"

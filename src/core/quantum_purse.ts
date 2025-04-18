@@ -1,7 +1,6 @@
 // QuantumPurse.ts
 import { IS_MAIN_NET, SPHINCSPLUS_LOCK } from "./config";
 import { Reader } from "ckb-js-toolkit";
-import { CKBSphincsPlusHasher } from "./hasher";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { Script, HashType, Address, Transaction, DepType, Cell } from "@ckb-lumos/base";
 import { TransactionSkeletonType, TransactionSkeleton, sealTransaction, addressToScript } from "@ckb-lumos/helpers";
@@ -26,10 +25,10 @@ export default class QuantumPurse {
   //*********************************** ATRIBUTES ****************************************//
   //**************************************************************************************//
   /* All in one lock script configuration */
-  private static readonly MULTISIG_ID     = "80";
+  private static readonly MULTISIG_ID = "80";
   private static readonly REQUIRE_FISRT_N = "00";
-  private static readonly THRESHOLD       = "01";
-  private static readonly PUBKEY_NUM      = "01";
+  private static readonly THRESHOLD = "01";
+  private static readonly PUBKEY_NUM = "01";
   private static instance?: QuantumPurse;
   /* CKB light client status worker */
   private worker: Worker | undefined;
@@ -43,11 +42,11 @@ export default class QuantumPurse {
   private client?: LightClient;
   private syncStatusListeners: Set<(status: any) => void> = new Set();
   private static readonly CLIENT_SECRET = "ckb-light-client-wasm-secret-key";
-  private static readonly START_BLOCK   = "ckb-light-client-wasm-start-block";
+  private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
   /* Account management */
   private keyVault?: KeyVault;
   private sphincsLock: { codeHash: string; hashType: HashType };
-  public accountPointer?: string; // Is a sphincs+ public key
+  public accountPointer?: string; // Is a sphincs+ lock script argument
 
   //**************************************************************************************//
   //*************************************** METHODS **************************************//
@@ -265,7 +264,7 @@ export default class QuantumPurse {
   public addSyncStatusListener(listener: (status: any) => void): void {
     this.syncStatusListeners.add(listener);
   }
-  
+
   /* Method to remove a listener */
   public removeSyncStatusListener(listener: (status: any) => void): void {
     this.syncStatusListeners.delete(listener);
@@ -367,7 +366,7 @@ export default class QuantumPurse {
    * Signs a Nervos CKB transaction using the SPHINCS+ signature scheme.
    * @param tx - The transaction skeleton to sign.
    * @param password - The password to decrypt the private key (will be zeroed out after use).
-   * @param spxLockArgs - The sphincs+ lock script arguments.
+   * @param spxLockArgs - The sphincs+ lock script arguments of the account that signs.
    * @returns A promise resolving to the signed transaction.
    * @throws Error if no account is set or decryption fails.
    * @remark The password is overwritten with zeros after use.
@@ -401,9 +400,9 @@ export default class QuantumPurse {
   /* Clears all local data of the wallet. */
   public async deleteWallet(): Promise<void> {
     // localStorage.removeItem(QuantumPurse.CLIENT_SECRET);
-    const spxPubKeyList = await this.getAllAccounts();
-    spxPubKeyList.forEach((spxPub) => {
-      localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + spxPub);
+    const spxLockArgsList = await this.getAllLockScriptArgs();
+    spxLockArgsList.forEach((lockArgs) => {
+      localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + lockArgs);
     });
     await Promise.all([
       KeyVault.clear_database(),
@@ -422,12 +421,12 @@ export default class QuantumPurse {
   public async genAccount(password: Uint8Array): Promise<string> {
     try {
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      const [accList, sphincs_pub] = await Promise.all([
-        this.getAllAccounts(),
+      const [lockArgsList, lockArgs] = await Promise.all([
+        this.getAllLockScriptArgs(),
         this.keyVault.gen_new_account(password)
       ]);
-      await this.setSellectiveSyncFilterInternal(sphincs_pub, (accList.length === 0));
-      return sphincs_pub;
+      await this.setSellectiveSyncFilterInternal(lockArgs, (lockArgsList.length === 0));
+      return lockArgs;
     } finally {
       password.fill(0);
     }
@@ -435,12 +434,12 @@ export default class QuantumPurse {
 
   /**
    * Sets the account pointer (There can be many sub/child accounts in db but at a time Quantum Purse will show just 1).
-   * @param accPointer - The SPHINCS+ public key (as a pointer to the encrypted privatekey in DB) to set.
+   * @param accPointer - The SPHINCS+ lock script argument (as a pointer to the encrypted privatekey in DB) to set.
    * @throws Error if the account to be set is not in the DB.
    */
-  public async setAccPointer(accPointer: string): Promise<void> {
-    const accList = await this.getAllAccounts();
-    if (!accList.includes(accPointer)) throw Error("Invalid account pointer");
+  public async setAccountPointer(accPointer: string): Promise<void> {
+    const lockArgsList = await this.getAllLockScriptArgs();
+    if (!lockArgsList.includes(accPointer)) throw Error("Invalid account pointer");
     this.accountPointer = accPointer;
   }
 
@@ -509,19 +508,19 @@ export default class QuantumPurse {
   }
 
   /**
-   * Retrieve all sphincs plus public keys from all child accounts in the indexed DB.
-   * @returns An ordered array of all child key's sphincs plus public keys.
+   * Retrieve all sphincs+ lock script arguments from all child accounts in the indexed DB.
+   * @returns An ordered array of all child key's sphincs+ lock script argument.
    */
-  public async getAllAccounts(): Promise<string[]> {
+  public async getAllLockScriptArgs(): Promise<string[]> {
     return await KeyVault.get_all_sphincs_lock_args();
   }
 
   /**
-   * Retrieve a list of on-the-fly sphincs+ public key for wallet recovery process.
+   * Retrieve a list of on-the-fly sphincs+ lock script arguments for wallet recovery process.
    * @param password - The password to decrypt the master seed (will be zeroed out).
    * @param startIndex - The index to start searching from.
    * @param count - The number of keys to search for.
-   * @returns An ordered array of all child key's sphincs plus public keys.
+   * @returns An ordered array of all child key's sphincs+ lock script arguments.
    * @remark The password is overwritten with zeros after use.
    */
   public async genAccountInBatch(
@@ -550,9 +549,9 @@ export default class QuantumPurse {
       if (!this.client) throw new Error("Light client not initialized");
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
 
-      const spxPubKeyList = await this.keyVault.recover_accounts(password, count);
-      const startBlocksPromises = spxPubKeyList.map(async (spxPub) => {
-        const lock = this.getLock(spxPub);
+      const spxLockArgsList = await this.keyVault.recover_accounts(password, count);
+      const startBlocksPromises = spxLockArgsList.map(async (lockArgs) => {
+        const lock = this.getLock(lockArgs);
         const searchKey: ClientIndexerSearchKeyLike = {
           scriptType: "lock",
           script: lock,
@@ -568,7 +567,7 @@ export default class QuantumPurse {
       });
 
       const startBlocks = await Promise.all(startBlocksPromises);
-      await this.setSellectiveSyncFilter(spxPubKeyList, startBlocks, LightClientSetScriptsCommand.All);
+      await this.setSellectiveSyncFilter(spxLockArgsList, startBlocks, LightClientSetScriptsCommand.All);
     } finally {
       password.fill(0);
     }

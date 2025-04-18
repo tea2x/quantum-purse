@@ -1,7 +1,7 @@
 interface IAccount {
   name: string;
   address: string | null;
-  sphincsPlusPubKey: string;
+  spxLockArgs: string;
 }
 
 interface CurrentAccount extends IAccount {

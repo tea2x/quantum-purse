@@ -53,7 +53,12 @@ macro_rules! sphincs_sign {
             .try_sign($message_vec, &[], true)
             .map_err(|e| JsValue::from_str(&format!("Signing error: {:?}", e)))?;
 
-        let all_in_one_config: [u8; 4] = [MULTISIG_RESERVED_FIELD_VALUE, REQUIRED_FIRST_N, THRESHOLD, PUBKEY_NUM];
+        let all_in_one_config: [u8; 4] = [
+            MULTISIG_RESERVED_FIELD_VALUE,
+            REQUIRED_FIRST_N,
+            THRESHOLD,
+            PUBKEY_NUM,
+        ];
         let param_id_and_sign_flag: u8 = ($variant << 1) | 1;
 
         // The sphincs+ public key is the second half of the private key
@@ -67,8 +72,9 @@ macro_rules! sphincs_sign {
             &[param_id_and_sign_flag],
             &pub_key[..],
             signature.as_slice(),
-        ].concat();
-        
+        ]
+        .concat();
+
         pri_key_bytes.zeroize();
 
         Ok(Uint8Array::from(ckb_qr_full_signature.as_slice()))

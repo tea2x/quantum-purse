@@ -1,13 +1,10 @@
 mod errors;
 
-use errors::KeyVaultDBError;
-use crate::constants::{
-    CHILD_KEYS_STORE, DB_NAME, SEED_PHRASE_KEY, SEED_PHRASE_STORE,
-};
 use super::types::{CipherPayload, SphincsPlusAccount};
+use crate::constants::{CHILD_KEYS_STORE, DB_NAME, SEED_PHRASE_KEY, SEED_PHRASE_STORE};
+use errors::KeyVaultDBError;
 use indexed_db_futures::{
-    database::Database, error::Error as DBError, prelude::*,
-    transaction::TransactionMode,
+    database::Database, error::Error as DBError, prelude::*, transaction::TransactionMode,
 };
 
 /// Opens the IndexedDB database, creating object stores if necessary.

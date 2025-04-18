@@ -4,7 +4,7 @@ import { useDebounce } from "./useDebounce";
 interface Account {
   address?: string | null;
   name: string;
-  sphincsPlusPubKey: string;
+  spxLockArgs: string;
   balance?: string;
   [key: string]: any;
 }
@@ -12,7 +12,7 @@ interface Account {
 export function useAccountSearch<T extends Account>(
   accounts: T[],
   debounceTime: number = 300,
-  searchFields: string[] = ["name", "address", "sphincsPlusPubKey"]
+  searchFields: string[] = ["name", "address", "spxLockArgs"]
 ) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const debouncedSearchTerm = useDebounce(searchTerm, debounceTime);
