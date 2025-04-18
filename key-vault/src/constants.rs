@@ -19,3 +19,9 @@ pub const ENC_SCRYPT: ScryptParam = ScryptParam {
     p: 1,
     len: 32,
 };
+
+/// All-in-one quantum resistant lock script configuration
+pub const MULTISIG_RESERVED_FIELD_VALUE: u8 = 0x80;
+pub const REQUIRED_FIRST_N: u8 = 0x00;
+pub const THRESHOLD: u8 = 0x01;
+pub const PUBKEY_NUM: u8 = 0x01;

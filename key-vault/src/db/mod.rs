@@ -4,7 +4,7 @@ use errors::KeyVaultDBError;
 use crate::constants::{
     CHILD_KEYS_STORE, DB_NAME, SEED_PHRASE_KEY, SEED_PHRASE_STORE,
 };
-use super::types::{CipherPayload, SphincsPlusKeyPair};
+use super::types::{CipherPayload, SphincsPlusAccount};
 use indexed_db_futures::{
     database::Database, error::Error as DBError, prelude::*,
     transaction::TransactionMode,
@@ -88,16 +88,16 @@ pub async fn get_encrypted_mnemonic_seed() -> Result<Option<CipherPayload>, KeyV
     }
 }
 
-/// Stores a child key (SPHINCS+ key pair) in the database.
+/// Stores a SPHINCS+ account to the database.
 ///
 /// **Parameters**:
-/// - `pair: SphincsPlusKeyPair` - The SPHINCS+ key pair to store.
+/// - `account: SphincsPlusAccount` - The SPHINCS+ account to store.
 ///
 /// **Returns**:
 /// - `Result<(), KeyVaultDBError>` - Ok on success, or an error if storage fails.
 ///
 /// **Async**: Yes
-pub async fn add_key_pair(mut pair: SphincsPlusKeyPair) -> Result<(), KeyVaultDBError> {
+pub async fn add_account(mut account: SphincsPlusAccount) -> Result<(), KeyVaultDBError> {
     let db = open_db().await?;
     let tx = db
         .transaction(CHILD_KEYS_STORE)
@@ -105,10 +105,10 @@ pub async fn add_key_pair(mut pair: SphincsPlusKeyPair) -> Result<(), KeyVaultDB
         .build()?;
     let store = tx.object_store(CHILD_KEYS_STORE)?;
     let count = store.count().await?;
-    pair.index = count as u32;
-    let js_value = serde_wasm_bindgen::to_value(&pair)?;
+    account.index = count as u32;
+    let js_value = serde_wasm_bindgen::to_value(&account)?;
 
-    match store.add(js_value).with_key(pair.pub_key).build() {
+    match store.add(js_value).with_key(account.lock_args).build() {
         Ok(_) => {
             tx.commit().await?;
             Ok(())
@@ -128,16 +128,16 @@ pub async fn add_key_pair(mut pair: SphincsPlusKeyPair) -> Result<(), KeyVaultDB
     }
 }
 
-/// Retrieves a child key pair by its public key from the database.
+/// Retrieves a child account by its public key from the database.
 ///
 /// **Parameters**:
-/// - `pub_key: &str` - The hex-encoded public key of the child key to retrieve.
+/// - `lock_args: &str` - The hex-encoded lock script's arguments corresponding to the SPHINCS+ public key of the retrieved child account.
 ///
 /// **Returns**:
-/// - `Result<Option<SphincsPlusKeyPair>, KeyVaultDBError>` - The child key if found, `None` if not found, or an error if retrieval fails.
+/// - `Result<Option<SphincsPlusAccount>, KeyVaultDBError>` - The child key if found, `None` if not found, or an error if retrieval fails.
 ///
 /// **Async**: Yes
-pub async fn get_key_pair(pub_key: &str) -> Result<Option<SphincsPlusKeyPair>, KeyVaultDBError> {
+pub async fn get_account(lock_args: &str) -> Result<Option<SphincsPlusAccount>, KeyVaultDBError> {
     let db = open_db().await?;
     let tx = db
         .transaction(CHILD_KEYS_STORE)
@@ -146,12 +146,12 @@ pub async fn get_key_pair(pub_key: &str) -> Result<Option<SphincsPlusKeyPair>, K
     let store = tx.object_store(CHILD_KEYS_STORE)?;
 
     if let Some(js_value) = store
-        .get(pub_key)
+        .get(lock_args)
         .await
         .map_err(|e| KeyVaultDBError::DatabaseError(e.to_string()))?
     {
-        let pair: SphincsPlusKeyPair = serde_wasm_bindgen::from_value(js_value)?;
-        Ok(Some(pair))
+        let account: SphincsPlusAccount = serde_wasm_bindgen::from_value(js_value)?;
+        Ok(Some(account))
     } else {
         Ok(None)
     }

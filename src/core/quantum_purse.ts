@@ -132,13 +132,13 @@ export default class QuantumPurse {
    * when accounts are created gradually via genAccount (when users want to create a new account)
   */
   private async setSellectiveSyncFilterInternal(
-    spxPubKey: string,
+    spxLockArgs: string,
     firstAccount: boolean
   ): Promise<void> {
     if (!this.client) throw new Error("Light client not initialized");
 
-    const lock = this.getLock(spxPubKey);
-    const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKey;
+    const lock = this.getLock(spxLockArgs);
+    const storageKey = QuantumPurse.START_BLOCK + "-" + spxLockArgs;
     let startingBlock: bigint = (await this.client!.getTipHeader()).number;
 
     localStorage.setItem(storageKey, startingBlock.toString());
@@ -285,26 +285,26 @@ export default class QuantumPurse {
 
   /**
    * Helper function tells the light client which account and from what block they start making transactions.
-   * @param spxPubKeys The sphincs+ publickey array representing sphincs+ accounts in your DB.
-   * @param startingBlocks The starting block array corresponding to the spxPubKeys to be set.
+   * @param spxLockArgsArray The sphincs+ lock script arguments array (each correspond to 1 sphincs+ accounts in your DB).
+   * @param startingBlocks The starting block array corresponding to the spxLockArgsArray to be set.
    * @param setMode The mode to set the scripts (All, Partial, Delete).
    * @throws Error light client is not initialized.
    */
-  public async setSellectiveSyncFilter(spxPubKeys: string[], startingBlocks: bigint[], setMode: LightClientSetScriptsCommand) {
+  public async setSellectiveSyncFilter(spxLockArgsArray: string[], startingBlocks: bigint[], setMode: LightClientSetScriptsCommand) {
     if (!this.client) throw new Error("Light client not initialized");
 
-    if (spxPubKeys.length !== startingBlocks.length) {
-      throw new Error("Length of spxPubKeys and startingBlocks must be the same");
+    if (spxLockArgsArray.length !== startingBlocks.length) {
+      throw new Error("Length of spxLockArgsArray and startingBlocks must be the same");
     }
 
-    for (let i = 0; i < spxPubKeys.length; i++) {
-      const storageKey = QuantumPurse.START_BLOCK + "-" + spxPubKeys[i];
+    for (let i = 0; i < spxLockArgsArray.length; i++) {
+      const storageKey = QuantumPurse.START_BLOCK + "-" + spxLockArgsArray[i];
       localStorage.setItem(storageKey, startingBlocks[i].toString());
     }
 
-    const filters: ScriptStatus[] = spxPubKeys.map((spxPubKey, index) => ({
+    const filters: ScriptStatus[] = spxLockArgsArray.map((spxLockArgs, index) => ({
       blockNumber: startingBlocks[index],
-      script: this.getLock(spxPubKey),
+      script: this.getLock(spxLockArgs),
       scriptType: "lock"
     }));
 
@@ -313,53 +313,47 @@ export default class QuantumPurse {
 
   /**
    * Gets the CKB lock script.
-   * @param spxPubKey - The sphincs+ public key to get a lock script from.
+   * @param spxLockArgs - The sphincs+ lock script arguments.
    * @returns The CKB lock script (an asset lock in CKB blockchain).
    * @throws Error if no account pointer is set by default.
    */
-  public getLock(spxPubKey?: string): Script {
+  public getLock(spxLockArgs?: string): Script {
     const accPointer =
-      spxPubKey !== undefined ? spxPubKey : this.accountPointer;
+      spxLockArgs !== undefined ? spxLockArgs : this.accountPointer;
     if (!accPointer || accPointer === "") {
       throw new Error("Account pointer not available!");
     }
 
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
 
-    // recreating on-chain lock script procedure
-    const hasher = new CKBSphincsPlusHasher();
-    hasher.update("0x" + this.spxAllInOneSetupHashInput());
-    hasher.update("0x" + (this.keyVault.variant << 1).toString(16));
-    hasher.update("0x" + accPointer);
-
     return {
       codeHash: this.sphincsLock.codeHash,
       hashType: this.sphincsLock.hashType,
-      args: hasher.digestHex(),
+      args: "0x" + accPointer,
     };
   }
 
   /**
    * Gets the blockchain address.
-   * @param spxPubKey - The sphincs+ public key to get an address from.
+   * @param spxLockArgs - The sphincs+ lock script arguments.
    * @returns The CKB address as a string.
    * @throws Error if no account pointer is set by default (see `getLock` for details).
    */
-  public getAddress(spxPubKey?: string): string {
-    const lock = this.getLock(spxPubKey);
+  public getAddress(spxLockArgs?: string): string {
+    const lock = this.getLock(spxLockArgs);
     return scriptToAddress(lock, IS_MAIN_NET);
   }
 
   /**
    * Gets account balance via light client protocol.
-   * @param spxPubKey - The sphincs+ public key to get an address from which balance is retrieved, via light client.
+   * @param spxLockArgs - The sphincs+ lock script argument to form an address from which balance is retrieved, via light client.
    * @returns The account balance.
    * @throws Error light client is not initialized.
    */
-  public async getBalance(spxPubKey?: string): Promise<bigint> {
+  public async getBalance(spxLockArgs?: string): Promise<bigint> {
     if (!this.client) throw new Error("Light client not initialized");
 
-    const lock = this.getLock(spxPubKey);
+    const lock = this.getLock(spxLockArgs);
     const searchKey: ClientIndexerSearchKeyLike = {
       scriptType: "lock",
       script: lock,
@@ -373,7 +367,7 @@ export default class QuantumPurse {
    * Signs a Nervos CKB transaction using the SPHINCS+ signature scheme.
    * @param tx - The transaction skeleton to sign.
    * @param password - The password to decrypt the private key (will be zeroed out after use).
-   * @param spxPubKey - The sphincs+ public key to get a lock script from.
+   * @param spxLockArgs - The sphincs+ lock script arguments.
    * @returns A promise resolving to the signed transaction.
    * @throws Error if no account is set or decryption fails.
    * @remark The password is overwritten with zeros after use.
@@ -381,28 +375,24 @@ export default class QuantumPurse {
   public async sign(
     tx: TransactionSkeletonType,
     password: Uint8Array,
-    spxPubKey?: string
+    spxLockArgs?: string
   ): Promise<Transaction> {
     try {
-      const accPointer = spxPubKey !== undefined ? spxPubKey : this.accountPointer;
+      const accPointer = spxLockArgs !== undefined ? spxLockArgs : this.accountPointer;
       if (!accPointer || accPointer === "") {
         throw new Error("Account pointer not available!");
       }
 
-      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      if (!this.keyVault) {
+        throw new Error("KeyVault not initialized!");
+      }
 
       tx = insertWitnessPlaceHolder(tx);
       tx = prepareSigningEntries(tx);
       const entry = tx.get("signingEntries").toArray();
       const spxSig = await this.keyVault.sign(password, accPointer, hexToByteArray(entry[0].message));
       const spxSigHex = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
-      const fullCkbQrSig =
-        this.spxAllInOneSetupHashInput() +
-        ((this.keyVault.variant << 1) | 1).toString(16) +
-        accPointer +
-        spxSigHex.replace(/^0x/, "");
-
-      return sealTransaction(tx, ["0x" + fullCkbQrSig]);
+      return sealTransaction(tx, [spxSigHex]);
     } finally {
       password.fill(0);
     }
@@ -434,7 +424,7 @@ export default class QuantumPurse {
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
       const [accList, sphincs_pub] = await Promise.all([
         this.getAllAccounts(),
-        this.keyVault.gen_new_key_pair(password)
+        this.keyVault.gen_new_account(password)
       ]);
       await this.setSellectiveSyncFilterInternal(sphincs_pub, (accList.length === 0));
       return sphincs_pub;
@@ -523,7 +513,7 @@ export default class QuantumPurse {
    * @returns An ordered array of all child key's sphincs plus public keys.
    */
   public async getAllAccounts(): Promise<string[]> {
-    return await KeyVault.get_all_sphincs_pub();
+    return await KeyVault.get_all_sphincs_lock_args();
   }
 
   /**
@@ -541,7 +531,7 @@ export default class QuantumPurse {
   ): Promise<string[]> {
     try {
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      const list = await this.keyVault.gen_account_batch(password, startIndex, count);
+      const list = await this.keyVault.try_gen_account_batch(password, startIndex, count);
       return list;
     } finally {
       password.fill(0);

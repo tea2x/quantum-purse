@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use wasm_bindgen::prelude::*;
+use std::ops::{Shr, Shl};
 
 /// Scrypt param structure.
 pub struct ScryptParam {
@@ -23,17 +24,17 @@ pub struct CipherPayload {
     pub cipher_text: String,
 }
 
-/// Represents a SPHINCS+ key pair with the public key and an encrypted private key.
+/// Represents a SPHINCS+ key pair with the lock script argument (processed public key) and an encrypted private key.
 ///
 /// **Fields**:
 /// - `index: u32` - db addition order
-/// - `pub_key: String` - Hex-encoded SPHINCS+ public key.
+/// - `lock_args: String` - The lock script's argument calculated from the SPHINCS+ public key.
 /// - `pri_enc: CipherPayload` - Encrypted SPHINCS+ private key, stored as a `CipherPayload`.
 /// TODO improve size
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SphincsPlusKeyPair {
+pub struct SphincsPlusAccount {
     pub index: u32,
-    pub pub_key: String,
+    pub lock_args: String,
     pub pri_enc: CipherPayload,
 }
 
@@ -56,8 +57,8 @@ pub enum SphincsVariant {
 }
 
 impl SphincsVariant {
-    /// BIP39 accepts entropy level that is a multiple of 32 bytes.
-    /// Here're the entropy level Quantum Purse chooses for all SPHINCS+ param sets that's BIP39 compatible:
+    /// BIP39 accepts entropy levels that is a multiple of 32 bytes.
+    /// Here're the entropy levels Quantum Purse chooses for all SPHINCS+ param sets that's BIP39 compatible:
     ///     - For 128* variant, 48 bytes entropy required so 64(2*32) bytes is chosen (~ 48 words).
     ///     - For 192* variant, 72 bytes entropy required so 96(3*32) bytes is chosen (~ 72 words).
     ///     - For 256* variant, 96 bytes entropy required so 96(3*32) bytes is chosen (~ 72 words).
@@ -88,5 +89,19 @@ impl fmt::Display for SphincsVariant {
             SphincsVariant::Shake256S => "Shake256S",
         };
         write!(f, "{}", s)
+    }
+}
+
+impl Shr<u8> for SphincsVariant {
+    type Output = u8;
+    fn shr(self, rhs: u8) -> u8 {
+        (self as u8) >> rhs
+    }
+}
+
+impl Shl<u8> for SphincsVariant {
+    type Output = u8;
+    fn shl(self, rhs: u8) -> u8 {
+        (self as u8) << rhs
     }
 }
