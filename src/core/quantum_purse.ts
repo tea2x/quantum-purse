@@ -45,7 +45,7 @@ export default class QuantumPurse {
   private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
   /* Account management */
   private keyVault?: KeyVault;
-  private sphincsLock: { codeHash: string; hashType: HashType };
+  private sphincsPlusDep: { codeHash: string; hashType: HashType };
   public accountPointer?: string; // Is a sphincs+ lock script argument
 
   //**************************************************************************************//
@@ -53,7 +53,7 @@ export default class QuantumPurse {
   //**************************************************************************************//
   /** Constructor that takes sphincs+ on-chain binary deployment info */
   private constructor(sphincsCodeHash: string, sphincsHashType: HashType) {
-    this.sphincsLock = { codeHash: sphincsCodeHash, hashType: sphincsHashType };
+    this.sphincsPlusDep = { codeHash: sphincsCodeHash, hashType: sphincsHashType };
   }
 
   /* init code for wasm-bindgen module */
@@ -136,7 +136,7 @@ export default class QuantumPurse {
   ): Promise<void> {
     if (!this.client) throw new Error("Light client not initialized");
 
-    const lock = this.getLock(spxLockArgs);
+    const lock = this.getLockScript(spxLockArgs);
     const storageKey = QuantumPurse.START_BLOCK + "-" + spxLockArgs;
     let startingBlock: bigint = (await this.client!.getTipHeader()).number;
 
@@ -170,7 +170,7 @@ export default class QuantumPurse {
       startBlock: 0
     };
 
-    const lock = this.getLock();
+    const lock = this.getLockScript();
     const storeKey = QuantumPurse.START_BLOCK + "-" + this.accountPointer;
     const startBlock = Number(this.inferStartBlock(storeKey));
     const script = scripts.find((script) => script.script.args === lock.args);
@@ -303,7 +303,7 @@ export default class QuantumPurse {
 
     const filters: ScriptStatus[] = spxLockArgsArray.map((spxLockArgs, index) => ({
       blockNumber: startingBlocks[index],
-      script: this.getLock(spxLockArgs),
+      script: this.getLockScript(spxLockArgs),
       scriptType: "lock"
     }));
 
@@ -316,7 +316,7 @@ export default class QuantumPurse {
    * @returns The CKB lock script (an asset lock in CKB blockchain).
    * @throws Error if no account pointer is set by default.
    */
-  public getLock(spxLockArgs?: string): Script {
+  public getLockScript(spxLockArgs?: string): Script {
     const accPointer =
       spxLockArgs !== undefined ? spxLockArgs : this.accountPointer;
     if (!accPointer || accPointer === "") {
@@ -326,8 +326,8 @@ export default class QuantumPurse {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
 
     return {
-      codeHash: this.sphincsLock.codeHash,
-      hashType: this.sphincsLock.hashType,
+      codeHash: this.sphincsPlusDep.codeHash,
+      hashType: this.sphincsPlusDep.hashType,
       args: "0x" + accPointer,
     };
   }
@@ -336,10 +336,10 @@ export default class QuantumPurse {
    * Gets the blockchain address.
    * @param spxLockArgs - The sphincs+ lock script arguments.
    * @returns The CKB address as a string.
-   * @throws Error if no account pointer is set by default (see `getLock` for details).
+   * @throws Error if no account pointer is set by default (see `getLockScript` for details).
    */
   public getAddress(spxLockArgs?: string): string {
-    const lock = this.getLock(spxLockArgs);
+    const lock = this.getLockScript(spxLockArgs);
     return scriptToAddress(lock, IS_MAIN_NET);
   }
 
@@ -352,7 +352,7 @@ export default class QuantumPurse {
   public async getBalance(spxLockArgs?: string): Promise<bigint> {
     if (!this.client) throw new Error("Light client not initialized");
 
-    const lock = this.getLock(spxLockArgs);
+    const lock = this.getLockScript(spxLockArgs);
     const searchKey: ClientIndexerSearchKeyLike = {
       scriptType: "lock",
       script: lock,
@@ -551,7 +551,7 @@ export default class QuantumPurse {
 
       const spxLockArgsList = await this.keyVault.recover_accounts(password, count);
       const startBlocksPromises = spxLockArgsList.map(async (lockArgs) => {
-        const lock = this.getLock(lockArgs);
+        const lock = this.getLockScript(lockArgs);
         const searchKey: ClientIndexerSearchKeyLike = {
           scriptType: "lock",
           script: lock,

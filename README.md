@@ -117,7 +117,7 @@ Any PR to develop branch is welcomed. Have an idea? Feel free to open a github i
 1. As of 2025, quantum resistance is still experimental. Use this software at your own risk.
 2. Back up your seed phrases-loss means loss of funds
 3. Quantum Purse does NOT store your passwords. Passwords are used only temporarily to encrypt and decrypt your secret data.
-4. IndexedDB stores only public data (e.g., SPHINCS+ public keys) and encrypted secret data. Your SPHINCS+ private keys remain protected.
+4. IndexedDB stores only public data and encrypted secret data. Your SPHINCS+ private keys remain protected.
 5. Forgot your password? Recover access by importing your seed phrase and setting a new password instantly.
 6. Need help? Report issues on GitHub or contact us on Telegram: @quantumpurse.
 
