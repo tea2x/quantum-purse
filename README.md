@@ -30,11 +30,11 @@ All 12 NIST-approved SPHINCS+ parameter sets are supported by Quantum Purse. The
 - 3 security levels: `128 bit`, `192 bit`, `256 bit`
 - 2 optimization methods: `s`(small signature), `f`(fast signature generation)
 
-For CKB, `Sha2-128s`, `Sha-192s` and `Sha2-256s` are recommended because:
+For CKB, `Sha2-128s`, `Sha2-192s` and `Sha2-256s` are recommended because:
 - 's' variant is on-chain friendly as it's fast and light weight. The tradeoff here is that signature generation on QuantumPurse takes longer.
 - `Sha2` is faster than `Shake`.
 
-If you're all for security, `Sha2-256s` is good to start with otherwise `Sha2-128s` and `Sha-192s` will satisfy.
+If you're all for security, `Sha2-256s` is good to start with otherwise `Sha2-128s` and `Sha2-192s` will satisfy.
 
 ## 73 CKB
 Due to the larger size of the quantum lock script:

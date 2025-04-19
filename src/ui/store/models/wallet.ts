@@ -43,7 +43,7 @@ const initState: StateType = {
   },
   accounts: [],
   syncStatus: {
-    nodeId: "[...]",
+    nodeId: "NULL",
     connections: 0,
     syncedBlock: 0,
     tipBlock: 0,
@@ -316,7 +316,6 @@ export const wallet = createModel<RootModel>()({
         };
 
         await checkAccount(0, FIND_ACCOUNT_THRESHOLD);
-
         await quantum.recoverAccounts(utf8ToBytes(password), accountsLength);
 
         this.setActive(true);

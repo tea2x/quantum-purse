@@ -134,7 +134,10 @@ export default class QuantumPurse {
     spxLockArgs: string,
     firstAccount: boolean
   ): Promise<void> {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.client) {
+      console.error("Light client not initialized");
+      return Promise.resolve();
+    }
 
     const lock = this.getLockScript(spxLockArgs);
     const storageKey = QuantumPurse.START_BLOCK + "-" + spxLockArgs;
@@ -150,7 +153,17 @@ export default class QuantumPurse {
 
   /* Calculate sync status */
   private async getSyncStatusInternal() {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.client) {
+      console.error("Light client not initialized");
+      return {
+        nodeId: "NULL",
+        connections: 0,
+        syncedBlock: 0,
+        tipBlock: 0,
+        syncedStatus: 0,
+        startBlock: 0
+      };
+    }
 
     const [localNodeInfo, scripts, tipHeader] = await Promise.all([
       this.client.localNodeInfo(),
@@ -203,20 +216,27 @@ export default class QuantumPurse {
       }
     }
 
-    this.client = new LightClient();
-    const config = IS_MAIN_NET
-      ? await (await fetch(mainnetConfig)).text()
-      : await (await fetch(testnetConfig)).text();
-    await this.client.start(
-      { type: IS_MAIN_NET ? "MainNet" : "TestNet", config },
-      secretKey as Hex,
-      "info"
-    );
+    try {
+      this.client = new LightClient();
+      const config = IS_MAIN_NET
+        ? await (await fetch(mainnetConfig)).text()
+        : await (await fetch(testnetConfig)).text();
+      await this.client.start(
+        { type: IS_MAIN_NET ? "MainNet" : "TestNet", config },
+        secretKey as Hex,
+        "info"
+      );
+    } catch (error) {
+      console.error("Failed to start light client:", error);
+    }
   }
 
   /* Fetch the sphincs+ celldeps to the light client in quantumPurse wallet setup */
   private async fetchSphincsPlusCellDeps() {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.client) {
+      console.error("Light client not initialized");
+      return;
+    }
     await this.client.fetchTransaction(SPHINCSPLUS_LOCK.outPoint.txHash);
   }
 
@@ -350,7 +370,10 @@ export default class QuantumPurse {
    * @throws Error light client is not initialized.
    */
   public async getBalance(spxLockArgs?: string): Promise<bigint> {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.client) {
+      console.error("Light client not initialized");
+      return Promise.resolve(BigInt(0));
+    }
 
     const lock = this.getLockScript(spxLockArgs);
     const searchKey: ClientIndexerSearchKeyLike = {
@@ -546,10 +569,14 @@ export default class QuantumPurse {
    */
   public async recoverAccounts(password: Uint8Array, count: number): Promise<void> {
     try {
-      if (!this.client) throw new Error("Light client not initialized");
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
-
       const spxLockArgsList = await this.keyVault.recover_accounts(password, count);
+
+      if (!this.client) {
+        console.error("Light client not initialized");
+        return Promise.resolve();
+      }
+
       const startBlocksPromises = spxLockArgsList.map(async (lockArgs) => {
         const lock = this.getLockScript(lockArgs);
         const searchKey: ClientIndexerSearchKeyLike = {

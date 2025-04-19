@@ -1,4 +1,5 @@
-import { Button, Grid, Dropdown, Divider } from "antd";
+import { Button, Grid, Dropdown, Tooltip } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import React, { useContext, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import LayoutCtx from "../../context/layout_ctx";
@@ -12,10 +13,6 @@ import { CopyOutlined } from "@ant-design/icons";
 import { Copy } from "../../components";
 
 const { useBreakpoint } = Grid;
-
-const PeerValue: React.FC<{ value: number }> = ({ value }) => (
-  <span className={styles.blinker}>{value}</span>
-);
 
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -55,15 +52,25 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         <Dropdown
           overlay={
             <div className={styles.syncStatusOverlay}>
-              <h2>Peers Information</h2>
-
-              Node Id: {" "}
-              <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
-                <span> {shortenAddress(syncStatus.nodeId, 0, 5)} </span>
-                <CopyOutlined />
-              </Copy>
+              <div className={styles.withOptionalWarningSign}>
+                <h2>Peers Information</h2>
+                {syncStatus.nodeId === "NULL" && (
+                  <Tooltip title="Light client not functioning">
+                    <Icon.Alert />
+                  </Tooltip>
+                )}
+              </div>
+              <span>Node Id: </span>
+              {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
+                <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
+                  <span>{shortenAddress(syncStatus.nodeId, 0, 5)}</span>
+                  <CopyOutlined />
+                </Copy>
+              ) : (
+                <span>{syncStatus.nodeId}</span>
+              )}
               &nbsp; &nbsp; 
-              Connected: <PeerValue value={syncStatus && parseInt(syncStatus.connections.toString())}/> &nbsp; &nbsp; 
+              Connected: {syncStatus && parseInt(syncStatus.connections.toString())} &nbsp; &nbsp; 
               Sync: {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
             </div>
           }

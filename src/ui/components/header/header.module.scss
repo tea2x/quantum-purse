@@ -86,7 +86,6 @@
   color: rgb(28, 28, 28);
 }
 
-
 @keyframes harmonicSpin {
   0% {
     transform: rotate(0deg);
@@ -140,4 +139,11 @@
   50% {
     transform: scale(1.1);
   }
+}
+
+.withOptionalWarningSign {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
 }

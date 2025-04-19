@@ -6,8 +6,12 @@
     flex-direction: column;
     align-items: center;
     max-width: 76.8rem;
+    min-height: 35rem;
     margin: 0 auto;
     font-family: "Quantico", sans-serif;
+    @media (max-width: 768px) {
+      min-height: 30rem;
+    }
     
     h1 {
       font-weight: bold;
@@ -15,12 +19,18 @@
       line-height: 1.2;
       text-transform: uppercase;
       margin-bottom: 0.8rem;
+      @media (max-width: 768px) {
+        font-size: 2.6rem;
+      }
     }
 
     p {
       font-size: 1.4rem;
       line-height: 1.2;
       margin-bottom: 3.6rem;
+      @media (max-width: 768px) {
+        font-size: 1rem;
+      }
     }
 
     button {
