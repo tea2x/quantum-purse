@@ -24,11 +24,6 @@ export default class QuantumPurse {
   //**************************************************************************************//
   //*********************************** ATRIBUTES ****************************************//
   //**************************************************************************************//
-  /* All in one lock script configuration */
-  private static readonly MULTISIG_ID = "80";
-  private static readonly REQUIRE_FISRT_N = "00";
-  private static readonly THRESHOLD = "01";
-  private static readonly PUBKEY_NUM = "01";
   private static instance?: QuantumPurse;
   /* CKB light client status worker */
   private worker: Worker | undefined;
@@ -66,16 +61,6 @@ export default class QuantumPurse {
     await this.startLightClient();
     await this.fetchSphincsPlusCellDeps();
     this.startClientSyncStatusWorker();
-  }
-
-  /** Conjugate the first 4 bytes of the witness.lock for the hasher */
-  private spxAllInOneSetupHashInput(): string {
-    return (
-      QuantumPurse.MULTISIG_ID +
-      QuantumPurse.REQUIRE_FISRT_N +
-      QuantumPurse.THRESHOLD +
-      QuantumPurse.PUBKEY_NUM
-    );
   }
 
   /** Initialize web worker to poll the sync status from the ckb light client */
