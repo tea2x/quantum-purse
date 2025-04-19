@@ -1,12 +1,12 @@
+use super::constants::{ENC_SCRYPT, IV_LENGTH, SALT_LENGTH};
+use super::types::{CipherPayload, ScryptParam};
+use crate::secure_vec::SecureVec;
 use aes_gcm::{
     aead::{Aead, KeyInit},
     Aes256Gcm, Key, Nonce,
 };
-use crate::secure_vec::SecureVec;
-use scrypt::{scrypt, Params};
-use super::types::{CipherPayload, ScryptParam};
-use super::constants::{ENC_SCRYPT, SALT_LENGTH, IV_LENGTH};
 use hex::{decode, encode};
+use scrypt::{scrypt, Params};
 use zeroize::Zeroize;
 #[cfg(test)]
 mod tests;

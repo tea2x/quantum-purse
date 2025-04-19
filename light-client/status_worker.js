@@ -20,10 +20,10 @@ function requestSyncStatus() {
 async function startSyncStatusUpdates() {
   setInterval(async () => {
     syncStatus = await requestSyncStatus();
-    console.log(
-      "\x1b[37;44m INFO \x1b[0m \x1b[1mlight-client-sync-status\x1b[0m: ",
-      syncStatus
-    );
+    // console.log(
+    //   "\x1b[37;44m INFO \x1b[0m \x1b[1mlight-client-sync-status\x1b[0m: ",
+    //   syncStatus
+    // );
     // Send the sync status to the main thread
     self.postMessage({ type: "syncStatusUpdate", data: syncStatus });
   }, 5000);

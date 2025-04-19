@@ -5,8 +5,8 @@ import {
   BrowserRouter as Router,
   Routes,
 } from "react-router-dom";
-import ActiveLayout from "./layouts/ActiveLayout";
-import InactiveLayout from "./layouts/InactiveLayout";
+import ActiveLayout from "./ui/layouts/ActiveLayout";
+import InactiveLayout from "./ui/layouts/InactiveLayout";
 import {
   CommingSoon,
   CreateWallet,
@@ -17,8 +17,8 @@ import {
   Send,
   Wallet,
   Welcome,
-} from "./pages";
-import { ROUTES } from "./utils/constants";
+} from "./ui/pages";
+import { ROUTES } from "./ui/utils/constants";
 
 // Detect if running on Github Pages
 const isGithubPages = window.location.hostname.includes("github.io");

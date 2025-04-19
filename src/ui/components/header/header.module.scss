@@ -1,0 +1,149 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 6.4rem;
+  background-color: var(--teal-1);
+  border-radius: 0 0 1.2rem 1.2rem;
+  max-width: 128rem;
+  margin: 0 auto;
+  box-shadow: 0 0.4rem 0.4rem rgba(0, 0, 0, 0.25);
+
+  :global {
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: var(--white);
+      text-transform: uppercase;
+      font-family: "Quantico", sans-serif;
+      font-size: 2rem;
+
+      svg {
+        cursor: pointer;
+      }
+      p {
+        overflow: hidden;
+        white-space: nowrap;
+        border-right: 2px solid;
+        width: 0;
+        animation: typing 4s steps(13) infinite alternate,
+          blink-caret 0.75s step-end infinite;
+        margin: 0;
+        letter-spacing: 0.15em;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      // copy from header-left
+      color: var(--white);
+      text-transform: uppercase;
+      font-family: "Quantico", sans-serif;
+      font-size: 2rem;
+
+      svg {
+        color: var(--white);
+      }
+    }
+  }
+}
+
+.blinker {
+  animation: blinking 1s steps(30, start) infinite;
+}
+
+@keyframes blinking {
+  0% {
+    color: var(--black);
+  }
+  50% {
+    color: transparent;
+  }
+  100% {
+    color: var(--black);
+  }
+}
+
+.syncStatusOverlay {
+  text-align: center;
+  padding: 10px;
+  background-color: rgb(93, 149, 149);
+  color: var(--dark-gray);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+}
+
+.firstGlance {
+  font-size: 2rem;
+  align-items: center;
+  margin-right: 2rem;
+  color: rgb(28, 28, 28);
+}
+
+@keyframes harmonicSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(90deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  75% {
+    transform: rotate(270deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinWithPause {
+  0% {
+    transform: rotate(0deg);
+  }
+  45% {
+    transform: rotate(180deg);
+  }
+  90% {
+    transform: rotate(360deg);
+  }
+  91%,
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinAndPause {
+  animation: spinWithPause 4s ease-in-out infinite;
+}
+
+.spinHarmonic {
+  animation: harmonicSpin 2s ease-in-out infinite;
+}
+
+.zoomInOut {
+  animation: zoom 1s ease-in-out infinite;
+}
+
+@keyframes zoom {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.withOptionalWarningSign {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}

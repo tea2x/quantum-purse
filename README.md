@@ -30,11 +30,11 @@ All 12 NIST-approved SPHINCS+ parameter sets are supported by Quantum Purse. The
 - 3 security levels: `128 bit`, `192 bit`, `256 bit`
 - 2 optimization methods: `s`(small signature), `f`(fast signature generation)
 
-For CKB, `Sha2-128s`, `Sha-192s` and `Sha2-256s` are recommended because:
+For CKB, `Sha2-128s`, `Sha2-192s` and `Sha2-256s` are recommended because:
 - 's' variant is on-chain friendly as it's fast and light weight. The tradeoff here is that signature generation on QuantumPurse takes longer.
 - `Sha2` is faster than `Shake`.
 
-If you're all for security, `Sha2-256s` is good to start with otherwise `Sha2-128s` and `Sha-192s` will satisfy.
+If you're all for security, `Sha2-256s` is good to start with otherwise `Sha2-128s` and `Sha2-192s` will satisfy.
 
 ## 73 CKB
 Due to the larger size of the quantum lock script:
@@ -43,9 +43,9 @@ Due to the larger size of the quantum lock script:
 
 ## Light client
 
-Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetwork/ckb-light-client) directly in your browser. The light client sync status is displayed on the right side of the app's header:
+Quantum Purse runs its own [CKB light client node](https://github.com/nervosnetwork/ckb-light-client) directly in your browser. The light client sync status such as peers connected and sync percentage are displayed on the right side of the app's header:
 
-<img width="258" alt="header-right" src="https://github.com/user-attachments/assets/3a53afb8-2f38-43cd-866b-15ef603fa89e" />
+<img width="240" alt="Screenshot 2025-04-16 at 5 58 02 PM" src="https://github.com/user-attachments/assets/c99c8750-ef1d-4416-8344-b79aefd5098b" />
 
 **Important:**
 - It takes 5-10 seconds to establish connections to other nodes.
@@ -117,7 +117,7 @@ Any PR to develop branch is welcomed. Have an idea? Feel free to open a github i
 1. As of 2025, quantum resistance is still experimental. Use this software at your own risk.
 2. Back up your seed phrases-loss means loss of funds
 3. Quantum Purse does NOT store your passwords. Passwords are used only temporarily to encrypt and decrypt your secret data.
-4. IndexedDB stores only public data (e.g., SPHINCS+ public keys) and encrypted secret data. Your SPHINCS+ private keys remain protected.
+4. IndexedDB stores only public data and encrypted secret data. Your SPHINCS+ private keys remain protected.
 5. Forgot your password? Recover access by importing your seed phrase and setting a new password instantly.
 6. Need help? Report issues on GitHub or contact us on Telegram: @quantumpurse.
 

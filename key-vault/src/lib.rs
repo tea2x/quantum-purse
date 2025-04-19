@@ -32,8 +32,10 @@ mod secure_vec;
 mod types;
 mod utilities;
 
-use crate::constants::{CHILD_KEYS_STORE, KDF_PATH_PREFIX, SEED_PHRASE_STORE};
-use db::*;
+use crate::constants::{
+    CHILD_KEYS_STORE, KDF_PATH_PREFIX, MULTISIG_RESERVED_FIELD_VALUE, PUBKEY_NUM, REQUIRED_FIRST_N,
+    SEED_PHRASE_STORE, THRESHOLD,
+};
 use secure_vec::SecureVec;
 use types::*;
 use utilities::*;
@@ -98,31 +100,31 @@ impl KeyVault {
     /// **Async**: Yes
     #[wasm_bindgen]
     pub async fn clear_database() -> Result<(), JsValue> {
-        let db = open_db().await.map_err(|e| e.to_jsvalue())?;
-        clear_object_store(&db, SEED_PHRASE_STORE)
+        let db = db::open_db().await.map_err(|e| e.to_jsvalue())?;
+        db::clear_object_store(&db, SEED_PHRASE_STORE)
             .await
             .map_err(|e| e.to_jsvalue())?;
-        clear_object_store(&db, CHILD_KEYS_STORE)
+        db::clear_object_store(&db, CHILD_KEYS_STORE)
             .await
             .map_err(|e| e.to_jsvalue())?;
         Ok(())
     }
 
-    /// Retrieves all SPHINCS+ public keys from the database in the order they get inserted.
+    /// Retrieves all SPHINCS+ lock script arguments (processed public keys) from the database in the order they get inserted.
     ///
     /// **Returns**:
-    /// - `Result<Vec<String>, JsValue>` - A JavaScript Promise that resolves to an array of hex-encoded SPHINCS+ public keys on success,
+    /// - `Result<Vec<String>, JsValue>` - A JavaScript Promise that resolves to an array of hex-encoded SPHINCS+ lock script arguments on success,
     ///   or rejects with a JavaScript error on failure.
     ///
     /// **Async**: Yes
     #[wasm_bindgen]
-    pub async fn get_all_sphincs_pub() -> Result<Vec<String>, JsValue> {
+    pub async fn get_all_sphincs_lock_args() -> Result<Vec<String>, JsValue> {
         /// Error conversion helper
         fn map_db_error<T>(result: Result<T, DBError>) -> Result<T, JsValue> {
             result.map_err(|e| JsValue::from_str(&format!("Database error: {}", e)))
         }
 
-        let db = open_db().await.map_err(|e| e.to_jsvalue())?;
+        let db = db::open_db().await.map_err(|e| e.to_jsvalue())?;
         let tx = map_db_error(
             db.transaction(CHILD_KEYS_STORE)
                 .with_mode(TransactionMode::Readonly)
@@ -130,22 +132,25 @@ impl KeyVault {
         )?;
         let store = map_db_error(tx.object_store(CHILD_KEYS_STORE))?;
 
-        // Retrieve all key pairs
+        // Retrieve all accounts
         let iter: ArrayMapIter<JsValue> = map_db_error(store.get_all().await)?;
-        let mut key_pairs: Vec<SphincsPlusKeyPair> = Vec::new();
+        let mut accounts: Vec<SphincsPlusAccount> = Vec::new();
         for result in iter {
             let js_value = map_db_error(result)?;
-            let pair: SphincsPlusKeyPair = serde_wasm_bindgen::from_value(js_value)?;
-            key_pairs.push(pair);
+            let account: SphincsPlusAccount = serde_wasm_bindgen::from_value(js_value)?;
+            accounts.push(account);
         }
 
         // Sort by index
-        key_pairs.sort_by_key(|pair| pair.index);
+        accounts.sort_by_key(|account| account.index);
 
-        // Extract public keys in sorted order
-        let pub_keys: Vec<String> = key_pairs.into_iter().map(|pair| pair.pub_key).collect();
+        // Extract lock args in sorted order
+        let lock_args_array: Vec<String> = accounts
+            .into_iter()
+            .map(|account| account.lock_args)
+            .collect();
 
-        Ok(pub_keys)
+        Ok(lock_args_array)
     }
 
     /// Initializes the mnemonic phrase by generating a BIP39 mnemonic, encrypting it with the provided password, and storing it in IndexedDB.
@@ -162,7 +167,7 @@ impl KeyVault {
     /// **Note**: Only effective when the mnemonic phrase is not yet set.
     #[wasm_bindgen]
     pub async fn init_seed_phrase(&self, password: Uint8Array) -> Result<(), JsValue> {
-        let stored_seed = get_encrypted_mnemonic_seed()
+        let stored_seed = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?;
         if stored_seed.is_some() {
@@ -176,53 +181,53 @@ impl KeyVault {
         let encrypted_seed = encrypt(&password, entropy.as_ref())
             .map_err(|e| JsValue::from_str(&format!("Encryption error: {}", e)))?;
 
-        set_encrypted_mnemonic_seed(encrypted_seed)
+        db::set_encrypted_mnemonic_seed(encrypted_seed)
             .await
             .map_err(|e| e.to_jsvalue())?;
         Ok(())
     }
 
-    /// Generates a new SPHINCS+ key pair - a SPHINCS+ child key pair derived from the mnemonic phrase,
+    /// Generates a new SPHINCS+ account - a SPHINCS+ child account derived from the mnemonic phrase,
     /// encrypts the private key with the password, and stores/appends it in IndexedDB.
     ///
     /// **Parameters**:
     /// - `password: Uint8Array` - The password used to decrypt the mnemonic phrase and encrypt the child private key.
     ///
     /// **Returns**:
-    /// - `Result<String, JsValue>` - A String Promise that resolves to the hex-encoded SPHINCS+ public key from the key pair on success,
+    /// - `Result<String, JsValue>` - A String Promise that resolves to the hex-encoded SPHINCS+ lock argument (processed SPHINCS+ public key) of the account on success,
     ///   or rejects with a JavaScript error on failure.
     ///
     /// **Async**: Yes
     #[wasm_bindgen]
-    pub async fn gen_new_key_pair(&self, password: Uint8Array) -> Result<String, JsValue> {
+    pub async fn gen_new_account(&self, password: Uint8Array) -> Result<String, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
 
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_seed()
+        let payload = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
         let seed = decrypt(&password, payload)?;
 
-        let index = Self::get_all_sphincs_pub().await?.len() as u32;
+        let index = Self::get_all_sphincs_lock_args().await?.len() as u32;
         let (pub_key, pri_key) = self
             .derive_sphincs_key(&seed, index)
             .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
 
+        // Calculate lock script args and encrypt corresponding private key
+        let lock_script_args = self.get_lock_scrip_arg(&pub_key);
         let encrypted_pri = encrypt(&password, &pri_key)?;
 
         // Store to DB
-        let pair = SphincsPlusKeyPair {
-            index: 0, // Init to 0; Will be set correctly in add_key_pair
-            pub_key: encode(pub_key.as_ref()),
+        let account = SphincsPlusAccount {
+            index: 0, // Init to 0; Will be set correctly in add_account
+            lock_args: encode(lock_script_args),
             pri_enc: encrypted_pri,
         };
 
-        add_key_pair(pair).await.map_err(|e| e.to_jsvalue())?;
+        db::add_account(account).await.map_err(|e| e.to_jsvalue())?;
 
-        // TODO check rng
-
-        Ok(encode(pub_key.as_ref()))
+        Ok(encode(lock_script_args))
     }
 
     /// Imports a mnemonic by encrypting it with the provided password and storing it as the mnemonic phrase.
@@ -277,7 +282,7 @@ impl KeyVault {
         }
 
         let encrypted_seed = encrypt(&password, &combined_entropy)?;
-        set_encrypted_mnemonic_seed(encrypted_seed)
+        db::set_encrypted_mnemonic_seed(encrypted_seed)
             .await
             .map_err(|e| e.to_jsvalue())?;
         Ok(())
@@ -299,7 +304,7 @@ impl KeyVault {
     #[wasm_bindgen]
     pub async fn export_seed_phrase(password: Uint8Array) -> Result<Uint8Array, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
-        let payload = get_encrypted_mnemonic_seed()
+        let payload = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
@@ -320,7 +325,7 @@ impl KeyVault {
     ///
     /// **Parameters**:
     /// - `password: Uint8Array` - The password used to decrypt the private key.
-    /// - `sphincs_plus_pub: String` - The SPHINCS+ public key identifying the private key to use for signing.
+    /// - `lock_args: String` - The hex-encoded lock script's arguments corresponding to the SPHINCS+ public key of the account that signs.
     /// - `message: Uint8Array` - The message to be signed.
     ///
     /// **Returns**:
@@ -332,46 +337,46 @@ impl KeyVault {
     pub async fn sign(
         &self,
         password: Uint8Array,
-        sphincs_plus_pub: String,
+        lock_args: String,
         message: Uint8Array,
     ) -> Result<Uint8Array, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
-        let pair = get_key_pair(&sphincs_plus_pub)
+        let account = db::get_account(&lock_args)
             .await
             .map_err(|e| e.to_jsvalue())?
-            .ok_or_else(|| JsValue::from_str("Key pair not found"))?;
+            .ok_or_else(|| JsValue::from_str("Account not found"))?;
 
-        let pri_key = decrypt(&password, pair.pri_enc)?;
+        let pri_key = decrypt(&password, account.pri_enc)?;
         let message_vec = message.to_vec();
 
         match self.variant {
-            SphincsVariant::Sha2128S => sphincs_sign!(slh_dsa_sha2_128s, pri_key, &message_vec),
-            SphincsVariant::Sha2128F => sphincs_sign!(slh_dsa_sha2_128f, pri_key, &message_vec),
-            SphincsVariant::Shake128S => sphincs_sign!(slh_dsa_shake_128s, pri_key, &message_vec),
-            SphincsVariant::Shake128F => sphincs_sign!(slh_dsa_shake_128f, pri_key, &message_vec),
-            SphincsVariant::Sha2192S => sphincs_sign!(slh_dsa_sha2_192s, pri_key, &message_vec),
-            SphincsVariant::Sha2192F => sphincs_sign!(slh_dsa_sha2_192f, pri_key, &message_vec),
-            SphincsVariant::Shake192S => sphincs_sign!(slh_dsa_shake_192s, pri_key, &message_vec),
-            SphincsVariant::Shake192F => sphincs_sign!(slh_dsa_shake_192f, pri_key, &message_vec),
-            SphincsVariant::Sha2256S => sphincs_sign!(slh_dsa_sha2_256s, pri_key, &message_vec),
-            SphincsVariant::Sha2256F => sphincs_sign!(slh_dsa_sha2_256f, pri_key, &message_vec),
-            SphincsVariant::Shake256S => sphincs_sign!(slh_dsa_shake_256s, pri_key, &message_vec),
-            SphincsVariant::Shake256F => sphincs_sign!(slh_dsa_shake_256f, pri_key, &message_vec),
+            SphincsVariant::Sha2128S => sphincs_sign!(slh_dsa_sha2_128s, pri_key, &message_vec, self.variant),
+            SphincsVariant::Sha2128F => sphincs_sign!(slh_dsa_sha2_128f, pri_key, &message_vec, self.variant),
+            SphincsVariant::Shake128S => sphincs_sign!(slh_dsa_shake_128s, pri_key, &message_vec, self.variant),
+            SphincsVariant::Shake128F => sphincs_sign!(slh_dsa_shake_128f, pri_key, &message_vec, self.variant),
+            SphincsVariant::Sha2192S => sphincs_sign!(slh_dsa_sha2_192s, pri_key, &message_vec, self.variant),
+            SphincsVariant::Sha2192F => sphincs_sign!(slh_dsa_sha2_192f, pri_key, &message_vec, self.variant),
+            SphincsVariant::Shake192S => sphincs_sign!(slh_dsa_shake_192s, pri_key, &message_vec, self.variant),
+            SphincsVariant::Shake192F => sphincs_sign!(slh_dsa_shake_192f, pri_key, &message_vec, self.variant),
+            SphincsVariant::Sha2256S => sphincs_sign!(slh_dsa_sha2_256s, pri_key, &message_vec, self.variant),
+            SphincsVariant::Sha2256F => sphincs_sign!(slh_dsa_sha2_256f, pri_key, &message_vec, self.variant),
+            SphincsVariant::Shake256S => sphincs_sign!(slh_dsa_shake_256s, pri_key, &message_vec, self.variant),
+            SphincsVariant::Shake256F => sphincs_sign!(slh_dsa_shake_256f, pri_key, &message_vec, self.variant),
         }
     }
 
-    /// Supporting wallet recovery - derives a list of public keys from the seed phrase starting from a given index.
+    /// Supporting wallet recovery - derives a list of lock script arguments (processed public keys) from the seed phrase starting from a given index.
     ///
     /// **Parameters**:
     /// - `password: Uint8Array` - The password used to decrypt the mnemonic.
     /// - `start_index: u32` - The starting index for derivation.
-    /// - `count: u32` - The number of public keys to derive.
+    /// - `count: u32` - The number of sequential lock scripts arguments to derive.
     ///
     /// **Returns**:
-    /// - `Result<Vec<String>, JsValue>` - A list of public keys as strings on success,
+    /// - `Result<Vec<String>, JsValue>` - A list of lock script arguments on success,
     ///   or a JavaScript error on failure.
     #[wasm_bindgen]
-    pub async fn gen_account_batch(
+    pub async fn try_gen_account_batch(
         &self,
         password: Uint8Array,
         start_index: u32,
@@ -379,19 +384,22 @@ impl KeyVault {
     ) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_seed()
+        let payload = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
         let seed = decrypt(&password, payload)?;
-        let mut pub_keys: Vec<String> = Vec::new();
+        let mut lock_args_array: Vec<String> = Vec::new();
         for i in start_index..(start_index + count) {
             let (pub_key, _) = self
                 .derive_sphincs_key(&seed, i)
                 .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
-            pub_keys.push(encode(pub_key.as_ref()));
+
+            // Calculate lock script args
+            let lock_script_args = self.get_lock_scrip_arg(&pub_key);
+            lock_args_array.push(encode(lock_script_args));
         }
-        Ok(pub_keys)
+        Ok(lock_args_array)
     }
 
     /// Supporting wallet recovery - Recovers the wallet by deriving and storing private keys for the first N accounts.
@@ -401,7 +409,7 @@ impl KeyVault {
     /// - `count: u32` - The number of accounts to recover (from index 0 to count-1).
     ///
     /// **Returns**:
-    /// - `Result<(), JsValue>` - A list of newly generated sphincs+ public keys on success, or a JavaScript error on failure.
+    /// - `Result<(), JsValue>` - A list of newly generated sphincs+ lock script arguments (processed public keys) on success, or a JavaScript error on failure.
     ///
     /// **Async**: Yes
     #[wasm_bindgen]
@@ -412,30 +420,53 @@ impl KeyVault {
     ) -> Result<Vec<String>, JsValue> {
         let password = SecureVec::from_slice(&password.to_vec());
         // Get and decrypt the mnemonic seed phrase
-        let payload = get_encrypted_mnemonic_seed()
+        let payload = db::get_encrypted_mnemonic_seed()
             .await
             .map_err(|e| e.to_jsvalue())?
             .ok_or_else(|| JsValue::from_str("Mnemonic phrase not found"))?;
-        let mut pub_keys: Vec<String> = Vec::new();
+        let mut lock_args_array: Vec<String> = Vec::new();
         let seed = decrypt(&password, payload)?;
         for i in 0..count {
             let (pub_key, pri_key) = self
                 .derive_sphincs_key(&seed, i)
                 .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
 
-            // let pub_key_clone = pub_key.clone();
+            // Calculate lock script args and encrypt corresponding private key
+            let lock_script_args = self.get_lock_scrip_arg(&pub_key);
             let encrypted_pri = encrypt(&password, &pri_key)?;
             // Store to DB
-            let pair = SphincsPlusKeyPair {
-                index: 0, // Init to 0; Will be set correctly in add_key_pair
-                pub_key: encode(pub_key.as_ref()),
+            let account = SphincsPlusAccount {
+                index: 0, // Init to 0; Will be set correctly in add_account
+                lock_args: encode(lock_script_args),
                 pri_enc: encrypted_pri,
             };
-            pub_keys.push(encode(pub_key.as_ref()));
+            lock_args_array.push(encode(lock_script_args));
 
-            add_key_pair(pair).await.map_err(|e| e.to_jsvalue())?;
+            db::add_account(account).await.map_err(|e| e.to_jsvalue())?;
         }
-        Ok(pub_keys)
+        Ok(lock_args_array)
+    }
+
+    /// Building CKB lockscript for SPHINCS+ public key
+    ///
+    /// **Parameters**:
+    /// - `public_key: &SecureVec` - The SPHINCS+ public key to be used in the lock script.
+    ///
+    /// **Returns**:
+    /// - `[u8; 32]` - The lock script arguments as a byte array.
+    fn get_lock_scrip_arg(&self, public_key: &SecureVec) -> [u8; 32] {
+        let all_in_one_config: [u8; 4] = [
+            MULTISIG_RESERVED_FIELD_VALUE,
+            REQUIRED_FIRST_N,
+            THRESHOLD,
+            PUBKEY_NUM,
+        ];
+        let sign_flag: u8 = self.variant << 1;
+        let mut script_args_hasher = Hasher::script_args_hasher();
+        script_args_hasher.update(&all_in_one_config);
+        script_args_hasher.update(&[sign_flag]);
+        script_args_hasher.update(&public_key);
+        script_args_hasher.hash()
     }
 }
 

@@ -42,17 +42,41 @@ macro_rules! sphincs_keygen {
 
 #[macro_export]
 macro_rules! sphincs_sign {
-    ($module:ident, $pri_key:expr, $message_vec:expr) => {{
-        let mut pri_key_array: [u8; $module::SK_LEN] = $pri_key
+    ($module:ident, $pri_key:expr, $message_vec:expr, $variant:expr) => {{
+        let mut pri_key_bytes: [u8; $module::SK_LEN] = $pri_key
             .as_ref()
             .try_into()
             .map_err(|_| JsValue::from_str("Invalid private key length"))?;
-        let signing_key = $module::PrivateKey::try_from_bytes(&pri_key_array)
+        let signing_key = $module::PrivateKey::try_from_bytes(&pri_key_bytes)
             .map_err(|e| JsValue::from_str(&format!("Unable to construct private key: {:?}", e)))?;
         let signature = signing_key
             .try_sign($message_vec, &[], true)
             .map_err(|e| JsValue::from_str(&format!("Signing error: {:?}", e)))?;
-        pri_key_array.zeroize();
-        Ok(Uint8Array::from(signature.as_slice()))
+
+        let all_in_one_config: [u8; 4] = [
+            MULTISIG_RESERVED_FIELD_VALUE,
+            REQUIRED_FIRST_N,
+            THRESHOLD,
+            PUBKEY_NUM,
+        ];
+        let param_id_and_sign_flag: u8 = ($variant << 1) | 1;
+
+        // The sphincs+ public key is the second half of the private key
+        let pub_key: [u8; $module::PK_LEN] = pri_key_bytes
+            [$module::PK_LEN..$module::PK_LEN + $module::PK_LEN]
+            .as_ref()
+            .try_into()
+            .map_err(|_| JsValue::from_str("Invalid public key length"))?;
+        let ckb_qr_full_signature = [
+            &all_in_one_config[..],
+            &[param_id_and_sign_flag],
+            &pub_key[..],
+            signature.as_slice(),
+        ]
+        .concat();
+
+        pri_key_bytes.zeroize();
+
+        Ok(Uint8Array::from(ckb_qr_full_signature.as_slice()))
     }};
 }

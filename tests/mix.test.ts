@@ -87,14 +87,14 @@ describe("Quantum Purse Basics", () => {
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccount(passwordStrHandler);
-    const accountList = await wallet.getAllAccounts();
+    const accountList = await wallet.getAllLockScriptArgs();
     const address0 = wallet.getAddress(accountList[0]);
 
     // Stub buildTransfer to return a dummy transaction
     sinon.stub(wallet as any, "buildTransfer").resolves(dummyTx);
 
     passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.setAccPointer(accountList[0]);
+    await wallet.setAccountPointer(accountList[0]);
     const signedTx = await wallet.sign(dummyTx, passwordStrHandler);
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
   });
