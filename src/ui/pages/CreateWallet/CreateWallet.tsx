@@ -73,7 +73,7 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
       });
     } catch (error) {
       notification.error({
-        message: "Create wallet failed!",
+        message: "Wallet creation failed!",
         description: formatError(error),
       });
     }
@@ -152,19 +152,25 @@ export const StepCreatePassword: React.FC = () => {
     }
     // store chosen param set to storage, so wallet type retains when refreshed
     localStorage.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
-    
-    await dispatch.wallet
-      .createWallet({ password })
-      .then(async () => {
-        await dispatch.wallet.exportSRP({ password });
-      })
-      .then(() => {
-        next();
-        localStorage.setItem(
-          STORAGE_KEYS.WALLET_STEP,
-          WALLET_STEP.SRP.toString()
-        );
+    try {
+      await dispatch.wallet
+        .createWallet({ password })
+        .then(async () => {
+          await dispatch.wallet.exportSRP({ password });
+        })
+        .then(() => {
+          next();
+          localStorage.setItem(
+            STORAGE_KEYS.WALLET_STEP,
+            WALLET_STEP.SRP.toString()
+          );
+        });
+    } catch (error) {
+      notification.info({
+        message: "Wallet creation failed",
+        description: formatError(error),
       });
+    }
   };
 
   return (

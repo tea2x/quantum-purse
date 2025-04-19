@@ -8,7 +8,7 @@ import { RootModel } from "./index";
 interface IAccount {
   name: string;
   address: string | null;
-  sphincsPlusPubKey: string;
+  spxLockArgs: string;
   balance?: string;
 }
 
@@ -39,11 +39,11 @@ const initState: StateType = {
     name: "",
     address: "",
     balance: "0",
-    sphincsPlusPubKey: "",
+    spxLockArgs: "",
   },
   accounts: [],
   syncStatus: {
-    nodeId: "[............................]",
+    nodeId: "NULL",
     connections: 0,
     syncedBlock: 0,
     tipBlock: 0,
@@ -68,9 +68,9 @@ export const wallet = createModel<RootModel>()({
     setAccounts(state: StateType, accounts: IAccount[]) {
       return { ...state, accounts };
     },
-    setAccountBalance(state: StateType, { sphincsPlusPubKey, balance }) {
+    setAccountBalance(state: StateType, { spxLockArgs, balance }) {
       const accounts = state.accounts.map((account) => {
-        if (account.sphincsPlusPubKey === sphincsPlusPubKey) {
+        if (account.spxLockArgs === spxLockArgs) {
           return { ...account, balance };
         }
         return account;
@@ -91,10 +91,10 @@ export const wallet = createModel<RootModel>()({
     async loadAccounts() {
       if (!quantum) return;
       try {
-        const accounts = await quantum.getAllAccounts();
+        const accounts = await quantum.getAllLockScriptArgs();
         const accountsData = accounts.map((account, index) => ({
           name: `Account ${index + 1}`,
-          sphincsPlusPubKey: account,
+          spxLockArgs: account,
           address: quantum.getAddress(account),
         }));
         this.setAccounts(accountsData);
@@ -141,13 +141,13 @@ export const wallet = createModel<RootModel>()({
           );
   
           if (preservedAccountSphincsPlusPubKey) {
-            await quantum.setAccPointer(preservedAccountSphincsPlusPubKey);
+            await quantum.setAccountPointer(preservedAccountSphincsPlusPubKey);
           } else {
             localStorage.setItem(
               STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC,
-              accountsData[0].sphincsPlusPubKey
+              accountsData[0].spxLockArgs
             );
-            await quantum.setAccPointer(accountsData[0].sphincsPlusPubKey);
+            await quantum.setAccountPointer(accountsData[0].spxLockArgs);
           }
           this.setActive(true);
         } else {
@@ -165,14 +165,14 @@ export const wallet = createModel<RootModel>()({
       try {
         const accountPointer = quantum.accountPointer;
         const accountData = rootState.wallet.accounts.find(
-          (account) => account.sphincsPlusPubKey === accountPointer
+          (account) => account.spxLockArgs === accountPointer
         );
         if (!accountData) return;
         const currentBalance = await quantum.getBalance();
         this.setCurrent({
           address: quantum.getAddress(accountPointer),
           balance: currentBalance.toString(),
-          sphincsPlusPubKey: accountData.sphincsPlusPubKey,
+          spxLockArgs: accountData.spxLockArgs,
           name: accountData.name,
         });
       } catch (error) {
@@ -210,12 +210,12 @@ export const wallet = createModel<RootModel>()({
         throw error;
       }
     },
-    async getAccountBalance({ sphincsPlusPubKey }) {
+    async getAccountBalance({ spxLockArgs }) {
       if (!quantum) return null;
       try {
-        const balance = await quantum.getBalance(sphincsPlusPubKey);
+        const balance = await quantum.getBalance(spxLockArgs);
         // this.setAccountBalance({
-        //   sphincsPlusPubKey,
+        //   spxLockArgs,
         //   balance: balance.toString(),
         // });
         return balance.toString();
@@ -224,13 +224,13 @@ export const wallet = createModel<RootModel>()({
         // throw error;
       }
     },
-    async switchAccount({ sphincsPlusPubKey }, rootState) {
+    async switchAccount({ spxLockArgs }, rootState) {
       try {
-        await quantum.setAccPointer(sphincsPlusPubKey);
+        await quantum.setAccountPointer(spxLockArgs);
         this.loadCurrentAccount({});
         localStorage.setItem(
           STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC,
-          sphincsPlusPubKey
+          spxLockArgs
         );
       } catch (error) {
         throw error;
@@ -241,7 +241,7 @@ export const wallet = createModel<RootModel>()({
         const tx = await quantum.buildTransfer(from, to, amount);
         const fromSphincsPlusPubKey = rootState.wallet.accounts.find(
           (account) => account.address === from
-        )?.sphincsPlusPubKey;
+        )?.spxLockArgs;
         const signedTx = await quantum.sign(
           tx,
           utf8ToBytes(password),
@@ -295,9 +295,9 @@ export const wallet = createModel<RootModel>()({
           );
 
           const accountsWithBalance = await Promise.all(
-            accounts.map(async (sphincsPlusPubKey) => {
-              const balance = await quantum.getBalance(sphincsPlusPubKey);
-              return { sphincsPlusPubKey, balance };
+            accounts.map(async (spxLockArgs) => {
+              const balance = await quantum.getBalance(spxLockArgs);
+              return { spxLockArgs, balance };
             })
           );
 
@@ -316,7 +316,6 @@ export const wallet = createModel<RootModel>()({
         };
 
         await checkAccount(0, FIND_ACCOUNT_THRESHOLD);
-
         await quantum.recoverAccounts(utf8ToBytes(password), accountsLength);
 
         this.setActive(true);

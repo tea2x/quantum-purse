@@ -22,7 +22,6 @@ const Layout: React.FC<AuthLayoutProps> = ({
         await dispatch.wallet.init({});
         await dispatch.wallet.loadCurrentAccount({});
       } catch (error: any) {
-        
         if (error.message.includes("SharedArrayBuffer is not defined")) {
           notification.error({
             message: "Insecure browser context",

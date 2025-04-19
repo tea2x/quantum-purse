@@ -6,7 +6,7 @@ import { AccountItem } from "../../pages/Wallet/Wallet";
 export interface AccountOption {
   address?: string | null;
   name: string;
-  sphincsPlusPubKey: string;
+  spxLockArgs: string;
   [key: string]: any;
 }
 
@@ -46,7 +46,7 @@ const AccountSelect: React.FC<AccountSelectProps> = ({
       <AccountItem
         address={accountData.address!}
         name={accountData.name}
-        sphincsPlusPubKey={accountData.sphincsPlusPubKey}
+        spxLockArgs={accountData.spxLockArgs}
         hasTools={false}
         copyable={false}
       />
@@ -61,7 +61,7 @@ const AccountSelect: React.FC<AccountSelectProps> = ({
       <AccountItem
         address={accountData?.address!}
         name={accountData?.name}
-        sphincsPlusPubKey={accountData?.sphincsPlusPubKey}
+        spxLockArgs={accountData?.spxLockArgs}
         hasTools={false}
         copyable={false}
         showBalance={true}
