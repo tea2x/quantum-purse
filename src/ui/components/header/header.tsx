@@ -63,8 +63,8 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               <span>Node Id: </span>
               {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
                 <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
-                  <span>{shortenAddress(syncStatus.nodeId, 0, 5)}</span>
-                  <CopyOutlined />
+                  <span>{shortenAddress(syncStatus.nodeId, 2, 5)}</span>
+                  <CopyOutlined className={styles.copyable}/>
                 </Copy>
               ) : (
                 <span>{syncStatus.nodeId}</span>

@@ -147,3 +147,14 @@
   justify-content: center;
   gap: 1rem;
 }
+
+.copyable {
+  width: fit-content;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  transition: all 0.3s ease;
+  &:hover {
+    background-color:rgba(0, 255, 255, 0.252);
+    color: gray;
+  }
+}
