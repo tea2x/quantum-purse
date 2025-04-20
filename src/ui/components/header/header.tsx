@@ -42,9 +42,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             }
           }}
         />
-        {screens.md && (
-          <p className={styles.text}>Quantum Purse</p>
-        )}
+        <p className={styles.text}>Quantum Purse</p>
       </div>
 
       <div className="header-right">
@@ -80,9 +78,11 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           </div>
         </Dropdown>
 
-        <span className={styles.firstGlance}>
-          {syncStatus && parseInt(syncStatus.connections.toString())}
-        </span>
+        {screens.md && (
+          <span className={styles.firstGlance}>
+            {syncStatus && parseInt(syncStatus.connections.toString())}
+          </span>
+        )}
         
         <Dropdown
           dropdownRender={() => (
@@ -99,10 +99,11 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             <Icon.Syncing className={styles.spinHarmonic}/>
           </div>
         </Dropdown>
-
-        <span className={styles.firstGlance}>
-          {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
-        </span>
+        {screens.md && (
+          <span className={styles.firstGlance}>
+            {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
+          </span>
+        )}
         
         {!screens.md && (
           <Button

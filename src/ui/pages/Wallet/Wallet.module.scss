@@ -1,4 +1,10 @@
 .wallet {
+  h1 {
+    @media (max-width: 768px) {
+      font-size: 1.8rem;
+    }
+  }
+
   :global {
     display: flex;
     flex-direction: column;

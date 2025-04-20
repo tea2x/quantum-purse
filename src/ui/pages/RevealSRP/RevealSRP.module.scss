@@ -12,4 +12,9 @@
     max-width: 50rem;
     margin: 0 auto;
   }
+  h1 {
+    @media (max-width: 768px) {
+      font-size: 1.8rem;
+    }
+  }
 }

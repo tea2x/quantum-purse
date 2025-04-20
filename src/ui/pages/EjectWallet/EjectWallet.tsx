@@ -15,12 +15,7 @@ const EjectWallet: React.FC = () => {
       <h1>Eject Wallet</h1>
       <div className={styles.content}>
         <p>
-          Ejecting your wallet will remove it from the Quantum Purse
-          application.
-        </p>
-        <p>
-          Once ejected, you will not be able to access your wallet without
-          re-importing it.
+          This action removes all keys from the Quantum Purse. You can re-import your wallet using the mnemonic seed phrase after.
         </p>
         <Button 
           type="primary" 

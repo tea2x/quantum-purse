@@ -106,7 +106,7 @@ const Send: React.FC = () => {
   }, [fromAccountBalance, form]);
 
   return (
-    <section className={cx(styles.wallet, "panel")}>
+    <section className={cx(styles.sendForm, "panel")}>
       <h1>Send</h1>
       <div>
         <Form layout="vertical" form={form} className={styles.sendForm}>
@@ -133,7 +133,7 @@ const Send: React.FC = () => {
                     BigInt(fromAccountBalance) < BigInt(73 * 100000000)
                   ) {
                     return Promise.reject(
-                      "This account has insufficient balance. The balance must be greater than 73 CKB"
+                      "Insufficient balance."
                     );
                   }
                   return Promise.resolve();
@@ -155,7 +155,7 @@ const Send: React.FC = () => {
               <div className="label-container">
                 To
                 <div className="switch-container">
-                  Send To My Account
+                  My Account
                   <Form.Item
                     name="isSendToMyAccount"
                     style={{ marginBottom: 0 }}
