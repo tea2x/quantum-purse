@@ -3,7 +3,7 @@
 //! This module provides a secure authentication interface for managing cryptographic keys in
 //! QuantumPurse using WebAssembly. It leverages AES-GCM for encryption, Scrypt for key derivation,
 //! and the SPHINCS+ signature scheme for post-quantum transaction signing. Sensitive data, including
-//! the BIP39 mnemonic and derived SPHINCS+ private keys, is encrypted and stored in the browser via
+//! root seed and derived SPHINCS+ private keys, is encrypted and stored in the browser via
 //! IndexedDB, with access authenticated by user-provided passwords.
 
 use bip39::{Language, Mnemonic};
@@ -67,10 +67,10 @@ impl KeyVault {
     /// - `index: u32` - The index of the child sphincs+ key to be derived.
     ///
     /// **Returns**:
-    /// - `Result<SecureVec, String>` - Scrypt key on success, or an error message on failure.
+    /// - `Result<SecureVec, SecureVec>` - The SPHINCS+ key pair on success, or an error message on failure.
     ///
     /// Warning: Proper zeroization of the input seed is the responsibility of the caller.
-    fn derive_sphincs_key(
+    fn derive_sphincs_keys(
         &self,
         seed: &[u8],
         index: u32,
@@ -211,7 +211,7 @@ impl KeyVault {
 
         let index = Self::get_all_sphincs_lock_args().await?.len() as u32;
         let (pub_key, pri_key) = self
-            .derive_sphincs_key(&seed, index)
+            .derive_sphincs_keys(&seed, index)
             .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
 
         // Calculate lock script args and encrypt corresponding private key
@@ -392,7 +392,7 @@ impl KeyVault {
         let mut lock_args_array: Vec<String> = Vec::new();
         for i in start_index..(start_index + count) {
             let (pub_key, _) = self
-                .derive_sphincs_key(&seed, i)
+                .derive_sphincs_keys(&seed, i)
                 .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
 
             // Calculate lock script args
@@ -428,7 +428,7 @@ impl KeyVault {
         let seed = decrypt(&password, payload)?;
         for i in 0..count {
             let (pub_key, pri_key) = self
-                .derive_sphincs_key(&seed, i)
+                .derive_sphincs_keys(&seed, i)
                 .map_err(|e| JsValue::from_str(&format!("Key derivation error: {}", e)))?;
 
             // Calculate lock script args and encrypt corresponding private key

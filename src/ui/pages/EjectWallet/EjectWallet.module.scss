@@ -1,6 +1,11 @@
 .ejectWallet {
   display: flex;
   flex-direction: column;
+  h1 {
+    @media (max-width: 768px) {
+      font-size: 1.8rem;
+    }
+  }
   .content {
     display: flex;
     flex-direction: column;

@@ -12,10 +12,16 @@
     font-family: "Quantico", sans-serif;
     text-transform: uppercase;
     margin-bottom: 1.6rem;
+    @media (max-width: 768px) {
+      font-size: 2.5rem;
+    }
   }
   p {
     font-size: 2.4rem;
     margin-bottom: 3.2rem;
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
   }
   .buttonsGroup {
     display: flex;

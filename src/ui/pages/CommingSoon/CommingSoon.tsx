@@ -11,7 +11,7 @@ const CommingSoon: React.FC = () => {
   return (
     <section className={cx(styles.commingSoon)}>
       <h1>Comming Soon</h1>
-      <p>This feature is in development. Please check back later.</p>
+      <p>This feature is in development.</p>
       <div className={styles.buttonsGroup}>
         <NavLink to={ROUTES.HOME}>
           <Button type="primary">

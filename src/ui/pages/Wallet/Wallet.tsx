@@ -121,7 +121,7 @@ const Wallet: React.FC = () => {
           loading={loadingCreateAccount}
           disabled={loadingCreateAccount || loadingLoadAccounts}
         >
-          Add account
+          Gen New Account
         </Button>
       </Flex>
       <div className={styles.accountList}>
@@ -204,14 +204,16 @@ export const AccountItem: React.FC<AccountItemProps> = ({
               </Tag>
             )}
           </p>
-          {copyable ? (
-            <Copy value={address} className="address copyable">
-              <span>{shortenAddress(address, 10, 20)}</span>
+          <span className="address">
+            {shortenAddress(address, 10, 20)}
+            {copyable ? (
+            <Copy value={address} className="copyable">
               <CopyOutlined />
             </Copy>
           ) : (
             <div className="address">{shortenAddress(address, 10, 20)}</div>
           )}
+          </span>
         </div>
         <Flex gap={8} align="center">
           {hasTools && (
@@ -248,7 +250,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
           centered
         >
           <p>
-            Are you sure want to set <b>{name}</b> as current account?
+            Set <b>{name}</b> as current account?
           </p>
         </Modal>
       )}

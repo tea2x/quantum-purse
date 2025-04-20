@@ -198,6 +198,6 @@ body {
   }
 }
 
-.ant-btn, .ant-form-item, .ant-select, .ant-form-item-label, .ant-checkbox-wrapper, .ant-select-item-option, .ant-select-item-group {
+.ant-btn, .ant-form-item, .ant-select, .ant-form-item-label, .ant-checkbox-wrapper, .ant-select-item-option, .ant-select-item-group, .ant-menu, .ant-menu-item {
   font-family: "Quantico", sans-serif !important;
 }
