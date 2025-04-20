@@ -3,7 +3,7 @@
 //! This module provides a secure authentication interface for managing cryptographic keys in
 //! QuantumPurse using WebAssembly. It leverages AES-GCM for encryption, Scrypt for key derivation,
 //! and the SPHINCS+ signature scheme for post-quantum transaction signing. Sensitive data, including
-//! the BIP39 mnemonic and derived SPHINCS+ private keys, is encrypted and stored in the browser via
+//! root seed and derived SPHINCS+ private keys, is encrypted and stored in the browser via
 //! IndexedDB, with access authenticated by user-provided passwords.
 
 use bip39::{Language, Mnemonic};

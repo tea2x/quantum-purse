@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   return (
     <header className={cx(styles.header, className)} {...rest}>
       <div className="header-left">
-        <Icon.Chip
+        <Icon.Logo
           className={styles.zoomInOut}
           color="var(--white)"
           onClick={() => {
