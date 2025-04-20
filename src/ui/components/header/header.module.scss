@@ -15,7 +15,7 @@
       display: flex;
       align-items: center;
       gap: 1rem;
-      color: var(--white);
+      color: rgb(28, 28, 28);
       text-transform: uppercase;
       font-family: "Quantico", sans-serif;
       font-size: 2rem;
@@ -32,6 +32,7 @@
           blink-caret 0.75s step-end infinite;
         margin: 0;
         letter-spacing: 0.15em;
+        font-weight: bold;
       }
     }
 
