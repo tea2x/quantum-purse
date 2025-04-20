@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               <div className={styles.withOptionalWarningSign}>
                 <h2>Peers Information</h2>
                 {syncStatus.nodeId === "NULL" && (
-                  <Tooltip title="Light client not functioning">
+                  <Tooltip title="Light client has not started.">
                     <Icon.Alert />
                   </Tooltip>
                 )}
@@ -75,7 +75,9 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           )}
           trigger={["hover"]}
         >
-          <Icon.Connections className={styles.spinAndPause} />
+          <div className={styles.spinAndPause}>
+            <Icon.Connections />
+          </div>
         </Dropdown>
 
         <span className={styles.firstGlance}>
@@ -93,7 +95,9 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           )}
           trigger={["hover"]}
         >
-          <Icon.Syncing className={styles.spinHarmonic}/>
+          <div className={styles.spinHarmonic}>
+            <Icon.Syncing />
+          </div>
         </Dropdown>
 
         <span className={styles.firstGlance}>
@@ -108,7 +112,6 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           />
         )}
       </div>
-
     </header>
   );
 };
