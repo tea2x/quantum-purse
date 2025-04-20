@@ -1,5 +1,4 @@
 import { Button, Grid, Dropdown, Tooltip } from "antd";
-import { QuestionCircleOutlined } from "@ant-design/icons";
 import React, { useContext, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import LayoutCtx from "../../context/layout_ctx";
@@ -50,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
 
       <div className="header-right">
         <Dropdown
-          overlay={
+          dropdownRender={() => (
             <div className={styles.syncStatusOverlay}>
               <div className={styles.withOptionalWarningSign}>
                 <h2>Peers Information</h2>
@@ -73,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               Connected: {syncStatus && parseInt(syncStatus.connections.toString())} &nbsp; &nbsp; 
               Sync: {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
             </div>
-          }
+          )}
           trigger={["hover"]}
         >
           <Icon.Connections className={styles.spinAndPause} />
@@ -84,14 +83,14 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         </span>
         
         <Dropdown
-          overlay={
+          dropdownRender={() => (
             <div className={styles.syncStatusOverlay}>
               <h2>Network Status</h2>
               Start: {syncStatus && syncStatus.startBlock.toLocaleString()} &nbsp; &nbsp; 
               Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()} &nbsp; &nbsp; 
               Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
             </div>
-          }
+          )}
           trigger={["hover"]}
         >
           <Icon.Syncing className={styles.spinHarmonic}/>
