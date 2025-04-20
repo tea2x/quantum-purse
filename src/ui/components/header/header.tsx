@@ -75,8 +75,8 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           )}
           trigger={["hover"]}
         >
-          <div className={styles.spinAndPause}>
-            <Icon.Connections />
+          <div>
+            <Icon.Connections className={styles.spinAndPause}/>
           </div>
         </Dropdown>
 
@@ -95,8 +95,8 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           )}
           trigger={["hover"]}
         >
-          <div className={styles.spinHarmonic}>
-            <Icon.Syncing />
+          <div>
+            <Icon.Syncing className={styles.spinHarmonic}/>
           </div>
         </Dropdown>
 
