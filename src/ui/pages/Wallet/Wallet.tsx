@@ -15,6 +15,7 @@ import {
   notification,
   Spin,
   Tag,
+  Grid,
 } from "antd";
 import React, { useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,6 +30,8 @@ import { useAccountSearch } from "../../hooks/useAccountSearch";
 import { Dispatch, RootState } from "../../store";
 import { cx, formatError, shortenAddress } from "../../utils/methods";
 import styles from "./Wallet.module.scss";
+
+const { useBreakpoint } = Grid;
 
 const Wallet: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
@@ -158,6 +161,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
   isLoading = false,
   ...props
 }) => {
+  const screens = useBreakpoint();
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
   const isActive = spxLockArgs === wallet.current.spxLockArgs;
@@ -205,14 +209,22 @@ export const AccountItem: React.FC<AccountItemProps> = ({
             )}
           </p>
           <span className="address">
-            {shortenAddress(address, 10, 20)}
+            {screens.md ? (
+              <span>
+                {shortenAddress(address, 10, 40)}
+              </span>
+            ) : (
+              <span>
+                {shortenAddress(address, 10, 20)}
+              </span>
+            )}
             {copyable ? (
-            <Copy value={address} className="copyable">
-              <CopyOutlined />
-            </Copy>
-          ) : (
-            <div className="address">{shortenAddress(address, 10, 20)}</div>
-          )}
+              <Copy value={address} className="copyable">
+                <CopyOutlined />
+              </Copy>
+            ) : (
+              <div className="address">{shortenAddress(address, 10, 20)}</div>
+            )}
           </span>
         </div>
         <Flex gap={8} align="center">
