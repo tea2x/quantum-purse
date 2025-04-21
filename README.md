@@ -79,7 +79,7 @@ I deployed 2 versions of this app and serve in 2 links below. Github pages' or V
 **Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">NO Light Client</span>
 
 ###### <u>Vercel</u>:
-- https://quantum-purse-vercel.vercel.app/
+- https://quantum-purse.vercel.app/
 **Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">With Light Client but only Chrome based, Safari are supported. Check [Light Client](#light-client) section for more details.</span>
 
 ## Getting started
