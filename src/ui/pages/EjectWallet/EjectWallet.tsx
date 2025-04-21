@@ -15,7 +15,7 @@ const EjectWallet: React.FC = () => {
       <h1>Eject Wallet</h1>
       <div className={styles.content}>
         <p>
-          This action removes all keys from Quantum Purse's DB. You can re-import your wallet using the mnemonic seed phrase after.
+          IMPORTANT! This action removes all keys from Quantum Purse's DB. You can re-import your wallet using the mnemonic seed phrase after.
         </p>
         <Button 
           type="primary" 
