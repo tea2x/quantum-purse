@@ -1,7 +1,7 @@
 {
   "name": "quantum-purse",
-  "version": "0.1.1",
-  "description": "ckb quantum resistant wallet",
+  "version": "0.1.2",
+  "description": "CKB SPHINCS+ wallet",
   "private": true,
   "scripts": {
     "start": "webpack serve --config ./webpack/webpack.dev.js",
