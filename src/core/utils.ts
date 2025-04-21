@@ -5,7 +5,7 @@ import { Set } from "immutable";
 import { bytes } from "@ckb-lumos/codec";
 import { SPHINCSPLUS_LOCK } from "./config";
 import { RPC } from "@ckb-lumos/rpc";
-import { Util as KeyVaultUtil } from "../../key-vault/pkg/key_vault";
+import { Util as KeyVaultUtil } from "sphincs-plus-key-vault-web";
 
 /**
  * Converts a hexadecimal string to a BigInt number, handling both positive and negative values.

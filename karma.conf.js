@@ -5,7 +5,7 @@ module.exports = function (config) {
     files: [
       "tests/*.test.ts",
       {
-        pattern: "key-vault/pkg/key_vault_bg.wasm",
+        pattern: "node_modules/sphincs-plus-key-vault-web/sphincs_plus_key_vault_web_bg.wasm",
         type: "wasm",
         served: true,
         included: false,

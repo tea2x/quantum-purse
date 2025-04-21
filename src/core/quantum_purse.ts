@@ -5,7 +5,7 @@ import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { Script, HashType, Address, Transaction, DepType, Cell } from "@ckb-lumos/base";
 import { TransactionSkeletonType, TransactionSkeleton, sealTransaction, addressToScript } from "@ckb-lumos/helpers";
 import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from "./utils";
-import __wbg_init, { KeyVault, Util as KeyVaultUtil, SphincsVariant } from "../../key-vault/pkg/key_vault";
+import __wbg_init, { KeyVault, Util as KeyVaultUtil, SphincsVariant } from "sphincs-plus-key-vault-web";
 import { LightClient, randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex, ScriptStatus } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import testnetConfig from "../../light-client/network.test.toml";
@@ -13,7 +13,7 @@ import mainnetConfig from "../../light-client/network.main.toml";
 import { ClientIndexerSearchKeyLike, Hex } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
 
-export { SphincsVariant } from "../../key-vault/pkg/key_vault";
+export { SphincsVariant } from "sphincs-plus-key-vault-web";
 
 /**
  * Manages a wallet using the SPHINCS+ post-quantum signature scheme (shake-128f simple)
