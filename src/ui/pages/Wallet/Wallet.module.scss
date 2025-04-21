@@ -53,6 +53,9 @@
   align-items: center;
   box-sizing: border-box;
   border: solid 0.1rem transparent;
+  @media (max-width: 768px) {
+    padding: 0.6rem 0rem;
+  }
 
   &:has(:global(.account-info:hover)) {
     background-color: var(--gray-light);
