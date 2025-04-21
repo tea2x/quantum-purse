@@ -133,7 +133,7 @@ const Send: React.FC = () => {
                     BigInt(fromAccountBalance) < BigInt(73 * 100000000)
                   ) {
                     return Promise.reject(
-                      "Insufficient balance."
+                      "Insufficient balance!"
                     );
                   }
                   return Promise.resolve();
