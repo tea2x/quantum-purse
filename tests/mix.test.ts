@@ -2,7 +2,7 @@ import { expect } from "chai";
 import QuantumPurse, { SphincsVariant } from "../src/core/quantum_purse";
 import sinon from "sinon";
 import { utf8ToBytes, bytesToUtf8 } from "../src/core/utils";
-import __wbg_init from "../key-vault/pkg/key_vault";
+import __wbg_init from "quantum-purse-key-vault";
 import { dummyTx } from "./dummy_tx";
 
 describe("Quantum Purse Basics", () => {
@@ -21,7 +21,7 @@ describe("Quantum Purse Basics", () => {
 
   before(async () => {
     // Manually initialize Wasm with Karma-served file
-    const wasmResponse = await fetch("/base/key-vault/pkg/key_vault_bg.wasm");
+    const wasmResponse = await fetch("/base/node_modules/quantum-purse-key-vault/quantum_purse_key_vault_bg.wasm");
     const wasmBuffer = await wasmResponse.arrayBuffer();
     await __wbg_init(wasmBuffer);
     wallet = await QuantumPurse.getInstance();

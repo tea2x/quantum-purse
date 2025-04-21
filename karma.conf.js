@@ -5,7 +5,7 @@ module.exports = function (config) {
     files: [
       "tests/*.test.ts",
       {
-        pattern: "key-vault/pkg/key_vault_bg.wasm",
+        pattern: "node_modules/quantum-purse-key-vault/quantum_purse_key_vault_bg.wasm",
         type: "wasm",
         served: true,
         included: false,

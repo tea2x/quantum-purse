@@ -97,17 +97,17 @@
         padding: 0.4rem;
         margin-left: -0.4rem;
         border-radius: 0.4rem;
-      }
-    }
 
-    .copyable {
-      width: fit-content;
-      padding: 0.4rem;
-      border-radius: 0.4rem;
-      transition: all 0.3s ease;
-      &:hover {
-        background-color: var(--gray-01);
-        color: var(--white-abs);
+        .copyable {
+          width: fit-content;
+          padding: 0.4rem;
+          border-radius: 0.4rem;
+          transition: all 0.3s ease;
+          &:hover {
+            background-color: var(--gray-01);
+            color: var(--white-abs);
+          }
+        }
       }
     }
     
