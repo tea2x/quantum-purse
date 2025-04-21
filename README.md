@@ -84,15 +84,10 @@ I deployed 2 versions of this app and serve in 2 links below. Github pages' or V
 
 ## Getting started
 ###### <u>Dependencies</u>
-1. Rust and Cargo.
-2. wasm-pack.
-3. Node >=20.
+1. Node >=20.
 
 ###### <u>Command list</u>
 ```shell
-# Init git submodule
-git submodule update --init
-
 # Install all dependencies
 npm install
 
