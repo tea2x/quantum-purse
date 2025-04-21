@@ -10,8 +10,8 @@ const CommingSoon: React.FC = () => {
   const navigate = useNavigate();
   return (
     <section className={cx(styles.commingSoon)}>
-      <h1>Comming Soon</h1>
-      <p>This feature is in development. Please check back later.</p>
+      <h1>Coming soon</h1>
+      <p>This feature is in development.</p>
       <div className={styles.buttonsGroup}>
         <NavLink to={ROUTES.HOME}>
           <Button type="primary">

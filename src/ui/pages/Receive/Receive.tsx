@@ -8,7 +8,7 @@ const Receive: React.FC = () => {
   const activeAccount = useSelector((state: RootState) => state.wallet.current);
 
   return (
-    <section className={cx(styles.wallet, "panel")}>
+    <section className={cx(styles.receiveContainer, "panel")}>
       <h1>Receive</h1>
 
       <AccountDetail account={activeAccount} />

@@ -222,7 +222,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
         <Input.TextArea
           size="large"
           placeholder="Enter your seed recovery phrase"
-          rows={4}
+          rows={7}
         />
       </Form.Item>
       <Flex align="center" justify="center" gap={16}>

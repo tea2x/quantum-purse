@@ -84,7 +84,7 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
       {
         key: WALLET_STEP.PASSWORD,
         title: "Wallet Type & Password",
-        description: "Create password and choose the SPHINCS+ parameter set",
+        description: "Choose a SPHINCS+ parameter set and create a password",
         icon: loadingCreateWallet ? <LoadingOutlined /> : <KeyOutlined />,
         content: <StepCreatePassword />,
       },
@@ -280,7 +280,7 @@ const StepSecureSRP: React.FC = () => {
       title={"Secure Secret Recovery Phrase"}
       description={
         srp
-          ? "IMPORTANT! Back up your chosen SPHINCS+ variant " + quantumPurse.getSphincsPlusParamSet() + " with the mnemonic seed below."
+          ? "IMPORTANT! Back up too your chosen SPHINCS+ variant " + quantumPurse.getSphincsPlusParamSet() + " with the mnemonic seed below."
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process."
       }
       exportSrpHandler={exportSrpHandler}

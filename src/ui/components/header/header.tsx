@@ -1,5 +1,4 @@
 import { Button, Grid, Dropdown, Tooltip } from "antd";
-import { QuestionCircleOutlined } from "@ant-design/icons";
 import React, { useContext, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import LayoutCtx from "../../context/layout_ctx";
@@ -33,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   return (
     <header className={cx(styles.header, className)} {...rest}>
       <div className="header-left">
-        <Icon.Chip
+        <Icon.Logo
           className={styles.zoomInOut}
           color="var(--white)"
           onClick={() => {
@@ -43,19 +42,17 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             }
           }}
         />
-        {screens.md && (
-          <p className={styles.text}>Quantum Purse</p>
-        )}
+        <p className={styles.text}>Quantum Purse</p>
       </div>
 
       <div className="header-right">
         <Dropdown
-          overlay={
+          dropdownRender={() => (
             <div className={styles.syncStatusOverlay}>
               <div className={styles.withOptionalWarningSign}>
                 <h2>Peers Information</h2>
                 {syncStatus.nodeId === "NULL" && (
-                  <Tooltip title="Light client not functioning">
+                  <Tooltip title="Light client has not started.">
                     <Icon.Alert />
                   </Tooltip>
                 )}
@@ -63,8 +60,8 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               <span>Node Id: </span>
               {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
                 <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
-                  <span>{shortenAddress(syncStatus.nodeId, 0, 5)}</span>
-                  <CopyOutlined />
+                  <span>{shortenAddress(syncStatus.nodeId, 2, 5)}</span>
+                  <CopyOutlined className={styles.copyable}/>
                 </Copy>
               ) : (
                 <span>{syncStatus.nodeId}</span>
@@ -73,33 +70,40 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               Connected: {syncStatus && parseInt(syncStatus.connections.toString())} &nbsp; &nbsp; 
               Sync: {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
             </div>
-          }
+          )}
           trigger={["hover"]}
         >
-          <Icon.Connections className={styles.spinAndPause} />
+          <div>
+            <Icon.Connections className={styles.spinAndPause}/>
+          </div>
         </Dropdown>
 
-        <span className={styles.firstGlance}>
-          {syncStatus && parseInt(syncStatus.connections.toString())}
-        </span>
+        {screens.md && (
+          <span className={styles.firstGlance}>
+            {syncStatus && parseInt(syncStatus.connections.toString())}
+          </span>
+        )}
         
         <Dropdown
-          overlay={
+          dropdownRender={() => (
             <div className={styles.syncStatusOverlay}>
               <h2>Network Status</h2>
               Start: {syncStatus && syncStatus.startBlock.toLocaleString()} &nbsp; &nbsp; 
               Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()} &nbsp; &nbsp; 
               Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
             </div>
-          }
+          )}
           trigger={["hover"]}
         >
-          <Icon.Syncing className={styles.spinHarmonic}/>
+          <div>
+            <Icon.Syncing className={styles.spinHarmonic}/>
+          </div>
         </Dropdown>
-
-        <span className={styles.firstGlance}>
-          {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
-        </span>
+        {screens.md && (
+          <span className={styles.firstGlance}>
+            {syncStatus && syncStatus.syncedStatus.toFixed(2)}%
+          </span>
+        )}
         
         {!screens.md && (
           <Button
@@ -109,7 +113,6 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           />
         )}
       </div>
-
     </header>
   );
 };

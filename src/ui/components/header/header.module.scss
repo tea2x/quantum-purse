@@ -15,10 +15,13 @@
       display: flex;
       align-items: center;
       gap: 1rem;
-      color: var(--white);
+      color: rgb(28, 28, 28);
       text-transform: uppercase;
       font-family: "Quantico", sans-serif;
       font-size: 2rem;
+      @media (max-width: 768px) {
+        font-size: 1.7rem;
+      }
 
       svg {
         cursor: pointer;
@@ -32,6 +35,7 @@
           blink-caret 0.75s step-end infinite;
         margin: 0;
         letter-spacing: 0.15em;
+        font-weight: bold;
       }
     }
 
@@ -82,8 +86,38 @@
 .firstGlance {
   font-size: 2rem;
   align-items: center;
-  margin-right: 2rem;
+  margin-right: 0.2rem;
   color: rgb(28, 28, 28);
+}
+
+.spinAndPause {
+  animation: spinWithPause 4s ease-in-out infinite;
+}
+
+.spinHarmonic {
+  animation: harmonicSpin 2s ease-in-out infinite;
+}
+
+.zoomInOut {
+  animation: zoom 1s ease-in-out infinite;
+}
+
+.withOptionalWarningSign {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.copyable {
+  width: fit-content;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  transition: all 0.3s ease;
+  &:hover {
+    background-color:rgba(0, 255, 255, 0.252);
+    color: gray;
+  }
 }
 
 @keyframes harmonicSpin {
@@ -120,18 +154,6 @@
   }
 }
 
-.spinAndPause {
-  animation: spinWithPause 4s ease-in-out infinite;
-}
-
-.spinHarmonic {
-  animation: harmonicSpin 2s ease-in-out infinite;
-}
-
-.zoomInOut {
-  animation: zoom 1s ease-in-out infinite;
-}
-
 @keyframes zoom {
   0%, 100% {
     transform: scale(1);
@@ -139,11 +161,4 @@
   50% {
     transform: scale(1.1);
   }
-}
-
-.withOptionalWarningSign {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
 }

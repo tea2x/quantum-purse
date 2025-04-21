@@ -14,14 +14,8 @@ const EjectWallet: React.FC = () => {
     <section className={cx(styles.ejectWallet, "panel")}>
       <h1>Eject Wallet</h1>
       <div className={styles.content}>
-        <p>
-          Ejecting your wallet will remove it from the Quantum Purse
-          application.
-        </p>
-        <p>
-          Once ejected, you will not be able to access your wallet without
-          re-importing it.
-        </p>
+        <p>IMPORTANT!</p>
+        <p>This action removes all keys from Quantum Purse's DB.</p>
         <Button 
           type="primary" 
           onClick={() => { 

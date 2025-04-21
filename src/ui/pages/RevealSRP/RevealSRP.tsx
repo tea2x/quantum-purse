@@ -14,7 +14,7 @@ const RevealSRP: React.FC = () => {
   const exportSrpHandler = async (password: string) =>
     await dispatch.wallet.exportSRP({ password });
 
-  const description = `Back it up with your current SPHINCS+ variant: ${wallet.getSphincsPlusParamSet()}`;
+  const description = `IMPORTANT! Back up too your chosen SPHINCS+ variant ${wallet.getSphincsPlusParamSet()}`;
 
   return (
     <section className={cx(styles.revealSRP, "panel")}>
@@ -26,7 +26,7 @@ const RevealSRP: React.FC = () => {
           onConfirm={() => {
             dispatch.wallet.resetSRP();
           }}
-          title="Your Secret Recovery Phrase"
+          title="Reveal Secret Recovery Phrase"
           description={description}
         />
       </div>

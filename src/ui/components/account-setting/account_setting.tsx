@@ -29,13 +29,13 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account }) => {
           <CopyOutlined />
         </Flex>
       </Copy>
-      <Divider style={{ margin: '4px 0'}}>Set start block</Divider>
+      <Divider style={{ margin: '4px 0'}}>Sync from start block</Divider>
       <div className={styles.startingBlock}>
         <Flex align="center" gap={8}>
           <Input
             value={startingBlock}
             onChange={(e) => setStartingBlock(e.target.value)}
-            placeholder={"Must be in range [0," + syncStatus.tipBlock.toString() + "]"}
+            placeholder={"In range [0, " + syncStatus.tipBlock.toString() + "]"}
             style={{ flex: 1 }}
           />
           <Button
@@ -51,7 +51,7 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account }) => {
             }}
             disabled={!isValidStartingBlock}
           >
-            Set start block
+            Set
           </Button>
         </Flex>
       </div>
