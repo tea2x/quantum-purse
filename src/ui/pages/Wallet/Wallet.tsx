@@ -218,12 +218,10 @@ export const AccountItem: React.FC<AccountItemProps> = ({
                 {shortenAddress(address, 10, 20)}
               </span>
             )}
-            {copyable ? (
+            {copyable && (
               <Copy value={address} className="copyable">
                 <CopyOutlined />
               </Copy>
-            ) : (
-              <div className="address">{shortenAddress(address, 10, 20)}</div>
             )}
           </span>
         </div>
