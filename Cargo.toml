@@ -1,8 +1,0 @@
-[workspace]
-resolver = "2"
-members = [
-    "key-vault",
-]
-
-[profile.release]
-lto = true       # Enable link-time optimization

@@ -28,8 +28,9 @@ describe("Quantum Purse Basics", () => {
     wallet.initKeyVault(SphincsVariant.Shake128F);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     sinon.restore();
+    await wallet.deleteWallet();
   });
 
   it("Should export the exact seed imported", async () => {
@@ -45,13 +46,13 @@ describe("Quantum Purse Basics", () => {
 
   it("Should zeroize password after wallet init", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.initSeedPhrase(passwordStrHandler);
+    await wallet.generateMasterSeed(passwordStrHandler);
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
   });
 
   it("Should zeroize password after generating an account", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.initSeedPhrase(passwordStrHandler);
+    await wallet.generateMasterSeed(passwordStrHandler);
     // Mocking lightClient related function
     sinon.stub(wallet as any, "setSellectiveSyncFilterInternal").resolves();
 
@@ -70,7 +71,7 @@ describe("Quantum Purse Basics", () => {
 
   it("Should zeroize password after exporting seed phrase", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.initSeedPhrase(passwordStrHandler);
+    await wallet.generateMasterSeed(passwordStrHandler);
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.exportSeedPhrase(passwordStrHandler);
@@ -101,7 +102,7 @@ describe("Quantum Purse Basics", () => {
 
   it("Should zeroize password after generating account batch", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
-    await wallet.initSeedPhrase(passwordStrHandler);
+    await wallet.generateMasterSeed(passwordStrHandler);
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccountInBatch(passwordStrHandler, 0, 3);
@@ -153,7 +154,7 @@ describe("Quantum Purse Basics", () => {
       expect.fail("Expected an error to be thrown");
     } catch (error) {
       console.error(error)
-      expect(error).to.equal("Invalid mnemonic chunk: the mnemonic has an invalid checksum");
+      expect(error).to.contain("the mnemonic has an invalid checksum");
     }
   });
 
@@ -165,7 +166,7 @@ describe("Quantum Purse Basics", () => {
       expect.fail("Expected an error to be thrown");
     } catch (error) {
       console.error(error)
-      expect(error).to.contain("Invalid mnemonic chunk: mnemonic contains an unknown word");
+      expect(error).to.contain("mnemonic contains an unknown word");
     }
   });
 

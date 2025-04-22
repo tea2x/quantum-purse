@@ -16,9 +16,9 @@ import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager"
 export { SphincsVariant } from "quantum-purse-key-vault";
 
 /**
- * Manages a wallet using the SPHINCS+ post-quantum signature scheme (shake-128f simple)
- * on the Nervos CKB blockchain. This class provides functionality for generating accounts, signing transactions,
- * managing seed phrases, and interacting with the blockchain.
+ * Manages a wallet using the SPHINCS+ post-quantum signature scheme on the Nervos CKB blockchain.
+ * This class provides functionality for generating accounts, signing transactions,
+ * managing cryptographic keys, and interacting with the blockchain.
  */
 export default class QuantumPurse {
   //**************************************************************************************//
@@ -407,15 +407,11 @@ export default class QuantumPurse {
 
   /* Clears all local data of the wallet. */
   public async deleteWallet(): Promise<void> {
-    // localStorage.removeItem(QuantumPurse.CLIENT_SECRET);
     const spxLockArgsList = await this.getAllLockScriptArgs();
     spxLockArgsList.forEach((lockArgs) => {
       localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + lockArgs);
     });
-    await Promise.all([
-      KeyVault.clear_database(),
-      // this.client!.stop();
-    ]);
+    await KeyVault.clear_database();
   }
 
   /**
@@ -466,7 +462,7 @@ export default class QuantumPurse {
   }
 
   /**
-   * Imports a seed phrase and stores it encrypted in IndexedDB, overwriting any existing seed.
+   * Imports a seed phrase and stores the encrypted seed in IndexedDB, overwriting any existing seed.
    * @param seedPhrase - The seed phrase as a Uint8Array (UTF-8 encoded).
    * @param password - The password to encrypt the seed phrase (will be zeroed out).
    * @returns A promise that resolves when the seed is imported.
@@ -494,22 +490,22 @@ export default class QuantumPurse {
    */
   public async exportSeedPhrase(password: Uint8Array): Promise<Uint8Array> {
     try {
-      const seed = await KeyVault.export_seed_phrase(password);
-      return seed;
+      const mnemonic = await KeyVault.export_seed_phrase(password);
+      return mnemonic;
     } finally {
       password.fill(0);
     }
   }
 
   /**
-   * initialize a master seedphrase in DB.
+   * generate a master seed in DB.
    * @param password - The password to encrypt the master seed phrase.
    * @remark The password is overwritten with zeros after use.
    */
-  public async initSeedPhrase(password: Uint8Array): Promise<void> {
+  public async generateMasterSeed(password: Uint8Array): Promise<void> {
     try {
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      await this.keyVault.init_seed_phrase(password);
+      await this.keyVault.generate_master_seed(password);
     } finally {
       password.fill(0);
     }
