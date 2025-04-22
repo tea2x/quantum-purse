@@ -195,7 +195,7 @@ export const wallet = createModel<RootModel>()({
     },
     async createWallet({ password }) {
       try {
-        await quantum.initSeedPhrase(utf8ToBytes(password));
+        await quantum.generateMasterSeed(utf8ToBytes(password));
         await quantum.genAccount(utf8ToBytes(password));
         this.loadCurrentAccount({});
       } catch (error) {

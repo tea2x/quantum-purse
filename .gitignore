@@ -1,6 +1,5 @@
 dist/
 node_modules/
-target/
 bun.lockb
 package-lock.json
 .DS_Store
