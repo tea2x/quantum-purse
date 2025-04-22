@@ -28,17 +28,17 @@ export const formatBalance = (balance: string | bigint | undefined) => {
 };
 
 export const formatError = (error: any) => {
-  let description = "Something went wrong";
+  let description = "";
 
   if (String(error) === "Decryption error: Error") {
     description = "Invalid password";
-  } else if (String(error) === "Error: Insufficient balance!") {
-    description = "Insufficient balance";
   } else if (
     (String(error) === "Error: Light client not initialized")
     || String(error).includes("SharedArrayBuffer is not defined")
-  ){
-    description = "Light client startup failed: Insecure context.";
+  ) {
+    description = "Light client not available: Insecure context.";
+  } else {
+    description = error?.message || error?.toString() || "Something went wrong!";
   }
 
   return description;

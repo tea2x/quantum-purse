@@ -12,7 +12,7 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 |--------------------|---------|
 | **Signature type** | SPHINCS+ |
 | **Store model**    | Indexed DB |
-| **Mnemonic standard**| BIP39 48/72 words - 512/768 bit secure |
+| **Mnemonic standard**| Custom BIP39 48/72 words |
 | **Local encryption** | AES256 |
 | **Key derivation** | Scrypt |
 | **Authentication** | Password |
