@@ -490,7 +490,8 @@ export default class QuantumPurse {
    */
   public async exportSeedPhrase(password: Uint8Array): Promise<Uint8Array> {
     try {
-      const mnemonic = await KeyVault.export_seed_phrase(password);
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      const mnemonic = await this.keyVault.export_seed_phrase(password);
       return mnemonic;
     } finally {
       password.fill(0);
