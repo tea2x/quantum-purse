@@ -209,7 +209,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
             validator: (_, value) => {
               if (!value) return Promise.resolve();
               const words = value.trim().split(/\s+/);
-              if (words.length !== 48 && words.length !== 72) {
+              if (![36, 54, 72].includes(words.length)) {
                 return Promise.reject(
                   new Error(`Invalid word count: ${words.length}. Expect 48 or 72 words only.`)
                 );
