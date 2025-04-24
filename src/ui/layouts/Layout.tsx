@@ -16,6 +16,8 @@ const Layout: React.FC<AuthLayoutProps> = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch<Dispatch>();
+  const wallet = useSelector((state: RootState) => state.wallet);
+  
   useEffect(() => {
     const loadWallet = async () => {
       try {
@@ -48,6 +50,24 @@ const Layout: React.FC<AuthLayoutProps> = ({
     };
     loadWallet();
   }, [dispatch.wallet.init]);
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    if (wallet.active) {
+      intervalId = setInterval(() => {
+        dispatch.wallet.loadCurrentAccount({}).catch((error) => {
+          console.error("Failed to load current account:", error);
+        });
+      }, 3000);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [dispatch, wallet.active]);
 
   return (
     <div className={cx(styles.layout, className)} {...rest}>
