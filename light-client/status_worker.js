@@ -26,7 +26,7 @@ async function startSyncStatusUpdates() {
     // );
     // Send the sync status to the main thread
     self.postMessage({ type: "syncStatusUpdate", data: syncStatus });
-  }, 5000);
+  }, 1000);
 }
 
 /* This worker's persistent command receiver */
