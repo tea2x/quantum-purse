@@ -59,7 +59,7 @@ const Layout: React.FC<AuthLayoutProps> = ({
         dispatch.wallet.loadCurrentAccount({}).catch((error) => {
           console.error("Failed to load current account:", error);
         });
-      }, 3000);
+      }, 1000);
     }
 
     return () => {
