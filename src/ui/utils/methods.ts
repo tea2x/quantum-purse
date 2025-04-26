@@ -10,7 +10,7 @@ export const shortenAddress = (
   sequenceEnd = 4
 ) => {
   if (!address) return "";
-  return address.slice(0, sequenceStart) + " ... " + address.slice(-sequenceEnd);
+  return address.slice(0, sequenceStart) + "....." + address.slice(-sequenceEnd);
 };
 
 export const formatBalance = (balance: string | bigint | undefined) => {

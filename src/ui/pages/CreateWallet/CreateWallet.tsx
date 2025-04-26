@@ -20,7 +20,7 @@ import {
 import { cx, formatError } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
-import ParamSetSelectorForm from "../../components/sphincs-param-set/selector";
+import ParamSetSelectorForm from "../../components/sphincs-param-set/param_selector";
 import QuantumPurse, { SphincsVariant } from "../../../core/quantum_purse";
 
 const quantumPurse = QuantumPurse.getInstance();
@@ -180,13 +180,17 @@ export const StepCreatePassword: React.FC = () => {
         
         <ParamSetSelectorForm />
 
-        <Form.Item name="password" label="Password" rules={passwordRules}>
+        <Form.Item
+          name="password"
+          label={<span style={{ color: 'var(--gray-01)' }}>Password</span>}
+          rules={passwordRules}
+        >
           <Input.Password size="large" placeholder="Enter your password" />
         </Form.Item>
 
         <Form.Item
           name="confirmPassword"
-          label="Confirm password"
+          label={<span style={{ color: 'var(--gray-01)' }}>Confirm password</span>}
           dependencies={["password"]}
           rules={[
             { required: true, message: "Please confirm your password!" },
@@ -215,7 +219,9 @@ export const StepCreatePassword: React.FC = () => {
             },
           ]}
         >
-          <Checkbox>I understand I must back up my parameter set with the mnemonic seed next.</Checkbox>
+          <Checkbox style={{ color: 'var(--gray-01)' }}>
+            I understand I must back up my parameter set with the mnemonic seed next.
+          </Checkbox>
         </Form.Item>
 
         <Form.Item
@@ -234,7 +240,9 @@ export const StepCreatePassword: React.FC = () => {
             },
           ]}
         >
-          <Checkbox>I understand that Quantum Purse cannot recover this password if lost.</Checkbox>
+          <Checkbox style={{ color: 'var(--gray-01)' }}>
+            I understand that Quantum Purse cannot recover this password if lost.
+          </Checkbox>
         </Form.Item>
 
         <Flex align="center" justify="center" gap={16}>

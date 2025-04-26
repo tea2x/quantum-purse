@@ -1,6 +1,6 @@
 .createWallet {
   padding: 24px;
-  background: var(--white-abs);
+  background: rgba(255, 255, 255, 0.1);
   max-width: 76.8rem;
   margin: 0 auto;
   padding: 3.6rem 3.6rem;
@@ -8,20 +8,12 @@
   flex-direction: column;
   align-items: center;
 
-  h1 {
-    margin-bottom: 24px;
-    font-size: 24px;
-    font-weight: 600;
-    font-family: "Quantico", sans-serif;
-    text-transform: uppercase;
-    text-align: center;
-  }
-
   h2 {
     text-align: center;
     font-size: 1.6rem;
     font-weight: 600;
     margin-bottom: 1rem;
+    color: var(--gray-01);
   }
 
   p {
@@ -36,13 +28,14 @@
     .ant-steps-item-title {
       font-size: 1.4rem;
       font-weight: 500;
+      color: var(--gray-01) !important;
     }
 
     .ant-steps-item-description {
       font-size: 1.2rem;
       line-height: 1.2;
-      color: rgba(0, 0, 0, 0.45);
       max-width: unset;
+      color: var(--gray-01) !important;
     }
   }
 }

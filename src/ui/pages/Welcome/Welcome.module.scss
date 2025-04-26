@@ -9,27 +9,18 @@
     min-height: 35rem;
     margin: 0 auto;
     font-family: "Quantico", sans-serif;
+    background: rgba(255, 255, 255, 0.1);
     @media (max-width: 768px) {
-      min-height: 30rem;
-    }
-    
-    h1 {
-      font-weight: bold;
-      font-size: 3.6rem;
-      line-height: 1.2;
-      text-transform: uppercase;
-      margin-bottom: 0.8rem;
-      @media (max-width: 768px) {
-        font-size: 2rem;
-      }
+      min-height: calc(100vh - 9rem);
     }
 
     p {
+      color: var(--gray-01);
       font-size: 1.4rem;
       line-height: 1.2;
       margin-bottom: 3.6rem;
       @media (max-width: 768px) {
-        font-size: 1.07rem;
+        font-size: 1.1rem;
       }
     }
 
@@ -41,7 +32,7 @@
       padding: 1rem 2rem;
       font-size: 1.4rem;
       &:hover {
-        background-color: var(--teal-1);
+        background-color: var(--teal-2);
         color: var(--white);
       }
       + button {

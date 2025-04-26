@@ -8,6 +8,7 @@
   :global {
     display: flex;
     flex-direction: column;
+    background: rgba(255, 255, 255, 0.1);
 
     .account-list {
       display: flex;
@@ -71,9 +72,9 @@
 
       .name {
         font-size: 1.4rem;
-        font-weight: 600;
+        font-weight: bold;
         line-height: 1.5;
-        color: var(--gray-03);
+        color: var(--gray-02);
 
         display: flex;
         align-items: center;
@@ -90,7 +91,8 @@
         font-size: 1.2rem;
         line-height: 1.2;
         font-family: "Quantico", sans-serif;
-        color: var(--gray-02);
+        font-weight: bold;
+        color: var(--gray-01);
         display: flex;
         align-items: center;
         gap: 0.4rem;
@@ -115,6 +117,8 @@
       padding: 0;
       width: 3.2rem;
       height: 3.2rem;
+      font-weight: bolder;
+      color: var(--gray-01);
     }
   }
 }

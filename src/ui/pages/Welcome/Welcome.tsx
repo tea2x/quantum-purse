@@ -9,7 +9,7 @@ const Welcome: React.FC = () => {
 
   return (
     <section className={cx(styles.welcome, "panel")}>
-      <h1>Let's get started</h1>
+      <h1>Let's Get Started</h1>
       <p>Protecting Your CKB Assets from Post-Quantum Threats</p>
       <Button onClick={() => navigate(ROUTES.CREATE_WALLET, {replace: true})}>
         Create a new wallet

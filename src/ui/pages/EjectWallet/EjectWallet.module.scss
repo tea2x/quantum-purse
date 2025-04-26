@@ -1,6 +1,7 @@
 .ejectWallet {
   display: flex;
   flex-direction: column;
+  background: rgba(255, 255, 255, 0.1);
   h1 {
     @media (max-width: 768px) {
       font-size: 1.8rem;
@@ -13,6 +14,7 @@
     justify-content: center;
     gap: 1.6rem;
     flex: 1;
+    color: var(--gray-01);
     p {
       font-size: 1.4rem;
       text-align: center;

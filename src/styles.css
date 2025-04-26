@@ -136,6 +136,8 @@ html {
 body {
   margin: 0;
   background-color: var(--white);
+  background-image: url("./ui/components/assets/background.jpg");
+  background-size: cover;
 }
 
 :root {
@@ -164,14 +166,17 @@ body {
   @media (max-width: 768px) {
     padding: 1.2rem 1.8rem;
   }
-}
 
-.panel h1 {
-  font-family: "Quantico", sans-serif;
-  font-size: 2.4rem;
-  padding: 0 0 1.2rem 0;
-  border-bottom: solid 1px var(--gray-light);
-  margin: 0 0 1.2rem 0;
+  h1 {
+    font-family: "Quantico", sans-serif;
+    font-size: 2.4rem;
+    padding: 0 0 1.2rem 0;
+    border-bottom: solid 1px var(--gray-light);
+    margin: 0 0 1.2rem 0;
+    color: var(--teal-2);
+    font-weight: bold;
+    margin-bottom: 3rem;
+  }
 }
 
 @keyframes typing {
@@ -201,6 +206,10 @@ body {
   }
 }
 
-.ant-btn, .ant-form-item, .ant-select, .ant-form-item-label, .ant-checkbox-wrapper, .ant-select-item-option, .ant-select-item-group, .ant-menu, .ant-menu-item {
+.ant-btn, .ant-form-item, .ant-select, .ant-form-item-label, .ant-checkbox-wrapper, .ant-select-item-option, .ant-select-item-group {
   font-family: "Quantico", sans-serif !important;
+}
+
+.ant-menu, .ant-menu-item, .ant-menu-submenu-title {
+  color: var(--gray-01) !important;
 }

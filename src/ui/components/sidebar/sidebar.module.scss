@@ -3,6 +3,21 @@
   overflow: auto;
   flex-grow: 0;
   padding: 0;
+  color: var(--teal-2);
+
+  :global {
+    .ant-menu-item:hover {
+      background-color: var(--gray-light) !important;
+      color: var(--black) !important;
+    }
+  }
+  
+  :global(.ant-menu) {
+    @media (min-width: 768px) {
+      flex-basis: 20rem;
+      background: rgba(255, 255, 255, 0);
+    }
+  }
 
   @media (max-width: 768px) {
     position: absolute;
@@ -15,5 +30,6 @@
 
   @media (min-width: 768px) {
     flex-basis: 20rem;
+    background: rgba(255, 255, 255, 0.1);
   }
 }

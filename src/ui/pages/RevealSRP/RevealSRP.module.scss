@@ -1,6 +1,7 @@
 .revealSRP {
   display: flex;
   flex-direction: column;
+  background: rgba(255, 255, 255, 0.1);
   .content {
     display: flex;
     flex-direction: column;
@@ -12,6 +13,7 @@
     width: 100%;
     max-width: 50rem;
     margin: 0 auto;
+    color: var(--gray-01);
   }
   h1 {
     @media (max-width: 768px) {
