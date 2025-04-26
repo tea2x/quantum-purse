@@ -211,5 +211,5 @@ body {
 }
 
 .ant-menu, .ant-menu-item, .ant-menu-submenu-title {
-  color: var(--gray-01)!important;
+  color: var(--gray-01) !important;
 }
