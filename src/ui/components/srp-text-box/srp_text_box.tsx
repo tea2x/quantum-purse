@@ -51,7 +51,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   return (
     <div className={styles.srpTextBox}>
       {title && <h2 className={styles.title}>{title}</h2>}
-      {description && <p>{description}</p>}
+      {description && <p className={styles.description}>{description}</p>}
       {value ? (
         <>
           <Copy value={value}>

@@ -3,6 +3,18 @@
   overflow: auto;
   flex-grow: 0;
   padding: 0;
+  color: var(--teal-2);
+
+  :global {
+    .ant-menu-item:hover {
+      background-color: var(--gray-light) !important;
+      color: var(--black) !important;
+    }
+  }
+  
+  :global(.ant-menu) {
+    background-image: url("../assets/background.jpg");
+  }
 
   @media (max-width: 768px) {
     position: absolute;

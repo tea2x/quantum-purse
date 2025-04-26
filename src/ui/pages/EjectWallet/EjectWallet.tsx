@@ -14,8 +14,8 @@ const EjectWallet: React.FC = () => {
     <section className={cx(styles.ejectWallet, "panel")}>
       <h1>Eject Wallet</h1>
       <div className={styles.content}>
-        <p>IMPORTANT!</p>
-        <p>This action removes all keys from Quantum Purse's DB.</p>
+        <p><strong style={{fontSize: '1.1em' }}>Delete Your Wallet</strong></p>
+        <p>IMPORTANT! This action removes all keys from Quantum Purse's DB.</p>
         <Button 
           type="primary" 
           onClick={() => { 

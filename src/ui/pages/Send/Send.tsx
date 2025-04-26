@@ -196,6 +196,7 @@ const Send: React.FC = () => {
             )}
           </Form.Item>
           <Form.Item
+            className="amount"
             name="amount"
             label="Amount"
             rules={[

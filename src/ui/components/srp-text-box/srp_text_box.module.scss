@@ -21,6 +21,10 @@
     max-width: 40rem;
   }
 
+  p.description {
+    color: var(--gray-01);
+  }
+
   .textBox {
     margin: 0.8rem 0;
     padding: 1.2rem;
@@ -33,8 +37,8 @@
     transition: all 0.2s ease;
 
     &:hover {
-      background-color: var(--gray-lighter);
-      border-color: var(--gray);
+      background-color: var(--gray-light);
+      border-color: var(--teal-2);
     }
 
     :global(.srp) {

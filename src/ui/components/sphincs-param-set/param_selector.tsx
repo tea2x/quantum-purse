@@ -6,7 +6,7 @@ const ParamsetSelector: React.FC = () => {
   return (
     <Form.Item
       label={
-        <span>
+        <span style={{ color: 'var(--gray-01)' }}>
           Parameter set
           <Tooltip
             title="There are 12 SPHINCS+ parameter sets in total. Sha2_256s is the best choice if you have no reference!"

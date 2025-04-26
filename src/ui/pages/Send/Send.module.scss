@@ -15,6 +15,7 @@
           width: 100%;
 
           .from-label {
+            color: var(--teal-1);
             flex: 1;
             display: flex;
             align-items: center;
@@ -26,6 +27,7 @@
 
       &.field-to {
         label {
+          color: var(--teal-1);
           width: 100%;
           .label-container {
             display: flex;
@@ -39,6 +41,16 @@
             }
           }
         }
+      }
+
+      &.amount {
+        label {
+          color: var(--teal-1);
+        }
+      }
+
+      .ant-input-number-group-addon {
+        color: var(--teal-1);
       }
     }
     h1 {

@@ -24,7 +24,7 @@ import { Dispatch, RootState } from "../../store";
 import { WalletStepEnum, STORAGE_KEYS } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./ImportWallet.module.scss";
-import ParamSetSelector from "../../components/sphincs-param-set/selector";
+import ParamSetSelector from "../../components/sphincs-param-set/param_selector";
 import QuantumPurse, { SphincsVariant } from "../../../core/quantum_purse";
 
 interface ImportWalletContext {
@@ -94,13 +94,17 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
 
       <ParamSetSelector/>
 
-      <Form.Item name="password" label="Password" rules={passwordRules}>
+      <Form.Item
+        name="password"
+        label={<span style={{ color: 'var(--gray-01)' }}>Password</span>}
+        rules={passwordRules}
+      >
         <Input.Password size="large" />
       </Form.Item>
 
       <Form.Item
         name="confirmPassword"
-        label="Confirm password"
+        label={<span style={{ color: 'var(--gray-01)' }}>Confirm password</span>}
         dependencies={["password"]}
         rules={[
           { required: true, message: "Please confirm your password!" },
@@ -133,7 +137,9 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
           },
         ]}
       >
-        <Checkbox>I understand that the parameter set must match with the one I backed up with the mnemonic seed previously.</Checkbox>
+        <Checkbox style={{ color: 'var(--gray-01)' }}>
+          I understand that the parameter set must match with the one I backed up with the mnemonic seed previously.
+        </Checkbox>
       </Form.Item>
 
       <Form.Item
@@ -152,7 +158,9 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
           },
         ]}
       >
-        <Checkbox>I understand that Quantum Purse cannot recover this password if lost.</Checkbox>
+        <Checkbox style={{ color: 'var(--gray-01)' }}>
+          I understand that Quantum Purse cannot recover this password if lost.
+        </Checkbox>
       </Form.Item>
 
       <Flex align="center" justify="center" gap={16}>
@@ -222,7 +230,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
         <Input.TextArea
           size="large"
           placeholder="Enter your seed recovery phrase"
-          rows={7}
+          rows={8}
         />
       </Form.Item>
       <Flex align="center" justify="center" gap={16}>
