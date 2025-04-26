@@ -136,7 +136,7 @@ html {
 body {
   margin: 0;
   background-color: var(--white);
-  background-image: url("./ui/components/assets/background.jpg");
+  background-image: url("./ui/components/assets/background_blur.jpg");
   background-size: cover;
 }
 
@@ -166,6 +166,7 @@ body {
   @media (max-width: 768px) {
     padding: 1.2rem 1.8rem;
   }
+  background-image: url("./ui/components/assets/background_blur.jpg");
 
   h1 {
     font-family: "Quantico", sans-serif;

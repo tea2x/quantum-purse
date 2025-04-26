@@ -16,6 +16,7 @@ const { useBreakpoint } = Grid;
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
+  const isWalletActive = useSelector((state: RootState) => state.wallet.active);
   const syncStatus = useSelector((state: RootState) => state.wallet.syncStatus);
   const navigate = useNavigate();
   const { showSidebar, setShowSidebar } = useContext(LayoutCtx);
@@ -87,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         <Dropdown
           dropdownRender={() => (
             <div className={styles.syncStatusOverlay}>
-              <h2>Network Status</h2>
+              <h2>Sync Status</h2>
               Start: {syncStatus && syncStatus.startBlock.toLocaleString()} &nbsp; &nbsp; 
               Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()} &nbsp; &nbsp; 
               Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
@@ -105,7 +106,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           </span>
         )}
         
-        {!screens.md && (
+        {!screens.md && isWalletActive && (
           <Button
             type="text"
             onClick={() => setShowSidebar(!showSidebar)}
