@@ -1,6 +1,7 @@
 .ejectWallet {
   display: flex;
   flex-direction: column;
+  background: rgba(255, 255, 255, 0.1);
   h1 {
     @media (max-width: 768px) {
       font-size: 1.8rem;

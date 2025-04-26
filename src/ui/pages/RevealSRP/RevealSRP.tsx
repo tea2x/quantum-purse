@@ -3,7 +3,7 @@ import { SrpTextBox } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { cx } from "../../utils/methods";
 import styles from "./RevealSRP.module.scss";
-import QuantumPurse, {SphincsVariant} from "../../../core/quantum_purse";
+import QuantumPurse from "../../../core/quantum_purse";
 
 const wallet = QuantumPurse.getInstance();
 
