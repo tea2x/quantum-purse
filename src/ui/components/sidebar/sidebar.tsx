@@ -7,35 +7,43 @@ import { ROUTES } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import CurrentAccount from "../current-account/current_account";
 import styles from "./sidebar.module.scss";
+import Icon from "../icon/icon";
 
 type MenuItem = Required<MenuProps>["items"][number];
 const items: MenuItem[] = [
   {
     key: ROUTES.WALLET,
+    icon: <Icon.Wallet />,
     label: <NavLink to={ROUTES.WALLET}>My Wallet</NavLink>,
   },
   {
     key: ROUTES.SEND,
+    icon: <Icon.Send />,
     label: <NavLink to={ROUTES.SEND}>Send</NavLink>,
   },
   {
     key: ROUTES.RECEIVE,
+    icon: <Icon.Receive />,
     label: <NavLink to={ROUTES.RECEIVE}>Receive</NavLink>,
   },
   {
     key: ROUTES.DAO.HOME,
+    icon: <Icon.Dao />,
     label: "DAO",
     children: [
       {
         key: ROUTES.DAO.DEPOSIT,
+        icon: <Icon.Deposit />,
         label: <NavLink to={ROUTES.COMING_SOON}>Deposit</NavLink>,
       },
       {
         key: ROUTES.DAO.WITHDRAW,
+        icon: <Icon.Withdraw />,
         label: <NavLink to={ROUTES.COMING_SOON}>Withdraw</NavLink>,
       },
       {
         key: ROUTES.DAO.UNLOCK,
+        icon: <Icon.Unlock />,
         label: <NavLink to={ROUTES.COMING_SOON}>Unlock</NavLink>,
       },
     ],
@@ -45,14 +53,17 @@ const items: MenuItem[] = [
   },
   {
     key: ROUTES.SETTINGS.HOME,
+    icon: <Icon.Settings />,
     label: "Settings",
     children: [
       {
         key: ROUTES.SETTINGS.REVEAL_SRP,
+        icon: <Icon.Reveal />,
         label: <NavLink to={ROUTES.SETTINGS.REVEAL_SRP}>Reveal SRP</NavLink>,
       },
       {
         key: ROUTES.SETTINGS.EJECT_WALLET,
+        icon: <Icon.Eject />,
         label: (
           <NavLink to={ROUTES.SETTINGS.EJECT_WALLET}>Eject Wallet</NavLink>
         ),

@@ -6,9 +6,23 @@
   color: var(--teal-2);
 
   :global {
-    .ant-menu-item:hover {
+    .ant-menu-item:hover,
+    .ant-menu-submenu-title:hover {
       background-color: var(--gray-light) !important;
       color: var(--black) !important;
+    }
+    .ant-menu-item svg path,
+    .ant-menu-submenu-title svg path {
+      fill: var(--white-abs);
+    }
+
+    .ant-menu-item:hover svg path,
+    .ant-menu-submenu:hover .ant-menu-submenu-title svg path {
+      fill: var(--black);
+    }
+
+    .ant-menu-item-selected svg path {
+      fill: var(--black);
     }
   }
   
