@@ -219,7 +219,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
               const words = value.trim().split(/\s+/);
               if (![36, 54, 72].includes(words.length)) {
                 return Promise.reject(
-                  new Error(`Invalid word count: ${words.length}. Expect 48 or 72 words only.`)
+                  new Error(`Current word count is ${words.length} but expected to be 36, 54 or 72!`)
                 );
               }
               return Promise.resolve();
@@ -230,7 +230,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
         <Input.TextArea
           size="large"
           placeholder="Enter your seed recovery phrase"
-          rows={8}
+          rows={9}
         />
       </Form.Item>
       <Flex align="center" justify="center" gap={16}>
@@ -311,8 +311,8 @@ const ImportWalletContent: React.FC = () => {
   return (
     <section className={cx(styles.importWallet, "panel")}>
       <h1>Import wallet</h1>
+      <Steps current={currentStep} items={steps} />
       <Form form={form} layout="vertical" onFinish={onFinish}>
-        <Steps current={currentStep} items={steps} />
         <Tabs
           items={steps.map((step) => ({
             key: step.key.toString(),

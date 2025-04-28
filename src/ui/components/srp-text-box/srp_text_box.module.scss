@@ -35,6 +35,7 @@
     background-color: var(--white-abs);
     cursor: pointer;
     transition: all 0.2s ease;
+    color: var(--gray-03);
 
     &:hover {
       background-color: var(--gray-light);
