@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
     <div className={styles.footer}>
       <p>A CKB quantum-safe wallet</p>
       <p>
-        Developed by
+        Github
         <a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">
           <GithubOutlined />
           tea2x

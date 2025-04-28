@@ -27,7 +27,8 @@
   }
   
   :global(.ant-menu) {
-    background-image: url("../assets/background_blur.jpg");
+    background-image: url("../assets/background.jpg");
+    background-size: cover;
     @media (min-width: 768px) {
       flex-basis: 20rem;
       background: rgba(255, 255, 255, 0);
@@ -39,8 +40,9 @@
     left: 0;
     right: 0;
     z-index: 1000;
-    max-width: 50rem;
+    max-width: 30rem;
     margin: 0 auto;
+    box-shadow: 0 0.4rem 1.2rem rgba(255, 255, 255, 0.73);
   }
 
   @media (min-width: 768px) {
