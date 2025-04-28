@@ -35,6 +35,10 @@
       font-size: 1.2rem;
       line-height: 1.2;
       max-width: unset;
+      color: var(--gray-03) !important;
+    }
+
+    .ant-steps-item-finish .ant-steps-item-description {
       color: var(--gray-01) !important;
     }
   }

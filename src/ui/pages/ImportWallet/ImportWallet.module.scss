@@ -34,6 +34,10 @@
       font-size: 1.2rem;
       line-height: 1.2;
       max-width: unset;
+      color: var(--gray-03) !important;
+    }
+
+    .ant-steps-item-finish .ant-steps-item-description {
       color: var(--gray-01) !important;
     }
 
@@ -83,6 +87,13 @@
     margin-bottom: 1.6rem;
   }
   textarea {
+    width: 42rem;
+    font-family: monospace;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    margin: 0;
+    word-break: break-word;
+    color: var(--gray-03);
     text-align: center;
   }
 }
