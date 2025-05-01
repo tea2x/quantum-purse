@@ -76,10 +76,13 @@
         font-weight: bold;
         line-height: 1.5;
         color: var(--gray-02);
-
         display: flex;
         align-items: center;
         gap: 0.8rem;
+
+        @media (max-width: 768px) {
+          font-size: 1.4rem;
+        }
 
         .current {
           padding: 0.4rem 0.8rem;
@@ -100,6 +103,10 @@
         padding: 0.4rem;
         margin-left: -0.4rem;
         border-radius: 0.4rem;
+
+        @media (max-width: 768px) {
+          font-size: 1.2rem;
+        }
 
         .copyable {
           width: fit-content;
