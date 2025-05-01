@@ -1,7 +1,7 @@
 .wallet {
   h1 {
     @media (max-width: 768px) {
-      font-size: 1.8rem;
+      font-size: 2rem;
     }
   }
 
@@ -56,7 +56,7 @@
   box-sizing: border-box;
   border: solid 0.1rem transparent;
   @media (max-width: 768px) {
-    padding: 0.6rem 0rem;
+    padding: 0.6rem 0.4rem;
   }
 
   &:has(:global(.account-info:hover)) {
@@ -72,7 +72,7 @@
       flex-direction: column;
 
       .name {
-        font-size: 1.4rem;
+        font-size: 1.6rem;
         font-weight: bold;
         line-height: 1.5;
         color: var(--gray-02);
@@ -89,9 +89,9 @@
       }
       .address {
         width: fit-content;
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         line-height: 1.2;
-        font-family: "Quantico", sans-serif;
+        font-family: monospace;
         font-weight: bold;
         color: var(--gray-01);
         display: flex;

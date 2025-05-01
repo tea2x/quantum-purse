@@ -5,9 +5,14 @@
   min-height: 50rem;
   h1 {
     @media (max-width: 768px) {
-      font-size: 1.8rem;
+      font-size: 2rem;
     }
   }
+
+  p {
+    color: orangered;
+  }
+
   .content {
     display: flex;
     flex-direction: column;
@@ -17,7 +22,7 @@
     flex: 1;
     color: var(--gray-01);
     p {
-      font-size: 1.4rem;
+      font-size: 1.2rem;
       text-align: center;
     }
     button {

@@ -288,7 +288,7 @@ const StepSecureSRP: React.FC = () => {
       title={"Secure Secret Recovery Phrase"}
       description={
         srp
-          ? "IMPORTANT! Back up too your chosen SPHINCS+ variant " + quantumPurse.getSphincsPlusParamSet() + " with the mnemonic seed below."
+          ? "IMPORTANT! Back up too your chosen SPHINCS+ variant \"" + quantumPurse.getSphincsPlusParamSet() + "\" with the mnemonic seed below."
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process."
       }
       exportSrpHandler={exportSrpHandler}
