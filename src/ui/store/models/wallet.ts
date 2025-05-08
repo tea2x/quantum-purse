@@ -136,15 +136,15 @@ export const wallet = createModel<RootModel>()({
 
         const accountsData: any = await this.loadAccounts();
         if (accountsData && accountsData.length !== 0) {
-          const preservedAccountSphincsPlusPubKey = localStorage.getItem(
-            STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC
+          const preservedAccountLockArgs = localStorage.getItem(
+            STORAGE_KEYS.CURRENT_ACCOUNT_POINTER
           );
   
-          if (preservedAccountSphincsPlusPubKey) {
-            await quantum.setAccountPointer(preservedAccountSphincsPlusPubKey);
+          if (preservedAccountLockArgs) {
+            await quantum.setAccountPointer(preservedAccountLockArgs);
           } else {
             localStorage.setItem(
-              STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC,
+              STORAGE_KEYS.CURRENT_ACCOUNT_POINTER,
               accountsData[0].spxLockArgs
             );
             await quantum.setAccountPointer(accountsData[0].spxLockArgs);
@@ -229,7 +229,7 @@ export const wallet = createModel<RootModel>()({
         await quantum.setAccountPointer(spxLockArgs);
         this.loadCurrentAccount({});
         localStorage.setItem(
-          STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC,
+          STORAGE_KEYS.CURRENT_ACCOUNT_POINTER,
           spxLockArgs
         );
       } catch (error) {
@@ -271,7 +271,7 @@ export const wallet = createModel<RootModel>()({
           syncStatusListener = null;
         }
         await quantum.deleteWallet();
-        localStorage.removeItem(STORAGE_KEYS.CURRENT_ACCOUNT_SPHINC);
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_ACCOUNT_POINTER);
         notification.info({
           message: "Wallet ejected",
           description: "You have successfully ejected your wallet",

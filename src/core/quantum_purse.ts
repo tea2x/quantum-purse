@@ -71,7 +71,7 @@ export default class QuantumPurse {
     this.worker!.onmessage = (event) => {
       const { command, data, requestId, type } = event.data;
       if (command === "getSyncStatus") {
-        this.getSyncStatusInternal().then((status) => {
+        this.getSyncStatus().then((status) => {
           this.worker!.postMessage({
             data: status,
             requestId,
@@ -137,7 +137,7 @@ export default class QuantumPurse {
   }
 
   /* Calculate sync status */
-  private async getSyncStatusInternal() {
+  private async getSyncStatus() {
     if (!this.client) {
       console.error("Light client not initialized");
       return {
@@ -411,6 +411,7 @@ export default class QuantumPurse {
     spxLockArgsList.forEach((lockArgs) => {
       localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + lockArgs);
     });
+    this.accountPointer = undefined;
     await KeyVault.clear_database();
   }
 
