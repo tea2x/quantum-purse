@@ -95,5 +95,8 @@
     word-break: break-word;
     color: var(--gray-03);
     text-align: center;
+    @media (max-width: 768px) {
+      width: 35rem;
+    }
   }
 }
