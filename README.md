@@ -24,7 +24,7 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 ###### Overview
 <img width="628" alt="overview" src="https://github.com/user-attachments/assets/433a25dd-2845-4384-b9a3-e2374aac3227" />
 
-## Sha2-256s / Sha2-128s
+## Sha2-256s / Sha2-128s or what?
 All 12 NIST-approved SPHINCS+ parameter sets are supported by Quantum Purse. These parameter sets are the combinational results of:
 - 2 hashing algorithms: `Sha2`, `Shake`
 - 3 security levels: `128 bit`, `192 bit`, `256 bit`
@@ -105,12 +105,12 @@ npm run deploy
 ```
 
 ## Contribution
-Any PR to develop branch is welcomed. Have an idea? Feel free to open a github issue.
+Any PR to develop branch is welcomed. Have an idea or have found an issue? Feel free to open a github issue to let me know.
 
 ## Notes
 
 1. As of 2025, quantum resistance is still experimental. Use this software at your own risk.
-2. Back up your seed phrases-loss means loss of funds
+2. Back up your mnemonic seed. Losing your seed means losing access to your wallet.
 3. Quantum Purse does NOT store your passwords. Passwords are used only temporarily to encrypt and decrypt your secret data.
 4. IndexedDB stores only public data and encrypted secret data. Your SPHINCS+ private keys remain protected.
 5. Forgot your password? Recover access by importing your seed phrase and setting a new password instantly.
