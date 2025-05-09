@@ -209,7 +209,8 @@ export default class QuantumPurse {
       await this.client.start(
         { type: IS_MAIN_NET ? "MainNet" : "TestNet", config },
         secretKey as Hex,
-        "info"
+        "info",
+        "wss"
       );
     } catch (error) {
       console.error("Failed to start light client:", error);
