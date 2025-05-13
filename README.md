@@ -30,7 +30,7 @@ All 12 NIST-approved SPHINCS+ parameter sets are supported by Quantum Purse. The
 - 3 security parameter length: `128 bit`, `192 bit`, `256 bit`
 - 2 optimization methods: `s`(small signature), `f`(fast signature generation)
 
-##### Post Quantum security level
+##### <u>Post Quantum security level</u>
 NIST doesn't define the strength for each variant using precise estimates of the number of “bits of security” but offers 5 broad security strength categories. Refer to the [NIST call for quantum safe crypto proposal](https://csrc.nist.gov/CSRC/media/Projects/Post-Quantum-Cryptography/documents/call-for-proposals-final-dec-2016.pdf) for more details. Any attack that breaks the relevant security definition must require computational resources comparable to or greater than those required for:
 1) Key search on a block cipher with a 128-bit key (e.g. AES128)
 2) Collision search on a 256-bit hash function (e.g. SHA256/ SHA3-256)
@@ -40,7 +40,7 @@ NIST doesn't define the strength for each variant using precise estimates of the
 
 SPHINCS+ variant with security parameter length of 128, 192, 256 fall into the category 1, 3, 5 respectively.
 
-##### Recommendation
+##### <u>Recommendation</u>
 For CKB, `Sha2-128s`, `Sha2-192s` and `Sha2-256s` are recommended because:
 - 's' variant is on-chain friendly as it's fast and light weight. The tradeoff here is that signature generation on QuantumPurse takes longer.
 - `Sha2` is faster than `Shake`.
@@ -73,7 +73,7 @@ When you import your seed phrase into Quantum Purse, it automatically restores y
 
 ## How to use
 
-The following flag in `src/core/config.ts` switch controls mainnet/testnet. Change that to `true` for main-net and leave it be for test-net:
+The following flag in `src/core/config.ts` switch controls mainnet/testnet. Change that to `true` for main-net and leave it `false` for test-net:
 ```typescript
 export const IS_MAIN_NET = false;
 ```

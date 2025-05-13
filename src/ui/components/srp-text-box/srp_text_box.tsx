@@ -54,11 +54,11 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
       {description && <p className={styles.description}>{description}</p>}
       {value ? (
         <>
-          <Copy value={value}>
+          <div>
             <div className={styles.textBox}>
               <p className="srp">{value}</p>
             </div>
-          </Copy>
+          </div>
           <Button type="primary" onClick={onConfirm}>
             I wrote it down !
           </Button>
