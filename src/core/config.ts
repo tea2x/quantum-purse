@@ -1,5 +1,5 @@
-export const FEE_RATE = BigInt(1500);
 export const IS_MAIN_NET = false;
+export const FEE_RATE = BigInt(1500);
 
 // Currently use a binary from the following commit:
 // https://github.com/cryptape/quantum-resistant-lock-script/pull/14/commits/bd5f76e877327052146aaf4dc9fe741989d52713

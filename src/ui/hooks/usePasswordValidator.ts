@@ -8,7 +8,7 @@ const usePasswordValidator = () => {
     }
     const passwordBytes = utf8ToBytes(password);
     try {
-      QuantumPurse.checkPassword(passwordBytes);
+      QuantumPurse.checkPassword(passwordBytes, 256);
       return Promise.resolve();
     } catch (error) {
       return Promise.reject(new Error(error as string));
