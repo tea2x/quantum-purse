@@ -2,7 +2,9 @@ import Logo from "./svg/logo.svg?react";
 import Explore from "./svg/block-explorer.svg?react";
 import Hamburger from "./svg/hamburger.svg?react";
 import Connections from "./svg/global-peers.svg?react";
-import Syncing from "./svg/reload-sync-icon.svg?react";
+import NoConnections from "./svg/no-global-peers.svg?react";
+import Syncing from "./svg/sync-icon.svg?react";
+import NoSyncing from "./svg/no-sync-icon.svg?react";
 import Alert from "./svg/alert-icon.svg?react";
 import Wallet from "./svg/wallet.svg?react";
 import Send from "./svg/send.svg?react";
@@ -20,7 +22,9 @@ const Icon = {
   Explore,
   Hamburger,
   Connections,
+  NoConnections,
   Syncing,
+  NoSyncing,
   Alert,
   Wallet,
   Send,

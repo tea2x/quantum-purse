@@ -2,7 +2,6 @@ import { Button, Form, Input, notification } from "antd";
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
-import { Copy } from "../../components";
 import { Dispatch } from "../../store";
 import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { formatError } from "../../utils/methods";

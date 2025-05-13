@@ -75,7 +75,11 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           trigger={["hover"]}
         >
           <div>
-            <Icon.Connections className={styles.spinAndPause}/>
+            {syncStatus.nodeId !== "NULL" ? (
+              <Icon.Connections className={styles.spinAndPause}/>
+            ) : (
+              <Icon.NoConnections/>
+            )}
           </div>
         </Dropdown>
 
@@ -97,7 +101,11 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           trigger={["hover"]}
         >
           <div>
-            <Icon.Syncing className={styles.spinHarmonic}/>
+            {syncStatus.nodeId !== "NULL" ? (
+              <Icon.Syncing className={styles.spinHarmonic}/>
+            ) : (
+              <Icon.NoSyncing/>
+            )}
           </div>
         </Dropdown>
         {screens.md && (
