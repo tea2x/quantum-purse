@@ -24,17 +24,28 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 ###### Overview
 <img width="628" alt="overview" src="https://github.com/user-attachments/assets/433a25dd-2845-4384-b9a3-e2374aac3227" />
 
-## Sha2-256s / Sha2-128s or what?
+## Sha2-256s / Sha2-128s or which?
 All 12 NIST-approved SPHINCS+ parameter sets are supported by Quantum Purse. These parameter sets are the combinational results of:
 - 2 hashing algorithms: `Sha2`, `Shake`
-- 3 security levels: `128 bit`, `192 bit`, `256 bit`
+- 3 security parameter length: `128 bit`, `192 bit`, `256 bit`
 - 2 optimization methods: `s`(small signature), `f`(fast signature generation)
 
+##### Post Quantum security level
+NIST doesn't define the strength for each variant using precise estimates of the number of “bits of security” but offers 5 broad security strength categories. Refer to the [NIST call for quantum safe crypto proposal](https://csrc.nist.gov/CSRC/media/Projects/Post-Quantum-Cryptography/documents/call-for-proposals-final-dec-2016.pdf) for more details. Any attack that breaks the relevant security definition must require computational resources comparable to or greater than those required for:
+1) Key search on a block cipher with a 128-bit key (e.g. AES128)
+2) Collision search on a 256-bit hash function (e.g. SHA256/ SHA3-256)
+3) Key search on a block cipher with a 192-bit key (e.g. AES192)
+4) Collision search on a 384-bit hash function (e.g. SHA384/ SHA3-384)
+5) Key search on a block cipher with a 256-bit key (e.g. AES 256)
+
+SPHINCS+ variant with security parameter length of 128, 192, 256 fall into the category 1, 3, 5 respectively.
+
+##### Recommendation
 For CKB, `Sha2-128s`, `Sha2-192s` and `Sha2-256s` are recommended because:
 - 's' variant is on-chain friendly as it's fast and light weight. The tradeoff here is that signature generation on QuantumPurse takes longer.
 - `Sha2` is faster than `Shake`.
 
-If you're all for security, `Sha2-256s` is good to start with otherwise `Sha2-128s` and `Sha2-192s` will satisfy.
+If you have no reference, `Sha2-256s` is good to start with.
 
 ## 73 CKB
 Due to the larger size of the quantum lock script:
@@ -62,46 +73,37 @@ When you import your seed phrase into Quantum Purse, it automatically restores y
 
 ## How to use
 
-Currently, the following are the recommended ways to use this software, ranked from most to least preferred:
-1. Serve locally with webpack via `npm run start` (**recommended**). To use the wallet this way, refer to [Geting started](#getting-started) section. You can find other ways to serve the built `dist/` folder locally too.
-2. Though you can deploy this app on remote servers for example using `npm run deploy` for github pages, this is **not recommended** due to security reasons.
+The following flag in `src/core/config.ts` switch controls mainnet/testnet. Change that to `true` for main-net and leave it be for test-net:
+```typescript
+export const IS_MAIN_NET = false;
+```
 
-###### <u>Restrictions</u>
-GitHub Pages [does not support custom headers for cross-origin isolation](https://github.com/orgs/community/discussions/13309), which the light client depends on. Therefore, the light client will not work if deployed on GitHub Pages. You have two options:
-1. Deploy to Vercel.
-2. Stick with GitHub Pages but use a version that utilizes an RPC endpoint, like [this one](https://github.com/tea2x/quantum-purse-web-static/releases/tag/v0.0.1-rc1).
+Currently, the following are the recommended ways to use this software, ranked from most to least preferred:
+1. Serve locally with webpack via `npm run start`. To use the wallet this way, refer to [Geting started](#getting-started) section. You can find other ways to serve the built `dist/` folder locally too.
+2. **[Under development]** A PC native version for Quantum Purse is being prepared.
+3. Nothing stops you from deploying a mainnet version of Quantum Purse like the demo site. But this is not recommended due to security reasons.
 
 ## Demo
-I deployed 2 versions of this app and serve in 2 links below. Github pages' or Vercel role here is only to serve the app build(source code, instructions) for the app to intepret data from your local browser's indexedDB. You can definitely serve it on your github/vercel account (refer to command list) or best, serve it locally via `npm run start`!
-
-###### <u>Gh-pages</u>:
-- https://tea2x.github.io/quantum-purse-web-static/welcome
-**Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">NO Light Client</span>
-
-###### <u>Vercel</u>:
-- https://quantum-purse.vercel.app/
-**Notes:** <span style="background-color:yellow; padding:3px; border-radius:3px;">With Light Client but only Chrome based, Safari are supported. Check [Light Client](#light-client) section for more details.</span>
+https://quantum-purse.vercel.app/
 
 ## Getting started
 ###### <u>Dependencies</u>
 1. Node >=20.
+2. Chrome-based or safari browsers.
 
 ###### <u>Command list</u>
 ```shell
-# Install all dependencies
+# Install dependencies
 npm install
 
-# Build Key-vault and QuantumPurse
+# Build
 npm run build
 
 # Run test
 npm run test
 
-# Run in development env
+# Serve quantum purse locally
 npm run start
-
-# Deploy the web app to your GitHub Page (NOT WORKING ON LTS)
-npm run deploy
 ```
 
 ## Contribution
@@ -114,10 +116,9 @@ Any PR to develop branch is welcomed. Have an idea or have found an issue? Feel 
 3. Quantum Purse does NOT store your passwords. Passwords are used only temporarily to encrypt and decrypt your secret data.
 4. IndexedDB stores only public data and encrypted secret data. Your SPHINCS+ private keys remain protected.
 5. Forgot your password? Recover access by importing your seed phrase and setting a new password instantly.
-6. Need help? Report issues on GitHub or contact us on Telegram: @quantumpurse.
+6. Need help? Report issues on GitHub!
 
 ## Commentary
-
 Quantum Purse is designed as a static web app that runs entirely in the browser, with no backend or server involvement. This approach has both pros and cons:
 - **Pros:** Shorter development time, cross-platform accessibility as long as a web browser is available.
 - **Cons:** Vulnerable to browser-based threats such as malicious extensions, script injection, and other web-based attacks.
@@ -136,9 +137,3 @@ Until a proper SPHINCS+ hardware wallet is available for secure key management, 
    - This effectively turns your dedicated device into a quantum-safe offline signer.
 
 While Quantum Purse is not yet optimized for air-gapped usage, implementing this functionality would require minimal effort. If you're interested, open an issue to let me know what you need!
-
-If you'd like to support my work, below is my CKB address:
-**_ckb1qrgqep8saj8agswr30pls73hra28ry8jlnlc3ejzh3dl2ju7xxpjxqgqqxeu0ghthh9tw5lllkw7hajcv5r5gj094q8u7dpk_**
-
-<img width="200" alt="tungpham bit" src="https://github.com/user-attachments/assets/269fe4f6-827d-41b4-9806-1c962a439517" />
-
