@@ -7,7 +7,7 @@ import { dummyTx } from "./dummy_tx";
 
 describe("Quantum Purse Basics", () => {
   let wallet: QuantumPurse;
-  let passwordStr: string = "my password is easy to crack. D0n't use this!";
+  let passwordStr: string = "my pa$sword is easy to crack. D0n't use this!";
   let seedPhrase36: string =
     "stand hospital survey mixed lucky inject swing robust swamp dress off cotton biology announce atom job oak glance silent frame creek dose antenna cable crater improve make identify adult acquire cargo cruel lava wave lonely remind";
   let seedPhrase54: string =
