@@ -10,7 +10,7 @@
     "rebuild": "rm -rf dist/ && npm run build",
     "test": "npx karma start",
     "start:electron": "DEPLOY_TARGET=electron npm run build && electron .",
-    "build:electron": "DEPLOY_TARGET=electron npm run rebuild && electron-builder"
+    "build:electron": "DEPLOY_TARGET=electron npm run rebuild && electron-builder --mac --win --linux"
   },
   "build": {
     "appId": "com.example.quantum-purse",
