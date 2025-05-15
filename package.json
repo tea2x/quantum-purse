@@ -9,10 +9,8 @@
     "build": "webpack --config ./webpack/webpack.prod.js",
     "rebuild": "rm -rf dist/ && npm run build",
     "test": "npx karma start",
-    "deploy": "npx gh-pages-clean && node ./src/deploy.js",
-    "predeploy": "DEPLOY_TARGET=gh-pages npm run build",
-    "build:electron": "DEPLOY_TARGET=electron npm run build && electron-builder",
-    "start:electron": "electron ."
+    "start:electron": "DEPLOY_TARGET=electron npm run build && electron .",
+    "build:electron": "DEPLOY_TARGET=electron npm run rebuild && electron-builder"
   },
   "build": {
     "appId": "com.example.quantum-purse",
@@ -58,7 +56,6 @@
     "electron": "^36.2.0",
     "electron-builder": "^26.0.12",
     "file-loader": "^6.2.0",
-    "gh-pages": "^6.3.0",
     "html-webpack-plugin": "^5.3.1",
     "karma": "^6.4.4",
     "karma-chai": "^0.1.0",
