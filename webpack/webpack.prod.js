@@ -7,12 +7,12 @@ let publicPath = "/";
 if (process.env.DEPLOY_TARGET === "gh-pages") {
   try {
     const { execSync } = require("child_process");
-    const remoteUrl = execSync("git config --get remote.origin.url")
-      .toString()
-      .trim();
+    const remoteUrl = execSync("git config --get remote.origin.url").toString().trim();
     const match = remoteUrl.match(/github\.com[:/][^/]+\/([^/.]+)/);
     publicPath = publicPath + (match ? match[1] : "") + "/";
   } catch (error) {}
+} else if (process.env.DEPLOY_TARGET === "electron") {
+  publicPath = "./";
 }
 
 module.exports = merge(common, {
@@ -25,7 +25,7 @@ module.exports = merge(common, {
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: 'ts-loader',
+        use: "ts-loader",
       },
     ],
   },
