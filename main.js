@@ -15,7 +15,7 @@ function createWindow() {
     loadURL(mainWindow)
         .then(() => console.log('App loaded successfully'))
         .catch((err) => console.error('Failed to load app:', err));
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {
