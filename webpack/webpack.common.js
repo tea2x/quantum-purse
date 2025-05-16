@@ -74,7 +74,10 @@ module.exports = {
       template: "public/index.html",
     }),
     new CopyPlugin({
-      patterns: [{ from: "public/404.html", to: "404.html" }],
+      patterns: [
+        { from: "public/404.html", to: "404.html" },
+        { from: "public/status.worker.js", to: "status.worker.js" },
+      ],
     }),
   ],
   optimization: {
