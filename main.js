@@ -1,32 +1,42 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+const { app, BrowserWindow, session } = require('electron');
+const electronServe = require('electron-serve').default;
+const loadURL = electronServe({ directory: 'dist' });
 
 function createWindow() {
-  const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: { //todo check security
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
-  });
+    const mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+        },
+    });
 
-  win.loadFile(path.join(__dirname, 'dist', 'index.html'));
-  win.webContents.openDevTools();
+    loadURL(mainWindow)
+        .then(() => console.log('App loaded successfully'))
+        .catch((err) => console.error('Failed to load app:', err));
+    mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {
-  createWindow();
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+        const responseHeaders = Object.assign({}, details.responseHeaders);
+        responseHeaders['Cross-Origin-Opener-Policy'] = ['same-origin'];
+        responseHeaders['Cross-Origin-Embedder-Policy'] = ['require-corp'];
+        callback({ responseHeaders });
+    });
+
+    createWindow();
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
 });
