@@ -1,6 +1,5 @@
 const { app, BrowserWindow, session } = require('electron');
-const electronServe = require('electron-serve').default;
-const loadURL = electronServe({ directory: 'dist' });
+const path = require('path');
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
@@ -12,9 +11,7 @@ function createWindow() {
         },
     });
 
-    loadURL(mainWindow)
-        .then(() => console.log('App loaded successfully'))
-        .catch((err) => console.error('Failed to load app:', err));
+    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
     // mainWindow.webContents.openDevTools();
 }
 
