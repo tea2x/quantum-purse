@@ -1,9 +1,9 @@
-const { app, BrowserWindow, session } = require('electron');
+const { app, BrowserWindow, session, shell } = require('electron');
 const path = require('path');
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
-        width: 800,
+        width: 1000,
         height: 600,
         webPreferences: {
             nodeIntegration: false,
@@ -12,6 +12,11 @@ function createWindow() {
     });
 
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
+
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        shell.openExternal(url);
+    });
+
     // mainWindow.webContents.openDevTools();
 }
 
