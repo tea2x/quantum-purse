@@ -157,7 +157,7 @@ body {
 }
 
 .panel {
-  border-radius: 1.2rem;
+  border-radius: 0.5rem;
   overflow: hidden;
   background-color: var(--white-abs);
   box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.15);
