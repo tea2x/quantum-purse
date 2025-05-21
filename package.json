@@ -23,14 +23,16 @@
       "main.js"
     ],
     "mac": {
-      "category": "public.app-category.finance",
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "src/ui/components/assets/logo.icns"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "src/ui/components/assets/logo.ico"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "icon": "src/ui/components/assets/logo.png"
     }
   },
   "author": "tea2x",
