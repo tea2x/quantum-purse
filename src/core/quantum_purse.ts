@@ -1,5 +1,5 @@
 // QuantumPurse.ts
-import { IS_MAIN_NET, SPHINCSPLUS_LOCK } from "./config";
+import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO } from "./config";
 import { Reader } from "ckb-js-toolkit";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { Script, HashType, Address, Transaction, DepType, Cell } from "@ckb-lumos/base";
@@ -608,7 +608,7 @@ export default class QuantumPurse {
     let txSkeleton = new TransactionSkeleton();
     const transactionFee = BigInt(60000); // 60_000 shannons
     const outputCapacity = BigInt(amount) * BigInt(1e8);
-    const minimalSphincsPlusCapacity = BigInt(73) * BigInt(1e8);
+    const minimalSphincsPlusCapacity = BigInt(32 + 1 + 32 + 8) * BigInt(1e8);
     const requiredCapacity = transactionFee + outputCapacity + minimalSphincsPlusCapacity;
 
     // add sphics+ celldep
@@ -672,6 +672,124 @@ export default class QuantumPurse {
         type: undefined,
       },
       data: "0x",
+    };
+    txSkeleton = txSkeleton.update("outputs", (o) => o.push(output));
+
+    // add the change cell
+    const changeCapacity = inputCapacity - outputCapacity - transactionFee;
+    const changeCell: Cell = {
+      cellOutput: {
+        capacity: "0x" + changeCapacity.toString(16),
+        lock: addressToScript(from),
+        type: undefined,
+      },
+      data: "0x",
+    };
+    txSkeleton = txSkeleton.update("outputs", (o) => o.push(changeCell));
+
+    return txSkeleton;
+  }
+
+  /**
+   * Assemble a CKB transfer transaction.
+   * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#deposit
+   *
+   * @param from - The sender's address.
+   * @param to - The recipient's address.
+   * @param amount - The amount to transfer in CKB.
+   * @returns A Promise that resolves to a TransactionSkeletonType object.
+   * @throws Error if Light client is not ready / insufficient balance.
+   */
+  public async buildDeposit(
+    from: Address,
+    to: Address,
+    amount: string
+  ): Promise<TransactionSkeletonType> {
+    if (!this.client) throw new Error("Light client not initialized");
+
+    // initialize configuration
+    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
+    initializeConfig(configuration);
+
+    let txSkeleton = new TransactionSkeleton();
+    const transactionFee = BigInt(60000); // 60_000 shannons
+    const outputCapacity = BigInt(amount) * BigInt(1e8);
+    const minDaoCellCap = BigInt(32 + 1 + 32 + 8 + 32 + 1 + 8) * BigInt(1e8);
+    const requiredCapacity = transactionFee + outputCapacity + minDaoCellCap;
+    
+    // add sphics+ celldep
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
+      cellDeps.push({
+        outPoint: SPHINCSPLUS_LOCK.outPoint,
+        depType: SPHINCSPLUS_LOCK.depType as DepType,
+      })
+    );
+
+    // add Nervos DAO celldep
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
+      cellDeps.push({
+        outPoint: NERVOS_DAO.outPoint,
+        depType: NERVOS_DAO.depType as DepType,
+      })
+    );
+
+    // add input cells
+    const searchKey: ClientIndexerSearchKeyLike = {
+      scriptType: "lock",
+      script: addressToScript(from),
+      scriptSearchMode: "prefix",
+      filter: {
+        outputDataLenRange: [0, 1]
+      }
+    };
+    const collectedCells: CellWithBlockNumAndTxIndex[] = [];
+    let cursor: Hex | undefined;
+    let inputCapacity = BigInt(0);
+    cellCollecting: while (true) {
+      try {
+        const cells = await this.client.getCells(searchKey, "asc", 10, cursor);
+        if (cells.cells.length === 0) break cellCollecting;
+        cursor = cells.lastCursor as Hex;
+        for (const cell of cells.cells) {
+          if (inputCapacity >= requiredCapacity) break cellCollecting;
+          collectedCells.push(cell);
+          inputCapacity += BigInt(cell.cellOutput.capacity as string);
+        }
+      } catch (error) {
+        // error likely from getCells. todo check
+        console.error("Failed to fetch cells:", error);
+        break cellCollecting;
+      }
+    }
+
+    if (inputCapacity < requiredCapacity)
+      throw new Error("Insufficient balance!");
+
+    let inputCells: Cell[] = collectedCells.map(item => ({
+      cellOutput: {
+        ...item.cellOutput,
+        capacity: "0x" + item.cellOutput.capacity.toString(16)
+      },
+      data: item.outputData,
+      outPoint: {
+        ...item.outPoint,
+        index: "0x" + item.outPoint.index.toString(16)
+      }
+    } as Cell));
+    txSkeleton = txSkeleton.update("inputs", (i) => i.concat(inputCells));
+
+    // add the output as a Nervos DAO deposit cell
+    const output: Cell = {
+      cellOutput: {
+        capacity: "0x" + outputCapacity.toString(16),
+        lock: addressToScript(to),
+        type: {
+          codeHash: NERVOS_DAO.codeHash,
+          hashType: NERVOS_DAO.hashType as HashType,
+          args: "0x",
+        },
+      },
+      data: "0x0000000000000000",
     };
     txSkeleton = txSkeleton.update("outputs", (o) => o.push(output));
 
