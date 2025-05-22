@@ -12,6 +12,7 @@ import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
 import { ClientIndexerSearchKeyLike, Hex } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
+import { bytes, number } from "@ckb-lumos/codec";
 
 export { SphincsVariant } from "quantum-purse-key-vault";
 
@@ -691,12 +692,12 @@ export default class QuantumPurse {
   }
 
   /**
-   * Assemble a CKB transfer transaction.
+   * Assemble a Nervos DAO deposit transaction.
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#deposit
    *
    * @param from - The sender's address.
    * @param to - The recipient's address.
-   * @param amount - The amount to transfer in CKB.
+   * @param amount - The amount to deposit in CKB.
    * @returns A Promise that resolves to a TransactionSkeletonType object.
    * @throws Error if Light client is not ready / insufficient balance.
    */
@@ -804,6 +805,64 @@ export default class QuantumPurse {
       data: "0x",
     };
     txSkeleton = txSkeleton.update("outputs", (o) => o.push(changeCell));
+
+    return txSkeleton;
+  }
+
+  /**
+   * Assemble a Nervos dao withdraw request transaction.
+   * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-1
+   *
+   * @param depositCell - The Nervos DAO deposit cell to make a withdraw request from.
+   * @returns A Promise that resolves to a TransactionSkeletonType object.
+   * @throws Error if Light client is not ready / insufficient balance.
+   * @notice This transaction has no transaction fee
+   */
+  public async buildWithdraw(
+    depositCell: Cell
+  ): Promise<TransactionSkeletonType> {
+    if (!this.client) throw new Error("Light client not initialized");
+
+    // initialize configuration
+    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
+    initializeConfig(configuration);
+
+    let txSkeleton = new TransactionSkeleton();
+
+    // add sphics+ celldep
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
+      cellDeps.push({
+        outPoint: SPHINCSPLUS_LOCK.outPoint,
+        depType: SPHINCSPLUS_LOCK.depType as DepType,
+      })
+    );
+
+    // add Nervos DAO celldep
+    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
+      cellDeps.push({
+        outPoint: NERVOS_DAO.outPoint,
+        depType: NERVOS_DAO.depType as DepType,
+      })
+    );
+
+    // add Nervos DAO deposit cell as input
+    txSkeleton = txSkeleton.update("inputs", (i) => i.push(depositCell));
+
+    // add header deps
+    txSkeleton = txSkeleton.update("headerDeps", (headerDeps) => {
+      return headerDeps.push(depositCell.blockHash!);
+    });
+
+    // add output cell
+    const output: Cell = {
+      cellOutput: {
+        capacity: depositCell.cellOutput.capacity,
+        lock: depositCell.cellOutput.lock,
+        type: depositCell.cellOutput.type,
+      },
+      data: bytes.hexify(number.Uint64.pack(depositCell.blockNumber!)),
+    };
+    txSkeleton = txSkeleton.update("outputs", (o) => o.push(output));
 
     return txSkeleton;
   }
