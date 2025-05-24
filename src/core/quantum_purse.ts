@@ -866,4 +866,26 @@ export default class QuantumPurse {
 
     return txSkeleton;
   }
+
+  /**
+   * Assemble a Nervos dao unlock (withdraw phase2) transaction.
+   * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
+   *
+   * @param withdrawingCell - The Nervos DAO wightdrawing cell to be unlocked.
+   * @returns A Promise that resolves to a TransactionSkeletonType object.
+   * @throws Error if Light client is not ready / insufficient balance.
+   * @notice This transaction has no transaction fee
+   */
+  public async buildUnlock(
+    withdrawingCell: Cell
+  ): Promise<TransactionSkeletonType> {
+    if (!this.client) throw new Error("Light client not initialized");
+
+    // initialize configuration
+    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
+    initializeConfig(configuration);
+
+    let txSkeleton = new TransactionSkeleton();
+    return txSkeleton;
+  }
 }
