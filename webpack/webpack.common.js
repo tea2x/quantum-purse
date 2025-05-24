@@ -71,6 +71,9 @@ module.exports = {
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js", ".jsx"],
+    fallback: {
+      "stream": false
+    }
   },
   plugins: [
     new HtmlWebpackPlugin({
