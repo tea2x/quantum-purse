@@ -42,19 +42,6 @@ export class QPClient extends Client {
   private static instance?: QPClient;
   private lightClient: LightClient;
 
-  /* CKB light client status worker */
-  private worker: Worker | undefined;
-  private pendingRequests: Map<
-    string,
-    {
-      resolve: (value: any) => void;
-      reject: (reason: any) => void;
-    }
-  > = new Map();
-  private syncStatusListeners: Set<(status: any) => void> = new Set();
-  private static readonly CLIENT_SECRET = "ckb-light-client-wasm-secret-key";
-  private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
-
   private constructor() {
     super({ cache: new ClientCacheMemory() });
     this.lightClient = new LightClient();
