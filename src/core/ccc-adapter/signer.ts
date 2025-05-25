@@ -10,29 +10,48 @@ import {
   Transaction,
   Signature,
   BytesLike,
-  Script
+  ScriptLike,
+  Script,
+  Hex
 } from "@ckb-ccc/core";
-import QuantumPurse from "../quantum_purse";
 import { hexToByteArray, byteArrayToHex } from "../utils";
 import { QuantumClient } from "./client";
 import { IS_MAIN_NET } from "../config";
+import __wbg_init, { KeyVault, SphincsVariant } from "quantum-purse-key-vault";
+import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 
 export class QuantumSigner extends Signer {
-  private QP: QuantumPurse;
+  private keyVault?: KeyVault;
   private getPassword: () => Promise<Uint8Array>;
+  private account: ScriptLike;
 
-  constructor(client: QuantumClient, QP: QuantumPurse, getPassword: () => Promise<Uint8Array>) {
+  constructor(
+    client: QuantumClient,
+    variant: SphincsVariant,
+    getPassword: () => Promise<Uint8Array>,
+    scriptInfo: ScriptLike,
+  ) {
     super(client);
-    this.QP = QuantumPurse.getInstance();
     this.getPassword = getPassword;
+
+    if (this.keyVault) {
+      this.keyVault.free();
+    }
+    this.keyVault = new KeyVault(variant);
+    this.account = scriptInfo;
   }
 
-  /** Signer type (custom for SPHINCS+) */
+  /* init code for wasm-bindgen module. Should be called after the construction of QuantumSigner */
+  public async initWasmBindgen(): Promise<void> {
+    await __wbg_init();
+  }
+
+  /** Signer type (custom) */
   get type(): SignerType {
     return "QuantumPurse" as SignerType;
   }
 
-  /** Signature type (custom for SPHINCS+) */
+  /** Signature type (custom) */
   get signType(): SignerSignType {
     return "FIPS205" as SignerSignType;
   }
@@ -49,17 +68,21 @@ export class QuantumSigner extends Signer {
 
   /** Get internal address */
   async getInternalAddress(): Promise<string> {
-    return this.QP.getAddress();
+    return scriptToAddress(Script.from(this.account), IS_MAIN_NET);
   }
 
   /** Get address objects */
   async getAddressObjs(): Promise<Address[]> {
-    const lockArgs = await this.QP.getAllLockScriptArgs();
+    const lockArgs = await KeyVault.get_all_sphincs_lock_args();
     let ret: Address[] = [];
     lockArgs.forEach((args) => {
       if (!args) return;
       ret.push({
-        script: Script.from(this.QP.getLockScript(args)),
+        script: Script.from({
+          codeHash: this.account.codeHash,
+          hashType: this.account.hashType,
+          args: args,
+        }),
         prefix: IS_MAIN_NET ? "ckb" : "ckt",
       });
     });
@@ -70,7 +93,7 @@ export class QuantumSigner extends Signer {
   async signMessageRaw(message: string | BytesLike): Promise<string> {
     const password = await this.getPassword();
     try {
-      const signature = await this.QP.signMessage(hexToByteArray(message as string), password);
+      const signature = await this.keyVault!.sign(password, this.account.args as Hex, hexToByteArray(message as Hex));
       return byteArrayToHex(signature);
     } finally {
       password.fill(0);
