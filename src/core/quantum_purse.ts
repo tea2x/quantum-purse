@@ -2,7 +2,7 @@
 import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO } from "./config";
 import { Reader } from "ckb-js-toolkit";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
-import { Script, HashType, Address, Transaction, DepType, Cell } from "@ckb-lumos/base";
+import { Script, HashType, Address, DepType, Cell as LumosCell, Transaction as LumosTransaction } from "@ckb-lumos/base";
 import { TransactionSkeletonType, TransactionSkeleton, sealTransaction, addressToScript } from "@ckb-lumos/helpers";
 import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from "./utils";
 import __wbg_init, { KeyVault, Util as KeyVaultUtil, SphincsVariant } from "quantum-purse-key-vault";
@@ -10,9 +10,9 @@ import { LightClient, randomSecretKey, LightClientSetScriptsCommand, CellWithBlo
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
-import { ClientIndexerSearchKeyLike, Hex } from "@ckb-ccc/core";
+import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, Transaction } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
-import { bytes, number } from "@ckb-lumos/codec";
+import { getClaimEpoch, getProfit } from "./epoch";
 
 export { SphincsVariant } from "quantum-purse-key-vault";
 
@@ -283,7 +283,7 @@ export default class QuantumPurse {
    * @returns The transaction hash(id).
    * @throws Error light client is not initialized.
    */
-  public async sendTransaction(signedTx: Transaction): Promise<string> {
+  public async sendTransaction(signedTx: LumosTransaction): Promise<string> {
     if (!this.client) throw new Error("Light client not initialized");
     const txid = this.client.sendTransaction(signedTx);
     return txid;
@@ -385,7 +385,7 @@ export default class QuantumPurse {
     tx: TransactionSkeletonType,
     password: Uint8Array,
     spxLockArgs?: string
-  ): Promise<Transaction> {
+  ): Promise<LumosTransaction> {
     try {
       const accPointer = spxLockArgs !== undefined ? spxLockArgs : this.accountPointer;
       if (!accPointer || accPointer === "") {
@@ -652,7 +652,7 @@ export default class QuantumPurse {
     if (inputCapacity < requiredCapacity)
       throw new Error("Insufficient balance!");
 
-    let inputCells: Cell[] = collectedCells.map(item => ({
+    let inputCells: LumosCell[] = collectedCells.map(item => ({
       cellOutput: {
         ...item.cellOutput,
         capacity: "0x" + item.cellOutput.capacity.toString(16)
@@ -662,11 +662,11 @@ export default class QuantumPurse {
         ...item.outPoint,
         index: "0x" + item.outPoint.index.toString(16)
       }
-    } as Cell));
+    } as LumosCell));
     txSkeleton = txSkeleton.update("inputs", (i) => i.concat(inputCells));
 
     // add the output cell
-    const output: Cell = {
+    const output: LumosCell = {
       cellOutput: {
         capacity: "0x" + outputCapacity.toString(16),
         lock: addressToScript(to),
@@ -678,7 +678,7 @@ export default class QuantumPurse {
 
     // add the change cell
     const changeCapacity = inputCapacity - outputCapacity - transactionFee;
-    const changeCell: Cell = {
+    const changeCell: LumosCell = {
       cellOutput: {
         capacity: "0x" + changeCapacity.toString(16),
         lock: addressToScript(from),
@@ -705,108 +705,36 @@ export default class QuantumPurse {
     from: Address,
     to: Address,
     amount: string
-  ): Promise<TransactionSkeletonType> {
+  ): Promise<Transaction> {
     if (!this.client) throw new Error("Light client not initialized");
 
     // initialize configuration
     let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
     initializeConfig(configuration);
 
-    let txSkeleton = new TransactionSkeleton();
-    const transactionFee = BigInt(60000); // 60_000 shannons
-    const outputCapacity = BigInt(amount) * BigInt(1e8);
-    const minDaoCellCap = BigInt(32 + 1 + 32 + 8 + 32 + 1 + 8) * BigInt(1e8);
-    const requiredCapacity = transactionFee + outputCapacity + minDaoCellCap;
-    
-    // add sphics+ celldep
-    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
-      cellDeps.push({
-        outPoint: SPHINCSPLUS_LOCK.outPoint,
-        depType: SPHINCSPLUS_LOCK.depType as DepType,
-      })
-    );
-
-    // add Nervos DAO celldep
-    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
-      cellDeps.push({
-        outPoint: NERVOS_DAO.outPoint,
-        depType: NERVOS_DAO.depType as DepType,
-      })
-    );
-
-    // add input cells
-    const searchKey: ClientIndexerSearchKeyLike = {
-      scriptType: "lock",
-      script: addressToScript(from),
-      scriptSearchMode: "prefix",
-      filter: {
-        outputDataLenRange: [0, 1]
-      }
-    };
-    const collectedCells: CellWithBlockNumAndTxIndex[] = [];
-    let cursor: Hex | undefined;
-    let inputCapacity = BigInt(0);
-    cellCollecting: while (true) {
-      try {
-        const cells = await this.client.getCells(searchKey, "asc", 10, cursor);
-        if (cells.cells.length === 0) break cellCollecting;
-        cursor = cells.lastCursor as Hex;
-        for (const cell of cells.cells) {
-          if (inputCapacity >= requiredCapacity) break cellCollecting;
-          collectedCells.push(cell);
-          inputCapacity += BigInt(cell.cellOutput.capacity as string);
-        }
-      } catch (error) {
-        // error likely from getCells. todo check
-        console.error("Failed to fetch cells:", error);
-        break cellCollecting;
-      }
-    }
-
-    if (inputCapacity < requiredCapacity)
-      throw new Error("Insufficient balance!");
-
-    let inputCells: Cell[] = collectedCells.map(item => ({
-      cellOutput: {
-        ...item.cellOutput,
-        capacity: "0x" + item.cellOutput.capacity.toString(16)
-      },
-      data: item.outputData,
-      outPoint: {
-        ...item.outPoint,
-        index: "0x" + item.outPoint.index.toString(16)
-      }
-    } as Cell));
-    txSkeleton = txSkeleton.update("inputs", (i) => i.concat(inputCells));
-
-    // add the output as a Nervos DAO deposit cell
-    const output: Cell = {
-      cellOutput: {
-        capacity: "0x" + outputCapacity.toString(16),
-        lock: addressToScript(to),
-        type: {
-          codeHash: NERVOS_DAO.codeHash,
-          hashType: NERVOS_DAO.hashType as HashType,
-          args: "0x",
+    const tx = ccc.Transaction.from({
+      outputs: [
+        {
+          lock: addressToScript(to),
+          type: {
+            codeHash: NERVOS_DAO.codeHash,
+            hashType: NERVOS_DAO.hashType as HashType,
+            args: "0x",
+          },
         },
-      },
-      data: "0x0000000000000000",
-    };
-    txSkeleton = txSkeleton.update("outputs", (o) => o.push(output));
+      ],
+      outputsData: ["00".repeat(8)],
+    });
 
-    // add the change cell
-    const changeCapacity = inputCapacity - outputCapacity - transactionFee;
-    const changeCell: Cell = {
-      cellOutput: {
-        capacity: "0x" + changeCapacity.toString(16),
-        lock: addressToScript(from),
-        type: undefined,
-      },
-      data: "0x",
-    };
-    txSkeleton = txSkeleton.update("outputs", (o) => o.push(changeCell));
+    if (tx.outputs[0].capacity > ccc.fixedPointFrom(amount)) {
+      throw(Error("Minimal deposit amount is " + ccc.fixedPointToString(tx.outputs[0].capacity)));
+    }
+    tx.outputs[0].capacity = ccc.fixedPointFrom(amount);
 
-    return txSkeleton;
+    // await tx.completeInputsByCapacity(signer);
+    // await tx.completeFeeBy(signer, 1000);
+
+    return tx;
   }
 
   /**
@@ -819,52 +747,36 @@ export default class QuantumPurse {
    * @notice This transaction has no transaction fee
    */
   public async buildWithdraw(
-    depositCell: Cell
-  ): Promise<TransactionSkeletonType> {
+    depositCell: Cell,
+    depositBlockNumber: bigint,
+    depositCellBlockHash: Hex
+  ): Promise<Transaction> {
     if (!this.client) throw new Error("Light client not initialized");
 
     // initialize configuration
     let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
     initializeConfig(configuration);
 
-    let txSkeleton = new TransactionSkeleton();
-
-    // add sphics+ celldep
-    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
-      cellDeps.push({
-        outPoint: SPHINCSPLUS_LOCK.outPoint,
-        depType: SPHINCSPLUS_LOCK.depType as DepType,
-      })
-    );
-
-    // add Nervos DAO celldep
-    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
-      cellDeps.push({
-        outPoint: NERVOS_DAO.outPoint,
-        depType: NERVOS_DAO.depType as DepType,
-      })
-    );
-
-    // add Nervos DAO deposit cell as input
-    txSkeleton = txSkeleton.update("inputs", (i) => i.push(depositCell));
-
-    // add header deps
-    txSkeleton = txSkeleton.update("headerDeps", (headerDeps) => {
-      return headerDeps.push(depositCell.blockHash!);
+    const tx = ccc.Transaction.from({
+      headerDeps: [depositCellBlockHash],
+      inputs: [{ previousOutput: depositCell.outPoint }],
+      outputs: [depositCell.cellOutput],
+      outputsData: [ccc.numLeToBytes(depositBlockNumber, 8)],
     });
 
-    // add output cell
-    const output: Cell = {
-      cellOutput: {
-        capacity: depositCell.cellOutput.capacity,
-        lock: depositCell.cellOutput.lock,
-        type: depositCell.cellOutput.type,
+    // cell deps
+    tx.addCellDeps([
+      {
+        outPoint: SPHINCSPLUS_LOCK.outPoint,
+        depType: SPHINCSPLUS_LOCK.depType as DepType,
       },
-      data: bytes.hexify(number.Uint64.pack(depositCell.blockNumber!)),
-    };
-    txSkeleton = txSkeleton.update("outputs", (o) => o.push(output));
+      {
+        outPoint: NERVOS_DAO.outPoint,
+        depType: NERVOS_DAO.depType as DepType,
+      }
+    ]);
 
-    return txSkeleton;
+    return tx;
   }
 
   /**
@@ -872,20 +784,70 @@ export default class QuantumPurse {
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
    *
    * @param withdrawingCell - The Nervos DAO wightdrawing cell to be unlocked.
+   * @param to - The recipient's address.
+   * @param depositBlockHash - The block hash of the deposit cell.
+   * @param withdrawingBlockHash - The block hash of the withdrawing cell.
    * @returns A Promise that resolves to a TransactionSkeletonType object.
    * @throws Error if Light client is not ready / insufficient balance.
    * @notice This transaction has no transaction fee
    */
   public async buildUnlock(
-    withdrawingCell: Cell
-  ): Promise<TransactionSkeletonType> {
+    withdrawingCell: Cell,
+    to: Address,
+    depositBlockHash: Hex,
+    withdrawingBlockHash: Hex
+  ): Promise<Transaction> {
     if (!this.client) throw new Error("Light client not initialized");
 
     // initialize configuration
     let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
     initializeConfig(configuration);
 
-    let txSkeleton = new TransactionSkeleton();
-    return txSkeleton;
+    const [depositBlockHeader, withdrawBlockHeader] = await Promise.all([
+      this.client.getHeader(depositBlockHash),
+      this.client.getHeader(withdrawingBlockHash),
+    ]);
+
+    const tx = ccc.Transaction.from({
+      headerDeps: [withdrawingBlockHash, depositBlockHash],
+      inputs: [
+        {
+          previousOutput: withdrawingCell.outPoint,
+          since: {
+            relative: "absolute",
+            metric: "epoch",
+            value: ccc.epochToHex(getClaimEpoch(depositBlockHeader!, withdrawBlockHeader!)),
+          },
+        },
+      ],
+      outputs: [
+        {
+          lock: addressToScript(to),
+        },
+      ],
+      witnesses: [
+        ccc.WitnessArgs.from({
+          inputType: ccc.numLeToBytes(1, 8),
+        }).toBytes(),
+      ],
+    });
+
+    // cell deps
+    tx.addCellDeps([
+      {
+        outPoint: SPHINCSPLUS_LOCK.outPoint,
+        depType: SPHINCSPLUS_LOCK.depType as DepType,
+      },
+      {
+        outPoint: NERVOS_DAO.outPoint,
+        depType: NERVOS_DAO.depType as DepType,
+      }
+    ]);
+
+    // adding output
+    const outputCapacity = getProfit(withdrawingCell, depositBlockHeader!, withdrawBlockHeader!);
+    tx.outputs[0].capacity = outputCapacity;
+
+    return tx;
   }
 }
