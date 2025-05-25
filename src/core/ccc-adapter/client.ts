@@ -21,17 +21,50 @@ import {
   Hex,
   Cell,
   OutPointLike,
-  OutPoint
+  OutPoint,
+  ClientIndexerSearchKeyTransactionLike
 } from "@ckb-ccc/core";
-import { LightClient } from "ckb-light-client-js";
+import {
+  LightClient,
+  LightClientSetScriptsCommand,
+  ScriptStatus,
+  NetworkSetting,
+  FetchResponse,
+  GetTransactionsResponse,
+  TxWithCell,
+  TxWithCells,
+  GetCellsResponse,
+  LocalNode
+} from "ckb-light-client-js";
 import { IS_MAIN_NET } from "../config";
 
-export class QuantumClient extends Client {
+export class QPClient extends Client {
+  private static instance?: QPClient;
   private lightClient: LightClient;
 
-  constructor(lightClient: LightClient) {
+  /* CKB light client status worker */
+  private worker: Worker | undefined;
+  private pendingRequests: Map<
+    string,
+    {
+      resolve: (value: any) => void;
+      reject: (reason: any) => void;
+    }
+  > = new Map();
+  private syncStatusListeners: Set<(status: any) => void> = new Set();
+  private static readonly CLIENT_SECRET = "ckb-light-client-wasm-secret-key";
+  private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
+
+  private constructor() {
     super({ cache: new ClientCacheMemory() });
-    this.lightClient = lightClient;
+    this.lightClient = new LightClient();
+  }
+
+  public static getInstance() {
+    if (!QPClient.instance) {
+      QPClient.instance = new QPClient();
+    }
+    return QPClient.instance;
   }
 
   /** dummy */
@@ -212,5 +245,38 @@ export class QuantumClient extends Client {
   /** Get total capacity of cells */
   async getCellsCapacity(key: ClientIndexerSearchKeyLike): Promise<Num> {
     return await this.lightClient.getCellsCapacity(key);
+  }
+  
+  /* Relaying calls to this.lightClient */
+  public setScripts(scripts: ScriptStatus[], command?: LightClientSetScriptsCommand) {
+    this.lightClient.setScripts(scripts, command);
+  }
+
+  public getScripts(): Promise<ScriptStatus[]> {
+    return this.lightClient.getScripts();
+  }
+
+  public localNodeInfo(): Promise<LocalNode> {
+    return this.lightClient.localNodeInfo();
+  }
+
+  public async start(networkSetting: NetworkSetting, networkSecretKey: Hex, logLevel?: "trace" | "debug" | "info" | "error", transportType?: "ws" | "wss") {
+    this.lightClient.start(networkSetting, networkSecretKey, logLevel, transportType);
+  }
+
+  public fetchTransaction(txHash: HexLike): Promise<FetchResponse<ClientTransactionResponse>> {
+    return this.lightClient.fetchTransaction(txHash);
+  }
+
+  public getTransactions(searchKey: ClientIndexerSearchKeyTransactionLike, order?: "asc" | "desc", limit?: NumLike, afterCursor?: Hex): Promise<GetTransactionsResponse<TxWithCell> | GetTransactionsResponse<TxWithCells>>{
+    return this.lightClient.getTransactions(searchKey, order, limit, afterCursor);
+  }
+
+  public getCells(searchKey: ClientIndexerSearchKeyLike, order?: "asc" | "desc", limit?: NumLike, afterCursor?: Hex): Promise<GetCellsResponse> { 
+    return this.lightClient.getCells(searchKey, order, limit, afterCursor);
+  }
+
+  public getHeader(hash: HexLike): Promise<ClientBlockHeader | undefined> {
+    return this.lightClient.getHeader(hash);
   }
 }
