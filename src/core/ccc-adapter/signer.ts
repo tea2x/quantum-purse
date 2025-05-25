@@ -15,18 +15,19 @@ import {
   Hex
 } from "@ckb-ccc/core";
 import { hexToByteArray, byteArrayToHex } from "../utils";
-import { QuantumClient } from "./client";
+import { QPClient } from "./client";
 import { IS_MAIN_NET } from "../config";
 import __wbg_init, { KeyVault, SphincsVariant } from "quantum-purse-key-vault";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 
-export class QuantumSigner extends Signer {
+export class QPSigner extends Signer {
+  private static instance?: QPSigner;
   private keyVault?: KeyVault;
   private getPassword: () => Promise<Uint8Array>;
   private account: ScriptLike;
 
-  constructor(
-    client: QuantumClient,
+  private constructor(
+    client: QPClient,
     variant: SphincsVariant,
     getPassword: () => Promise<Uint8Array>,
     scriptInfo: ScriptLike,
@@ -41,7 +42,14 @@ export class QuantumSigner extends Signer {
     this.account = scriptInfo;
   }
 
-  /* init code for wasm-bindgen module. Should be called after the construction of QuantumSigner */
+  public static getInstance(client: QPClient, variant: SphincsVariant, getPassword: () => Promise<Uint8Array>, scriptInfo: ScriptLike) {
+    if (!QPSigner.instance) {
+      QPSigner.instance = new QPSigner(client, variant, getPassword, scriptInfo);
+    }
+    return QPSigner.instance;
+  }
+
+  /* init code for wasm-bindgen module. Should be called after the construction of QPSigner */
   public async initWasmBindgen(): Promise<void> {
     await __wbg_init();
   }
