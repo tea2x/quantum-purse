@@ -1,9 +1,10 @@
 import { createModel } from "@rematch/core";
 import { notification } from "antd";
-import Quantum from "../../../core/quantum_purse";
+import QuantumPurse from "../../../core/quantum_purse";
 import { bytesToUtf8, utf8ToBytes } from "../../../core/utils";
 import { FIND_ACCOUNT_THRESHOLD, STORAGE_KEYS } from "../../utils/constants";
 import { RootModel } from "./index";
+import { Hex } from "@ckb-ccc/core";
 
 interface IAccount {
   name: string;
@@ -30,7 +31,7 @@ interface IWallet {
 type StateType = IWallet;
 
 let isInitializing = false;
-export let quantum: Quantum;
+export let quantum: QuantumPurse;
 let syncStatusListener: ((status: any) => void) | null = null;
 
 const initState: StateType = {
@@ -95,7 +96,7 @@ export const wallet = createModel<RootModel>()({
         const accountsData = accounts.map((account, index) => ({
           name: `Account ${index + 1}`,
           spxLockArgs: account,
-          address: quantum.getAddress(account),
+          address: quantum.getAddress(account as Hex),
         }));
         this.setAccounts(accountsData);
         return accountsData;
@@ -106,11 +107,10 @@ export const wallet = createModel<RootModel>()({
     async init(_, rootState) {
       if (isInitializing) return;
       isInitializing = true;
-      quantum = await Quantum.getInstance();
 
       try {
+        quantum = QuantumPurse.getInstance();
         await quantum.initBackgroundServices();
-        
         // when refreshed, keyvault needs sphincs+ param set chosen by user
         const paramSet = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
         paramSet && quantum.initKeyVault(Number(paramSet));
@@ -161,16 +161,16 @@ export const wallet = createModel<RootModel>()({
       }
     },
     async loadCurrentAccount(_, rootState) {
-      if (!quantum.accountPointer || !rootState.wallet.accounts.length) return;
+      if (!QuantumPurse.accountPointer || !rootState.wallet.accounts.length) return;
       try {
-        const accountPointer = quantum.accountPointer;
+        const accountPointer = QuantumPurse.accountPointer;
         const accountData = rootState.wallet.accounts.find(
           (account) => account.spxLockArgs === accountPointer
         );
         if (!accountData) return;
         const currentBalance = await quantum.getBalance();
         this.setCurrent({
-          address: quantum.getAddress(accountPointer),
+          address: quantum.getAddress(accountPointer as Hex),
           balance: currentBalance.toString(),
           spxLockArgs: accountData.spxLockArgs,
           name: accountData.name,
@@ -296,7 +296,7 @@ export const wallet = createModel<RootModel>()({
 
           const accountsWithBalance = await Promise.all(
             accounts.map(async (spxLockArgs) => {
-              const balance = await quantum.getBalance(spxLockArgs);
+              const balance = await quantum.getBalance(spxLockArgs as Hex);
               return { spxLockArgs, balance };
             })
           );

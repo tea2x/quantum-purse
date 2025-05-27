@@ -2,8 +2,9 @@ import { expect } from "chai";
 import QuantumPurse, { SphincsVariant } from "../src/core/quantum_purse";
 import sinon from "sinon";
 import { utf8ToBytes, bytesToUtf8 } from "../src/core/utils";
-import __wbg_init from "quantum-purse-key-vault";
+import __wbg_init, { KeyVault } from "quantum-purse-key-vault";
 import { dummyTx } from "./dummy_tx";
+import { Hex } from "@ckb-ccc/core";
 
 describe("Quantum Purse Basics", () => {
   let wallet: QuantumPurse;
@@ -87,7 +88,7 @@ describe("Quantum Purse Basics", () => {
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccount(passwordStrHandler);
     const accountList = await wallet.getAllLockScriptArgs();
-    const address0 = wallet.getAddress(accountList[0]);
+    const address0 = wallet.getAddress(accountList[0] as Hex);
 
     // Stub buildTransfer to return a dummy transaction
     sinon.stub(wallet as any, "buildTransfer").resolves(dummyTx);
