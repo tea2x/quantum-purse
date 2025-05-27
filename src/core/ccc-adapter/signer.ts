@@ -21,36 +21,38 @@ import __wbg_init, { KeyVault, SphincsVariant } from "quantum-purse-key-vault";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 
 export class QPSigner extends Signer {
-  private static instance?: QPSigner;
-  private keyVault?: KeyVault;
-  private getPassword: () => Promise<Uint8Array>;
-  private account: ScriptLike;
+  private getPassword: () => Uint8Array;
+  protected account: ScriptLike;
+  protected keyVault?: KeyVault;
 
-  private constructor(
+  constructor(
     client: QPClient,
-    variant: SphincsVariant,
-    getPassword: () => Promise<Uint8Array>,
+    getPassword: () => Uint8Array,
     scriptInfo: ScriptLike,
   ) {
     super(client);
     this.getPassword = getPassword;
+    this.account = scriptInfo;
+  }
 
+  override get client(): QPClient {
+    return this.client_ as QPClient;
+  }
+
+  /**
+   * Fresh start a key-vault instance with a pre-determined SPHINCS variant.
+   * @param variant The SPHINCS+ parameter set to start with
+   * @returns void.
+   */
+  protected initKeyVaultCore(variant: SphincsVariant) {
     if (this.keyVault) {
       this.keyVault.free();
     }
     this.keyVault = new KeyVault(variant);
-    this.account = scriptInfo;
   }
 
-  public static getInstance(client: QPClient, variant: SphincsVariant, getPassword: () => Promise<Uint8Array>, scriptInfo: ScriptLike) {
-    if (!QPSigner.instance) {
-      QPSigner.instance = new QPSigner(client, variant, getPassword, scriptInfo);
-    }
-    return QPSigner.instance;
-  }
-
-  /* init code for wasm-bindgen module. Should be called after the construction of QPSigner */
-  public async initWasmBindgen(): Promise<void> {
+  /* init code for wasm-bindgen module */
+  protected async initKeyVaultWBG(): Promise<void> {
     await __wbg_init();
   }
 
@@ -99,9 +101,11 @@ export class QPSigner extends Signer {
 
   /** Sign message raw */
   async signMessageRaw(message: string | BytesLike): Promise<string> {
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+    
     const password = await this.getPassword();
     try {
-      const signature = await this.keyVault!.sign(password, this.account.args as Hex, hexToByteArray(message as Hex));
+      const signature = await this.keyVault.sign(password, this.account.args as Hex, hexToByteArray(message as Hex));
       return byteArrayToHex(signature);
     } finally {
       password.fill(0);
