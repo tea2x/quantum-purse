@@ -2,17 +2,18 @@
 import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO } from "./config";
 import { Reader } from "ckb-js-toolkit";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
-import { Script, HashType, Address, DepType, Cell as LumosCell, Transaction as LumosTransaction } from "@ckb-lumos/base";
+import { Address, DepType, Cell as LumosCell, Transaction as LumosTransaction } from "@ckb-lumos/base";
 import { TransactionSkeletonType, TransactionSkeleton, sealTransaction, addressToScript } from "@ckb-lumos/helpers";
 import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from "./utils";
 import __wbg_init, { KeyVault, Util as KeyVaultUtil, SphincsVariant } from "quantum-purse-key-vault";
-import { LightClient, randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex, ScriptStatus } from "ckb-light-client-js";
+import { randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex, ScriptStatus } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
-import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, Transaction } from "@ckb-ccc/core";
+import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, Transaction, HashType, ScriptLike, Script } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
 import { getClaimEpoch, getProfit } from "./epoch";
+import { QPSigner } from "./ccc-adapter/signer";
 
 export { SphincsVariant } from "quantum-purse-key-vault";
 
@@ -21,11 +22,13 @@ export { SphincsVariant } from "quantum-purse-key-vault";
  * This class provides functionality for generating accounts, signing transactions,
  * managing cryptographic keys, and interacting with the blockchain.
  */
-export default class QuantumPurse {
+export default class QuantumPurse extends QPSigner {
   //**************************************************************************************//
   //*********************************** ATRIBUTES ****************************************//
   //**************************************************************************************//
   private static instance?: QuantumPurse;
+  private hasClientStarted: boolean = false;
+  
   /* CKB light client status worker */
   private worker: Worker | undefined;
   private pendingRequests: Map<
@@ -35,26 +38,21 @@ export default class QuantumPurse {
       reject: (reason: any) => void;
     }
   > = new Map();
-  private client?: LightClient;
   private syncStatusListeners: Set<(status: any) => void> = new Set();
   private static readonly CLIENT_SECRET = "ckb-light-client-wasm-secret-key";
   private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
   /* Account management */
-  private keyVault?: KeyVault;
-  private sphincsPlusDep: { codeHash: string; hashType: HashType };
-  public accountPointer?: string; // Is a sphincs+ lock script argument
+  public static accountPointer?: string; // Is a sphincs+ lock script argument
 
   //**************************************************************************************//
   //*************************************** METHODS **************************************//
   //**************************************************************************************//
   /** Constructor that takes sphincs+ on-chain binary deployment info */
-  private constructor(sphincsCodeHash: string, sphincsHashType: HashType) {
-    this.sphincsPlusDep = { codeHash: sphincsCodeHash, hashType: sphincsHashType };
-  }
-
-  /* init code for wasm-bindgen module */
-  private async initWasmBindgen(): Promise<void> {
-    await __wbg_init();
+  private constructor(
+    getPassword: () => Uint8Array,
+    scriptInfo: ScriptLike
+  ) {
+    super(getPassword, scriptInfo);
   }
 
   /* init light client and status worker */
@@ -117,7 +115,7 @@ export default class QuantumPurse {
    * when accounts are created gradually via genAccount (when users want to create a new account)
   */
   private async setSellectiveSyncFilterInternal(
-    spxLockArgs: string,
+    spxLockArgs: Hex,
     firstAccount: boolean
   ): Promise<void> {
     if (!this.client) {
@@ -160,7 +158,7 @@ export default class QuantumPurse {
     const tipBlock = Number(tipHeader.number);
     /* When wallet/accounts may not be created yet(accountPointer not available),
     light client connection and tipBlock can still be shown to let users know */
-    if (!this.accountPointer) return {
+    if (!QuantumPurse.accountPointer) return {
       nodeId: localNodeInfo.nodeId,
       connections: localNodeInfo.connections,
       syncedBlock: 0,
@@ -170,7 +168,7 @@ export default class QuantumPurse {
     };
 
     const lock = this.getLockScript();
-    const storeKey = QuantumPurse.START_BLOCK + "-" + this.accountPointer;
+    const storeKey = QuantumPurse.START_BLOCK + "-" + QuantumPurse.accountPointer;
     const startBlock = Number(this.inferStartBlock(storeKey));
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
@@ -190,7 +188,7 @@ export default class QuantumPurse {
 
   /* Start light client thread*/
   private async startLightClient() {
-    if (this.client !== undefined) return;
+    if (this.hasClientStarted) return;
 
     let secretKey = localStorage.getItem(QuantumPurse.CLIENT_SECRET);
     if (!secretKey) {
@@ -203,7 +201,6 @@ export default class QuantumPurse {
     }
 
     try {
-      this.client = new LightClient();
       const config = IS_MAIN_NET
         ? await (await fetch(mainnetConfig)).text()
         : await (await fetch(testnetConfig)).text();
@@ -213,6 +210,7 @@ export default class QuantumPurse {
         "info",
         "wss"
       );
+      this.hasClientStarted = true;
     } catch (error) {
       console.error("Failed to start light client:", error);
     }
@@ -236,29 +234,30 @@ export default class QuantumPurse {
   public static getInstance() {
     if (!QuantumPurse.instance) {
       QuantumPurse.instance = new QuantumPurse(
-        SPHINCSPLUS_LOCK.codeHash,
-        SPHINCSPLUS_LOCK.hashType as HashType
+        () => new Uint8Array(0), // dummy password getter, to be updated
+        {
+          codeHash: SPHINCSPLUS_LOCK.codeHash,
+          hashType: SPHINCSPLUS_LOCK.hashType,
+          args: this.accountPointer as string 
+        } as ScriptLike
       );
     }
     return QuantumPurse.instance;
   }
 
-  /* init background service as wasm code and light client*/
+  /* init background service such as wasm bind-gen init code and light client*/
   public async initBackgroundServices(): Promise<void> {
-    await this.initWasmBindgen();
+    await this.initKeyVaultWBG();
     await this.initLightClient();
   }
 
   /**
-   * Fresh start a key-vault instance with a pre-determined SPHINCS variant.
+   * Init(and reinit) the Key Vault from QPSigner with a pre-determined SPHINCS variant.
    * @param variant The SPHINCS+ parameter set to start with
    * @returns void.
    */
   public initKeyVault(variant: SphincsVariant) {
-    if (this.keyVault) {
-      this.keyVault.free();
-    }
-    this.keyVault = new KeyVault(variant);
+    this.initKeyVaultCore(variant);
   }
 
   /* get the name of sphincs+ paramset of choice*/
@@ -283,7 +282,7 @@ export default class QuantumPurse {
    * @returns The transaction hash(id).
    * @throws Error light client is not initialized.
    */
-  public async sendTransaction(signedTx: LumosTransaction): Promise<string> {
+  public async sendTransaction(signedTx: LumosTransaction): Promise<Hex> {
     if (!this.client) throw new Error("Light client not initialized");
     const txid = this.client.sendTransaction(signedTx);
     return txid;
@@ -296,7 +295,7 @@ export default class QuantumPurse {
    * @param setMode The mode to set the scripts (All, Partial, Delete).
    * @throws Error light client is not initialized.
    */
-  public async setSellectiveSyncFilter(spxLockArgsArray: string[], startingBlocks: bigint[], setMode: LightClientSetScriptsCommand) {
+  public async setSellectiveSyncFilter(spxLockArgsArray: Hex[], startingBlocks: bigint[], setMode: LightClientSetScriptsCommand) {
     if (!this.client) throw new Error("Light client not initialized");
 
     if (spxLockArgsArray.length !== startingBlocks.length) {
@@ -323,9 +322,9 @@ export default class QuantumPurse {
    * @returns The CKB lock script (an asset lock in CKB blockchain).
    * @throws Error if no account pointer is set by default.
    */
-  public getLockScript(spxLockArgs?: string): Script {
+  public getLockScript(spxLockArgs?: Hex): ScriptLike {
     const accPointer =
-      spxLockArgs !== undefined ? spxLockArgs : this.accountPointer;
+      spxLockArgs !== undefined ? spxLockArgs : QuantumPurse.accountPointer;
     if (!accPointer || accPointer === "") {
       throw new Error("Account pointer not available!");
     }
@@ -333,8 +332,8 @@ export default class QuantumPurse {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
 
     return {
-      codeHash: this.sphincsPlusDep.codeHash,
-      hashType: this.sphincsPlusDep.hashType,
+      codeHash: this.account.codeHash,
+      hashType: this.account.hashType,
       args: "0x" + accPointer,
     };
   }
@@ -345,9 +344,9 @@ export default class QuantumPurse {
    * @returns The CKB address as a string.
    * @throws Error if no account pointer is set by default (see `getLockScript` for details).
    */
-  public getAddress(spxLockArgs?: string): string {
+  public getAddress(spxLockArgs?: Hex): string {
     const lock = this.getLockScript(spxLockArgs);
-    return scriptToAddress(lock, IS_MAIN_NET);
+    return scriptToAddress(Script.from(lock), IS_MAIN_NET);
   }
 
   /**
@@ -356,7 +355,7 @@ export default class QuantumPurse {
    * @returns The account balance.
    * @throws Error light client is not initialized.
    */
-  public async getBalance(spxLockArgs?: string): Promise<bigint> {
+  public async getBalance(spxLockArgs?: Hex): Promise<bigint> {
     if (!this.client) {
       console.error("Light client not initialized");
       return Promise.resolve(BigInt(0));
@@ -387,7 +386,7 @@ export default class QuantumPurse {
     spxLockArgs?: string
   ): Promise<LumosTransaction> {
     try {
-      const accPointer = spxLockArgs !== undefined ? spxLockArgs : this.accountPointer;
+      const accPointer = spxLockArgs !== undefined ? spxLockArgs : QuantumPurse.accountPointer;
       if (!accPointer || accPointer === "") {
         throw new Error("Account pointer not available!");
       }
@@ -413,7 +412,7 @@ export default class QuantumPurse {
     spxLockArgsList.forEach((lockArgs) => {
       localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + lockArgs);
     });
-    this.accountPointer = undefined;
+    QuantumPurse.accountPointer = undefined;
     await KeyVault.clear_database();
   }
 
@@ -432,7 +431,7 @@ export default class QuantumPurse {
         this.getAllLockScriptArgs(),
         this.keyVault.gen_new_account(password)
       ]);
-      await this.setSellectiveSyncFilterInternal(lockArgs, (lockArgsList.length === 0));
+      await this.setSellectiveSyncFilterInternal(lockArgs as Hex, (lockArgsList.length === 0));
       return lockArgs;
     } finally {
       password.fill(0);
@@ -447,7 +446,7 @@ export default class QuantumPurse {
   public async setAccountPointer(accPointer: string): Promise<void> {
     const lockArgsList = await this.getAllLockScriptArgs();
     if (!lockArgsList.includes(accPointer)) throw Error("Invalid account pointer");
-    this.accountPointer = accPointer;
+    QuantumPurse.accountPointer = accPointer;
   }
 
   /**
@@ -556,7 +555,7 @@ export default class QuantumPurse {
   public async recoverAccounts(password: Uint8Array, count: number): Promise<void> {
     try {
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      const spxLockArgsList = await this.keyVault.recover_accounts(password, count);
+      const spxLockArgsList = await this.keyVault.recover_accounts(password, count) as Hex[];
 
       if (!this.client) {
         console.error("Light client not initialized");
@@ -731,8 +730,8 @@ export default class QuantumPurse {
     }
     tx.outputs[0].capacity = ccc.fixedPointFrom(amount);
 
-    // await tx.completeInputsByCapacity(signer);
-    // await tx.completeFeeBy(signer, 1000);
+    await tx.completeInputsByCapacity(this);
+    await tx.completeFeeBy(this, 1000);
 
     return tx;
   }
@@ -775,6 +774,9 @@ export default class QuantumPurse {
         depType: NERVOS_DAO.depType as DepType,
       }
     ]);
+
+    await tx.completeInputsByCapacity(this);
+    await tx.completeFeeBy(this, 1000);
 
     return tx;
   }
@@ -844,9 +846,12 @@ export default class QuantumPurse {
       }
     ]);
 
+    await tx.completeInputsByCapacity(this);
+    await tx.completeFeeChangeToOutput(this, 0, 1000);
+
     // adding output
     const outputCapacity = getProfit(withdrawingCell, depositBlockHeader!, withdrawBlockHeader!);
-    tx.outputs[0].capacity = outputCapacity;
+    tx.outputs[0].capacity += outputCapacity;
 
     return tx;
   }
