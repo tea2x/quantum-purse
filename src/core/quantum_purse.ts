@@ -118,8 +118,8 @@ export default class QuantumPurse extends QPSigner {
     spxLockArgs: Hex,
     firstAccount: boolean
   ): Promise<void> {
-    if (!this.client) {
-      console.error("Light client not initialized");
+    if (!this.hasClientStarted) {
+      console.error("Light client has not initialized");
       return Promise.resolve();
     }
 
@@ -137,8 +137,8 @@ export default class QuantumPurse extends QPSigner {
 
   /* Calculate sync status */
   private async getSyncStatus() {
-    if (!this.client) {
-      console.error("Light client not initialized");
+    if (!this.hasClientStarted) {
+      console.error("Light client has not initialized");
       return {
         nodeId: "NULL",
         connections: 0,
@@ -218,8 +218,8 @@ export default class QuantumPurse extends QPSigner {
 
   /* Fetch the sphincs+ celldeps to the light client in quantumPurse wallet setup */
   private async fetchSphincsPlusCellDeps() {
-    if (!this.client) {
-      console.error("Light client not initialized");
+    if (!this.hasClientStarted) {
+      console.error("Light client has not initialized");
       return;
     }
     await this.client.fetchTransaction(SPHINCSPLUS_LOCK.outPoint.txHash);
@@ -283,7 +283,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error light client is not initialized.
    */
   public async sendTransaction(signedTx: LumosTransaction): Promise<Hex> {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.hasClientStarted) throw new Error("Light client has not initialized");
     const txid = this.client.sendTransaction(signedTx);
     return txid;
   }
@@ -296,7 +296,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error light client is not initialized.
    */
   public async setSellectiveSyncFilter(spxLockArgsArray: Hex[], startingBlocks: bigint[], setMode: LightClientSetScriptsCommand) {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     if (spxLockArgsArray.length !== startingBlocks.length) {
       throw new Error("Length of spxLockArgsArray and startingBlocks must be the same");
@@ -356,8 +356,8 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error light client is not initialized.
    */
   public async getBalance(spxLockArgs?: Hex): Promise<bigint> {
-    if (!this.client) {
-      console.error("Light client not initialized");
+    if (!this.hasClientStarted) {
+      console.error("Light client has not initialized");
       return Promise.resolve(BigInt(0));
     }
 
@@ -557,8 +557,8 @@ export default class QuantumPurse extends QPSigner {
       if (!this.keyVault) throw new Error("KeyVault not initialized!");
       const spxLockArgsList = await this.keyVault.recover_accounts(password, count) as Hex[];
 
-      if (!this.client) {
-        console.error("Light client not initialized");
+      if (!this.hasClientStarted) {
+        console.error("Light client has not initialized");
         return Promise.resolve();
       }
 
@@ -599,7 +599,7 @@ export default class QuantumPurse extends QPSigner {
     to: Address,
     amount: string
   ): Promise<TransactionSkeletonType> {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     // initialize configuration
     let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
@@ -705,7 +705,7 @@ export default class QuantumPurse extends QPSigner {
     to: Address,
     amount: string
   ): Promise<Transaction> {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     // initialize configuration
     let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
@@ -750,7 +750,7 @@ export default class QuantumPurse extends QPSigner {
     depositBlockNumber: bigint,
     depositCellBlockHash: Hex
   ): Promise<Transaction> {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     // initialize configuration
     let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
@@ -799,7 +799,7 @@ export default class QuantumPurse extends QPSigner {
     depositBlockHash: Hex,
     withdrawingBlockHash: Hex
   ): Promise<Transaction> {
-    if (!this.client) throw new Error("Light client not initialized");
+    if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     // initialize configuration
     let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
