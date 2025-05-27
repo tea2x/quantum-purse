@@ -1,5 +1,5 @@
 // QuantumPurse.ts
-import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO } from "./config";
+import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO, FEE_RATE } from "./config";
 import { Reader } from "ckb-js-toolkit";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { Address, DepType, Cell as LumosCell, Transaction as LumosTransaction } from "@ckb-lumos/base";
@@ -731,7 +731,7 @@ export default class QuantumPurse extends QPSigner {
     tx.outputs[0].capacity = ccc.fixedPointFrom(amount);
 
     await tx.completeInputsByCapacity(this);
-    await tx.completeFeeBy(this, 1000);
+    await tx.completeFeeBy(this, FEE_RATE);
 
     return tx;
   }
@@ -776,7 +776,7 @@ export default class QuantumPurse extends QPSigner {
     ]);
 
     await tx.completeInputsByCapacity(this);
-    await tx.completeFeeBy(this, 1000);
+    await tx.completeFeeBy(this, FEE_RATE);
 
     return tx;
   }
@@ -847,7 +847,7 @@ export default class QuantumPurse extends QPSigner {
     ]);
 
     await tx.completeInputsByCapacity(this);
-    await tx.completeFeeChangeToOutput(this, 0, 1000);
+    await tx.completeFeeChangeToOutput(this, 0, FEE_RATE);
 
     // adding output
     const outputCapacity = getProfit(withdrawingCell, depositBlockHeader!, withdrawBlockHeader!);
