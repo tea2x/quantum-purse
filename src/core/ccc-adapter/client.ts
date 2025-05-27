@@ -39,19 +39,11 @@ import {
 import { IS_MAIN_NET } from "../config";
 
 export class QPClient extends Client {
-  private static instance?: QPClient;
   private lightClient: LightClient;
 
-  private constructor() {
+  constructor() {
     super({ cache: new ClientCacheMemory() });
     this.lightClient = new LightClient();
-  }
-
-  public static getInstance() {
-    if (!QPClient.instance) {
-      QPClient.instance = new QPClient();
-    }
-    return QPClient.instance;
   }
 
   /** dummy */

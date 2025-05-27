@@ -29,7 +29,7 @@ export class QPSigner extends Signer {
     getPassword: () => Uint8Array,
     scriptInfo: ScriptLike,
   ) {
-    super(QPClient.getInstance());
+    super(new QPClient());
     this.getPassword = getPassword;
     this.account = scriptInfo;
   }
