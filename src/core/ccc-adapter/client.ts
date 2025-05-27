@@ -59,7 +59,7 @@ export class QPClient extends Client {
     return IS_MAIN_NET ? "light-client-mainnet" : "light-client-testnet";
   }
 
-  /** Address prefix based on network */
+  /** Address prefix */
   get addressPrefix(): string {
     return IS_MAIN_NET ? "ckb" : "ckt";
   }
@@ -234,7 +234,7 @@ export class QPClient extends Client {
     return this.lightClient.getCellsCapacity(key);
   }
   
-  /* Relaying calls to this.lightClient */
+  /* Delegating calls to this.lightClient */
   public async setScripts(scripts: ScriptStatus[], command?: LightClientSetScriptsCommand) {
     await this.lightClient.setScripts(scripts, command);
   }

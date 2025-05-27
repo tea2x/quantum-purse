@@ -26,11 +26,10 @@ export class QPSigner extends Signer {
   protected keyVault?: KeyVault;
 
   constructor(
-    client: QPClient,
     getPassword: () => Uint8Array,
     scriptInfo: ScriptLike,
   ) {
-    super(client);
+    super(QPClient.getInstance());
     this.getPassword = getPassword;
     this.account = scriptInfo;
   }
@@ -40,7 +39,7 @@ export class QPSigner extends Signer {
   }
 
   /**
-   * Fresh start a key-vault instance with a pre-determined SPHINCS variant.
+   * Initialize the key-vault instance from within Signer with a pre-determined SPHINCS variant.
    * @param variant The SPHINCS+ parameter set to start with
    * @returns void.
    */
@@ -51,7 +50,7 @@ export class QPSigner extends Signer {
     this.keyVault = new KeyVault(variant);
   }
 
-  /* init code for wasm-bindgen module */
+  /* Wasm-bindgen module init code for Key Vault */
   protected async initKeyVaultWBG(): Promise<void> {
     await __wbg_init();
   }
@@ -103,7 +102,7 @@ export class QPSigner extends Signer {
   async signMessageRaw(message: string | BytesLike): Promise<string> {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
     
-    const password = await this.getPassword();
+    const password = await this.getPassword(); //todo update
     try {
       const signature = await this.keyVault.sign(password, this.account.args as Hex, hexToByteArray(message as Hex));
       return byteArrayToHex(signature);
