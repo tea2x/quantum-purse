@@ -1,10 +1,8 @@
 import { expect } from "chai";
 import QuantumPurse, { SphincsVariant } from "../src/core/quantum_purse";
-import sinon from "sinon";
 import { utf8ToBytes, bytesToUtf8 } from "../src/core/utils";
-import __wbg_init, { KeyVault } from "quantum-purse-key-vault";
+import __wbg_init from "quantum-purse-key-vault";
 import { dummyTx } from "./dummy_tx";
-import { Hex } from "@ckb-ccc/core";
 
 describe("Quantum Purse Basics", () => {
   let wallet: QuantumPurse;
@@ -28,7 +26,6 @@ describe("Quantum Purse Basics", () => {
   });
 
   afterEach(async () => {
-    sinon.restore();
     await wallet.deleteWallet();
   });
 
@@ -52,8 +49,6 @@ describe("Quantum Purse Basics", () => {
   it("Should zeroize password after generating an account", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.generateMasterSeed(passwordStrHandler);
-    // Mocking lightClient related function
-    sinon.stub(wallet as any, "setSellectiveSyncFilterInternal").resolves();
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccount(passwordStrHandler);
@@ -82,16 +77,9 @@ describe("Quantum Purse Basics", () => {
     const seedPhraseHandler = utf8ToBytes(seedPhrase36);
     await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
 
-    // Mocking lightClient related function
-    sinon.stub(wallet as any, "setSellectiveSyncFilterInternal").resolves();
-
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.genAccount(passwordStrHandler);
     const accountList = await wallet.getAllLockScriptArgs();
-    const address0 = wallet.getAddress(accountList[0] as Hex);
-
-    // Stub buildTransfer to return a dummy transaction
-    sinon.stub(wallet as any, "buildTransfer").resolves(dummyTx);
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.setAccountPointer(accountList[0]);
@@ -112,15 +100,6 @@ describe("Quantum Purse Basics", () => {
     const seedPhraseHandler = utf8ToBytes(seedPhrase36);
     let passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
-
-    // Mock `this.client`
-    const mockClient = {
-      getTransactions: sinon.stub().resolves({
-        transactions: [{ blockNumber: BigInt(100) }],
-      }),
-      setScripts: sinon.stub().resolves(),
-    };
-    (wallet as any).client = mockClient;
 
     passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.recoverAccounts(passwordStrHandler, 3);
