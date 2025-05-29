@@ -46,7 +46,7 @@ export class QPClient extends Client {
     this.lightClient = new LightClient();
   }
 
-  /** dummy */
+  /** No url because this is light client based */
   get url(): string {
     return IS_MAIN_NET ? "light-client-mainnet" : "light-client-testnet";
   }

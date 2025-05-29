@@ -55,17 +55,17 @@ export class QPSigner extends Signer {
     await __wbg_init();
   }
 
-  /** Signer type (custom) */
+  /** CKB network */
   get type(): SignerType {
-    return "QuantumPurse" as SignerType;
+    return SignerType.CKB;
   }
 
-  /** Signature type (custom) */
+  /** Signature type is SPHINCS+ */
   get signType(): SignerSignType {
-    return "FIPS205" as SignerSignType;
+    return SignerSignType.Unknown;
   }
 
-  /** Connect (no-op since wallet is local) */
+  /** Connect (no-op since private key must be authenticated via password each use) */
   async connect(): Promise<void> {
     return;
   }
@@ -117,8 +117,30 @@ export class QPSigner extends Signer {
   }
 
   /** Prepare transaction */
-  async prepareTransaction(tx: TransactionLike): Promise<Transaction> {
-    throw new Error("prepareTransaction not implemented yet");
+  async prepareTransaction(txLike: TransactionLike): Promise<Transaction> {
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+
+    const tx = Transaction.from(txLike);
+    const { script } = await this.getRecommendedAddressObj();
+    // await tx.addCellDepsOfKnownScripts(this.client, KnownScript._);
+    const witnessSizeMap = {
+      [SphincsVariant.Sha2128F]: 17145,
+      [SphincsVariant.Shake128F]: 17145,
+      [SphincsVariant.Sha2128S]: 7913,
+      [SphincsVariant.Shake128S]: 7913,
+      [SphincsVariant.Sha2192F]: 35737,
+      [SphincsVariant.Shake192F]: 35737,
+      [SphincsVariant.Sha2192S]: 16297,
+      [SphincsVariant.Shake192S]: 16297,
+      [SphincsVariant.Sha2256F]: 49945,
+      [SphincsVariant.Shake256F]: 49945,
+      [SphincsVariant.Sha2256S]: 29881,
+      [SphincsVariant.Shake256S]: 29881,
+    };
+    const variant = this.keyVault.variant;
+    const witnessSize = witnessSizeMap[variant] || 0;
+    await tx.prepareSighashAllWitness(script, witnessSize, this.client);
+    return tx;
   }
 
   /** Sign only the transaction */
