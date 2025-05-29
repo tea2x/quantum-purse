@@ -545,7 +545,7 @@ export default class QuantumPurse extends QPSigner {
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
-  public async buildTransfer(
+  public async transfer(
     from: Address,
     to: Address,
     amount: string
@@ -581,7 +581,7 @@ export default class QuantumPurse extends QPSigner {
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
-  public async buildDeposit(
+  public async daoDeposit(
     from: Address,
     to: Address,
     amount: string
@@ -639,7 +639,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error if Light client is not ready / insufficient balance.
    * @notice This transaction has no transaction fee
    */
-  public async buildWithdraw(
+  public async daoWithdrawRequest(
     depositCell: Cell,
     depositBlockNumber: bigint,
     depositCellBlockHash: Hex
@@ -688,7 +688,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error if Light client is not ready / insufficient balance.
    * @notice This transaction has no transaction fee
    */
-  public async buildUnlock(
+  public async daoUnlock(
     withdrawingCell: Cell,
     to: Address,
     depositBlockHash: Hex,
