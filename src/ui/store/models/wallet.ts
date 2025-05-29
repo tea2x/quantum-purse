@@ -161,16 +161,16 @@ export const wallet = createModel<RootModel>()({
       }
     },
     async loadCurrentAccount(_, rootState) {
-      if (!QuantumPurse.accountPointer || !rootState.wallet.accounts.length) return;
+      if (!quantum.accountPointer || !rootState.wallet.accounts.length) return;
       try {
-        const accountPointer = QuantumPurse.accountPointer;
+        const accountPointer = quantum.accountPointer;
         const accountData = rootState.wallet.accounts.find(
           (account) => account.spxLockArgs === accountPointer
         );
         if (!accountData) return;
         const currentBalance = await quantum.getBalance();
         this.setCurrent({
-          address: quantum.getAddress(accountPointer as Hex),
+          address: quantum.getAddress(accountPointer),
           balance: currentBalance.toString(),
           spxLockArgs: accountData.spxLockArgs,
           name: accountData.name,

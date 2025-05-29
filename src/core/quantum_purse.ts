@@ -8,7 +8,7 @@ import { randomSecretKey, LightClientSetScriptsCommand, ScriptStatus } from "ckb
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
-import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, Script } from "@ckb-ccc/core";
+import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, Script, BytesLike, HashTypeLike } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
 import { getClaimEpoch, getProfit } from "./epoch";
 import { QPSigner } from "./ccc-adapter/signer";
@@ -39,8 +39,6 @@ export default class QuantumPurse extends QPSigner {
   private syncStatusListeners: Set<(status: any) => void> = new Set();
   private static readonly CLIENT_SECRET = "ckb-light-client-wasm-secret-key";
   private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
-  /* Account management */
-  public static accountPointer?: string; // Is a sphincs+ lock script argument
 
   //**************************************************************************************//
   //*************************************** METHODS **************************************//
@@ -48,7 +46,7 @@ export default class QuantumPurse extends QPSigner {
   /** Constructor that takes sphincs+ on-chain binary deployment info */
   private constructor(
     getPassword: () => Uint8Array,
-    scriptInfo: ScriptLike
+    scriptInfo: { codeHash: BytesLike, hashType: HashTypeLike }
   ) {
     super(getPassword, scriptInfo);
   }
@@ -156,7 +154,7 @@ export default class QuantumPurse extends QPSigner {
     const tipBlock = Number(tipHeader.number);
     /* When wallet/accounts may not be created yet(accountPointer not available),
     light client connection and tipBlock can still be shown to let users know */
-    if (!QuantumPurse.accountPointer) return {
+    if (!this.accountPointer) return {
       nodeId: localNodeInfo.nodeId,
       connections: localNodeInfo.connections,
       syncedBlock: 0,
@@ -166,7 +164,7 @@ export default class QuantumPurse extends QPSigner {
     };
 
     const lock = this.getLockScript();
-    const storeKey = QuantumPurse.START_BLOCK + "-" + QuantumPurse.accountPointer;
+    const storeKey = QuantumPurse.START_BLOCK + "-" + this.accountPointer;
     const startBlock = Number(this.inferStartBlock(storeKey));
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
@@ -225,9 +223,7 @@ export default class QuantumPurse extends QPSigner {
 
   /**
    * Gets the singleton instance of QuantumPurse.
-   * It seems key-vault initialization should be placed in a different init function.
-   * But Keyvault is too fused to QuantumPurse so for convenience, it is placed here.
-   * @returns The singleton instance of QuantumPurse.
+   * @returns The singleton instance of QuantumPurse if there is and create a new obj if there isn't.
    */
   public static getInstance() {
     if (!QuantumPurse.instance) {
@@ -235,9 +231,8 @@ export default class QuantumPurse extends QPSigner {
         () => new Uint8Array(0), // dummy password getter, to be updated
         {
           codeHash: SPHINCSPLUS_LOCK.codeHash,
-          hashType: SPHINCSPLUS_LOCK.hashType,
-          args: this.accountPointer as string 
-        } as ScriptLike
+          hashType: SPHINCSPLUS_LOCK.hashType
+        }
       );
     }
     return QuantumPurse.instance;
@@ -308,9 +303,9 @@ export default class QuantumPurse extends QPSigner {
    * @returns The CKB lock script (an asset lock in CKB blockchain).
    * @throws Error if no account pointer is set by default.
    */
-  public getLockScript(spxLockArgs?: Hex): ScriptLike {
+  public getLockScript(spxLockArgs?: BytesLike): ScriptLike {
     const accPointer =
-      spxLockArgs !== undefined ? spxLockArgs : QuantumPurse.accountPointer;
+      spxLockArgs !== undefined ? spxLockArgs : this.accountPointer;
     if (!accPointer || accPointer === "") {
       throw new Error("Account pointer not available!");
     }
@@ -318,8 +313,8 @@ export default class QuantumPurse extends QPSigner {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
 
     return {
-      codeHash: this.account.codeHash,
-      hashType: this.account.hashType,
+      codeHash: this.spxLock.codeHash,
+      hashType: this.spxLock.hashType,
       args: "0x" + accPointer,
     };
   }
@@ -330,7 +325,7 @@ export default class QuantumPurse extends QPSigner {
    * @returns The CKB address as a string.
    * @throws Error if no account pointer is set by default (see `getLockScript` for details).
    */
-  public getAddress(spxLockArgs?: Hex): string {
+  public getAddress(spxLockArgs?: BytesLike): string {
     const lock = this.getLockScript(spxLockArgs);
     return scriptToAddress(Script.from(lock), IS_MAIN_NET);
   }
@@ -363,7 +358,7 @@ export default class QuantumPurse extends QPSigner {
     spxLockArgsList.forEach((lockArgs) => {
       localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + lockArgs);
     });
-    QuantumPurse.accountPointer = undefined;
+    this.accountPointer = undefined;
     await KeyVault.clear_database();
   }
 
@@ -387,17 +382,6 @@ export default class QuantumPurse extends QPSigner {
     } finally {
       password.fill(0);
     }
-  }
-
-  /**
-   * Sets the account pointer (There can be many sub/child accounts in db but at a time Quantum Purse will show just 1).
-   * @param accPointer - The SPHINCS+ lock script argument (as a pointer to the encrypted privatekey in DB) to set.
-   * @throws Error if the account to be set is not in the DB.
-   */
-  public async setAccountPointer(accPointer: string): Promise<void> {
-    const lockArgsList = await this.getAllLockScriptArgs();
-    if (!lockArgsList.includes(accPointer)) throw Error("Invalid account pointer");
-    QuantumPurse.accountPointer = accPointer;
   }
 
   /**
@@ -464,14 +448,6 @@ export default class QuantumPurse extends QPSigner {
     } finally {
       password.fill(0);
     }
-  }
-
-  /**
-   * Retrieve all sphincs+ lock script arguments from all child accounts in the indexed DB.
-   * @returns An ordered array of all child key's sphincs+ lock script argument.
-   */
-  public async getAllLockScriptArgs(): Promise<string[]> {
-    return await KeyVault.get_all_sphincs_lock_args();
   }
 
   /**

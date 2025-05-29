@@ -10,11 +10,11 @@ import {
   Transaction,
   Signature,
   BytesLike,
-  ScriptLike,
   Script,
   Hex,
   hexFrom,
-  WitnessArgs
+  WitnessArgs,
+  HashTypeLike
 } from "@ckb-ccc/core";
 import { hexToByteArray, byteArrayToHex } from "../utils";
 import { QPClient } from "./client";
@@ -24,21 +24,36 @@ import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { get_ckb_tx_message_all_hash, utf8ToBytes } from "../utils";
 
 export class QPSigner extends Signer {
-  private getPassword: () => Uint8Array;
-  protected account: ScriptLike;
+  public accountPointer?: BytesLike;
+  protected spxLock: { codeHash: BytesLike, hashType: HashTypeLike };
   protected keyVault?: KeyVault;
+  private getPassword: () => Uint8Array;
 
   constructor(
     getPassword: () => Uint8Array,
-    scriptInfo: ScriptLike,
+    spxLockInfo: { codeHash: BytesLike, hashType: HashTypeLike }
   ) {
     super(new QPClient());
     this.getPassword = getPassword;
-    this.account = scriptInfo;
+    this.spxLock = spxLockInfo;
   }
 
   override get client(): QPClient {
     return this.client_ as QPClient;
+  }
+
+  async setAccountPointer(accPointer: BytesLike) {
+    const lockArgsList = await this.getAllLockScriptArgs();
+    if (!lockArgsList.includes(accPointer as string)) throw Error("Invalid account pointer");
+    this.accountPointer = accPointer;
+  }
+
+  /**
+   * Retrieve all sphincs+ lock script arguments from all child accounts in the indexed DB.
+   * @returns An ordered array of all child key's sphincs+ lock script argument.
+   */
+  public async getAllLockScriptArgs(): Promise<string[]> {
+    return await KeyVault.get_all_sphincs_lock_args();
   }
 
   /**
@@ -80,7 +95,14 @@ export class QPSigner extends Signer {
 
   /** Get internal address */
   async getInternalAddress(): Promise<string> {
-    return scriptToAddress(Script.from(this.account), IS_MAIN_NET);
+    return scriptToAddress(
+      Script.from({
+        codeHash: this.spxLock.codeHash,
+        hashType: this.spxLock.hashType,
+        args: this.accountPointer as string
+      }),
+      IS_MAIN_NET
+    );
   }
 
   /** Get address objects */
@@ -91,8 +113,8 @@ export class QPSigner extends Signer {
       if (!args) return;
       ret.push({
         script: Script.from({
-          codeHash: this.account.codeHash,
-          hashType: this.account.hashType,
+          codeHash: this.spxLock.codeHash,
+          hashType: this.spxLock.hashType,
           args: args,
         }),
         prefix: IS_MAIN_NET ? "ckb" : "ckt",
@@ -107,7 +129,7 @@ export class QPSigner extends Signer {
     
     const password = await this.getPassword(); //todo update
     try {
-      const signature = await this.keyVault.sign(password, this.account.args as Hex, hexToByteArray(message as Hex));
+      const signature = await this.keyVault.sign(password, this.accountPointer as Hex, hexToByteArray(message as Hex));
       return byteArrayToHex(signature);
     } finally {
       password.fill(0);
@@ -155,7 +177,7 @@ export class QPSigner extends Signer {
     const password = utf8ToBytes("'HXu`'>uw@x5TDs^`}(;'05[jQM24}v%}Qg14DI,jBxw$2b#5c"); //todo replace by an authenticator
     const spxSig = await this.keyVault.sign(
       password,
-      this.account.args as string,
+      this.accountPointer as string,
       message
     );
 
