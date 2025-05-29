@@ -238,16 +238,10 @@ export const wallet = createModel<RootModel>()({
     },
     async send({ from, to, amount, password }, rootState) {
       try {
-        const tx = await quantum.buildTransfer(from, to, amount);
+        const txid = await quantum.transfer(from, to, amount);
         const fromSphincsPlusPubKey = rootState.wallet.accounts.find(
           (account) => account.address === from
         )?.spxLockArgs;
-        const signedTx = await quantum.sign(
-          tx,
-          utf8ToBytes(password),
-          fromSphincsPlusPubKey
-        );
-        const txId: string = await quantum.sendTransaction(signedTx);
 
         if (
           from === rootState.wallet.current.address ||
@@ -258,7 +252,7 @@ export const wallet = createModel<RootModel>()({
           // TODO: We need to listen to the blockchain event and update the balance
           this.loadCurrentAccount({});
         }
-        return txId;
+        return txid;
       } catch (error) {
         throw error;
       }
