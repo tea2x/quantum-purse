@@ -1,16 +1,14 @@
 // QuantumPurse.ts
 import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO, FEE_RATE } from "./config";
-import { Reader } from "ckb-js-toolkit";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
-import { Address, DepType, Cell as LumosCell, Transaction as LumosTransaction } from "@ckb-lumos/base";
-import { TransactionSkeletonType, TransactionSkeleton, sealTransaction, addressToScript } from "@ckb-lumos/helpers";
-import { insertWitnessPlaceHolder, prepareSigningEntries, hexToByteArray } from "./utils";
+import { Address, DepType } from "@ckb-lumos/base";
+import { addressToScript } from "@ckb-lumos/helpers";
 import __wbg_init, { KeyVault, Util as KeyVaultUtil, SphincsVariant } from "quantum-purse-key-vault";
-import { randomSecretKey, LightClientSetScriptsCommand, CellWithBlockNumAndTxIndex, ScriptStatus } from "ckb-light-client-js";
+import { randomSecretKey, LightClientSetScriptsCommand, ScriptStatus } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
-import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, Transaction, HashType, ScriptLike, Script } from "@ckb-ccc/core";
+import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, Script } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
 import { getClaimEpoch, getProfit } from "./epoch";
 import { QPSigner } from "./ccc-adapter/signer";
@@ -277,18 +275,6 @@ export default class QuantumPurse extends QPSigner {
   }
 
   /**
-   * Send the signed transaction via the light client.
-   * @param signedTx The signed CKB transaction
-   * @returns The transaction hash(id).
-   * @throws Error light client is not initialized.
-   */
-  public async sendTransaction(signedTx: LumosTransaction): Promise<Hex> {
-    if (!this.hasClientStarted) throw new Error("Light client has not initialized");
-    const txid = this.client.sendTransaction(signedTx);
-    return txid;
-  }
-
-  /**
    * Helper function tells the light client which account and from what block they start making transactions.
    * @param spxLockArgsArray The sphincs+ lock script arguments array (each correspond to 1 sphincs+ accounts in your DB).
    * @param startingBlocks The starting block array corresponding to the spxLockArgsArray to be set.
@@ -369,41 +355,6 @@ export default class QuantumPurse extends QPSigner {
     };
     const capacity = await this.client.getCellsCapacity(searchKey);
     return capacity;
-  }
-
-  /**
-   * Signs a Nervos CKB transaction using the SPHINCS+ signature scheme.
-   * @param tx - The transaction skeleton to sign.
-   * @param password - The password to decrypt the private key (will be zeroed out after use).
-   * @param spxLockArgs - The sphincs+ lock script arguments of the account that signs.
-   * @returns A promise resolving to the signed transaction.
-   * @throws Error if no account is set or decryption fails.
-   * @remark The password is overwritten with zeros after use.
-   */
-  public async sign(
-    tx: TransactionSkeletonType,
-    password: Uint8Array,
-    spxLockArgs?: string
-  ): Promise<LumosTransaction> {
-    try {
-      const accPointer = spxLockArgs !== undefined ? spxLockArgs : QuantumPurse.accountPointer;
-      if (!accPointer || accPointer === "") {
-        throw new Error("Account pointer not available!");
-      }
-
-      if (!this.keyVault) {
-        throw new Error("KeyVault not initialized!");
-      }
-
-      tx = insertWitnessPlaceHolder(tx);
-      tx = prepareSigningEntries(tx);
-      const entry = tx.get("signingEntries").toArray();
-      const spxSig = await this.keyVault.sign(password, accPointer, hexToByteArray(entry[0].message));
-      const spxSigHex = new Reader(spxSig.buffer as ArrayBuffer).serializeJson();
-      return sealTransaction(tx, [spxSigHex]);
-    } finally {
-      password.fill(0);
-    }
   }
 
   /* Clears all local data of the wallet. */
@@ -586,126 +537,55 @@ export default class QuantumPurse extends QPSigner {
   }
 
   /**
-   * Assemble a CKB transfer transaction.
+   * CKB transfer.
    *
    * @param from - The sender's address.
    * @param to - The recipient's address.
    * @param amount - The amount to transfer in CKB.
-   * @returns A Promise that resolves to a TransactionSkeletonType object.
+   * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async buildTransfer(
     from: Address,
     to: Address,
     amount: string
-  ): Promise<TransactionSkeletonType> {
+  ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
-    // initialize configuration
-    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
-    initializeConfig(configuration);
-
-    let txSkeleton = new TransactionSkeleton();
-    const transactionFee = BigInt(60000); // 60_000 shannons
-    const outputCapacity = BigInt(amount) * BigInt(1e8);
-    const minimalSphincsPlusCapacity = BigInt(32 + 1 + 32 + 8) * BigInt(1e8);
-    const requiredCapacity = transactionFee + outputCapacity + minimalSphincsPlusCapacity;
-
-    // add sphics+ celldep
-    txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
-      cellDeps.push({
+    const tx = ccc.Transaction.from({
+      outputs: [{ lock: (await ccc.Address.fromString(to, this.client)).script, capacity: ccc.fixedPointFrom(amount) }],
+    });
+    
+    // cell deps
+    tx.addCellDeps([
+      {
         outPoint: SPHINCSPLUS_LOCK.outPoint,
         depType: SPHINCSPLUS_LOCK.depType as DepType,
-      })
-    );
-
-    // add input cells
-    const searchKey: ClientIndexerSearchKeyLike = {
-      scriptType: "lock",
-      script: addressToScript(from),
-      scriptSearchMode: "prefix",
-      filter: {
-        outputDataLenRange: [0, 1]
       }
-    };
-    const collectedCells: CellWithBlockNumAndTxIndex[] = [];
-    let cursor: Hex | undefined;
-    let inputCapacity = BigInt(0);
-    cellCollecting: while (true) {
-      try {
-        const cells = await this.client.getCells(searchKey, "asc", 10, cursor);
-        if (cells.cells.length === 0) break cellCollecting;
-        cursor = cells.lastCursor as Hex;
-        for (const cell of cells.cells) {
-          if (inputCapacity >= requiredCapacity) break cellCollecting;
-          collectedCells.push(cell);
-          inputCapacity += BigInt(cell.cellOutput.capacity as string);
-        }
-      } catch (error) {
-        // error likely from getCells. todo check
-        console.error("Failed to fetch cells:", error);
-        break cellCollecting;
-      }
-    }
+    ]);
 
-    if (inputCapacity < requiredCapacity)
-      throw new Error("Insufficient balance!");
-
-    let inputCells: LumosCell[] = collectedCells.map(item => ({
-      cellOutput: {
-        ...item.cellOutput,
-        capacity: "0x" + item.cellOutput.capacity.toString(16)
-      },
-      data: item.outputData,
-      outPoint: {
-        ...item.outPoint,
-        index: "0x" + item.outPoint.index.toString(16)
-      }
-    } as LumosCell));
-    txSkeleton = txSkeleton.update("inputs", (i) => i.concat(inputCells));
-
-    // add the output cell
-    const output: LumosCell = {
-      cellOutput: {
-        capacity: "0x" + outputCapacity.toString(16),
-        lock: addressToScript(to),
-        type: undefined,
-      },
-      data: "0x",
-    };
-    txSkeleton = txSkeleton.update("outputs", (o) => o.push(output));
-
-    // add the change cell
-    const changeCapacity = inputCapacity - outputCapacity - transactionFee;
-    const changeCell: LumosCell = {
-      cellOutput: {
-        capacity: "0x" + changeCapacity.toString(16),
-        lock: addressToScript(from),
-        type: undefined,
-      },
-      data: "0x",
-    };
-    txSkeleton = txSkeleton.update("outputs", (o) => o.push(changeCell));
-
-    return txSkeleton;
+    await tx.completeInputsByCapacity(this);
+    await tx.completeFeeBy(this, FEE_RATE);
+    const hash = await this.sendTransaction(tx);
+    return hash;
   }
 
   /**
-   * Assemble a Nervos DAO deposit transaction.
+   * Nervos DAO deposit.
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#deposit
    * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
    * @param from - The sender's address.
    * @param to - The recipient's address.
    * @param amount - The amount to deposit in CKB.
-   * @returns A Promise that resolves to a TransactionSkeletonType object.
+   * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async buildDeposit(
     from: Address,
     to: Address,
     amount: string
-  ): Promise<Transaction> {
+  ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     // initialize configuration
@@ -731,19 +611,31 @@ export default class QuantumPurse extends QPSigner {
     }
     tx.outputs[0].capacity = ccc.fixedPointFrom(amount);
 
+    // cell deps
+    tx.addCellDeps([
+      {
+        outPoint: SPHINCSPLUS_LOCK.outPoint,
+        depType: SPHINCSPLUS_LOCK.depType as DepType,
+      },
+      {
+        outPoint: NERVOS_DAO.outPoint,
+        depType: NERVOS_DAO.depType as DepType,
+      }
+    ]);
+
     await tx.completeInputsByCapacity(this);
     await tx.completeFeeBy(this, FEE_RATE);
-
-    return tx;
+    const hash = await this.sendTransaction(tx);
+    return hash;
   }
 
   /**
-   * Assemble a Nervos dao withdraw request transaction.
+   * Nervos DAO withdraw request.
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-1
    * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
    * @param depositCell - The Nervos DAO deposit cell to make a withdraw request from.
-   * @returns A Promise that resolves to a TransactionSkeletonType object.
+   * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    * @notice This transaction has no transaction fee
    */
@@ -751,7 +643,7 @@ export default class QuantumPurse extends QPSigner {
     depositCell: Cell,
     depositBlockNumber: bigint,
     depositCellBlockHash: Hex
-  ): Promise<Transaction> {
+  ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     // initialize configuration
@@ -779,12 +671,12 @@ export default class QuantumPurse extends QPSigner {
 
     await tx.completeInputsByCapacity(this);
     await tx.completeFeeBy(this, FEE_RATE);
-
-    return tx;
+    const hash = await this.sendTransaction(tx);
+    return hash;
   }
 
   /**
-   * Assemble a Nervos dao unlock (withdraw phase2) transaction.
+   * Nervos DAO unlock (withdraw phase2).
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
    * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
@@ -792,7 +684,7 @@ export default class QuantumPurse extends QPSigner {
    * @param to - The recipient's address.
    * @param depositBlockHash - The block hash of the deposit cell.
    * @param withdrawingBlockHash - The block hash of the withdrawing cell.
-   * @returns A Promise that resolves to a TransactionSkeletonType object.
+   * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    * @notice This transaction has no transaction fee
    */
@@ -801,7 +693,7 @@ export default class QuantumPurse extends QPSigner {
     to: Address,
     depositBlockHash: Hex,
     withdrawingBlockHash: Hex
-  ): Promise<Transaction> {
+  ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     // initialize configuration
@@ -856,6 +748,7 @@ export default class QuantumPurse extends QPSigner {
     const outputCapacity = getProfit(withdrawingCell, depositBlockHeader!, withdrawBlockHeader!);
     tx.outputs[0].capacity += outputCapacity;
 
-    return tx;
+    const hash = await this.sendTransaction(tx);
+    return hash;
   }
 }

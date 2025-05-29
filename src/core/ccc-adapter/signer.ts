@@ -12,13 +12,16 @@ import {
   BytesLike,
   ScriptLike,
   Script,
-  Hex
+  Hex,
+  hexFrom,
+  WitnessArgs
 } from "@ckb-ccc/core";
 import { hexToByteArray, byteArrayToHex } from "../utils";
 import { QPClient } from "./client";
 import { IS_MAIN_NET } from "../config";
 import __wbg_init, { KeyVault, SphincsVariant } from "quantum-purse-key-vault";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
+import { get_ckb_tx_message_all_hash, utf8ToBytes } from "../utils";
 
 export class QPSigner extends Signer {
   private getPassword: () => Uint8Array;
@@ -144,7 +147,24 @@ export class QPSigner extends Signer {
   }
 
   /** Sign only the transaction */
-  async signOnlyTransaction(tx: TransactionLike): Promise<Transaction> {
-    throw new Error("signOnlyTransaction not implemented yet");
+  async signOnlyTransaction(txLike: TransactionLike): Promise<Transaction> {
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+
+    const tx = Transaction.from(txLike);
+    const message = get_ckb_tx_message_all_hash(tx); //todo update when new ccc core support is released
+    const password = utf8ToBytes("'HXu`'>uw@x5TDs^`}(;'05[jQM24}v%}Qg14DI,jBxw$2b#5c"); //todo replace by an authenticator
+    const spxSig = await this.keyVault.sign(
+      password,
+      this.account.args as string,
+      message
+    );
+
+    // place the signature in the witness
+    const position = 0;
+    const witness = tx.getWitnessArgsAt(position) ?? WitnessArgs.from({});
+    witness.lock = hexFrom(spxSig);
+    tx.setWitnessArgsAt(position, witness);
+    
+    return tx;
   }
 }
