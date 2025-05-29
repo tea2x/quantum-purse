@@ -149,18 +149,18 @@ export class QPSigner extends Signer {
     const { script } = await this.getRecommendedAddressObj();
     // await tx.addCellDepsOfKnownScripts(this.client, KnownScript._);
     const witnessSizeMap = {
-      [SphincsVariant.Sha2128F]: 17145,
-      [SphincsVariant.Shake128F]: 17145,
-      [SphincsVariant.Sha2128S]: 7913,
-      [SphincsVariant.Shake128S]: 7913,
-      [SphincsVariant.Sha2192F]: 35737,
-      [SphincsVariant.Shake192F]: 35737,
-      [SphincsVariant.Sha2192S]: 16297,
-      [SphincsVariant.Shake192S]: 16297,
-      [SphincsVariant.Sha2256F]: 49945,
-      [SphincsVariant.Shake256F]: 49945,
-      [SphincsVariant.Sha2256S]: 29881,
-      [SphincsVariant.Shake256S]: 29881,
+      [SphincsVariant.Sha2128F]: 17144,
+      [SphincsVariant.Shake128F]: 17144,
+      [SphincsVariant.Sha2128S]: 7912,
+      [SphincsVariant.Shake128S]: 7912,
+      [SphincsVariant.Sha2192F]: 35736,
+      [SphincsVariant.Shake192F]: 35736,
+      [SphincsVariant.Sha2192S]: 16296,
+      [SphincsVariant.Shake192S]: 16296,
+      [SphincsVariant.Sha2256F]: 49944,
+      [SphincsVariant.Shake256F]: 49944,
+      [SphincsVariant.Sha2256S]: 29880,
+      [SphincsVariant.Shake256S]: 29880,
     };
     const variant = this.keyVault.variant;
     const witnessSize = witnessSizeMap[variant] || 0;
