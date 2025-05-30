@@ -105,22 +105,21 @@ export class QPSigner extends Signer {
     );
   }
 
-  /** Get address objects */
+  /** Get address objects 
+   * Due to the current design of Quantum Purse, this function will only return 
+   * the address object matching this.accountPointer, not all the address objects.
+  */
   async getAddressObjs(): Promise<Address[]> {
-    const lockArgs = await KeyVault.get_all_sphincs_lock_args();
-    let ret: Address[] = [];
-    lockArgs.forEach((args) => {
-      if (!args) return;
-      ret.push({
+    return [
+      {
         script: Script.from({
           codeHash: this.spxLock.codeHash,
           hashType: this.spxLock.hashType,
-          args: args,
+          args: this.accountPointer as string
         }),
-        prefix: IS_MAIN_NET ? "ckb" : "ckt",
-      });
-    });
-    return ret;
+        prefix: IS_MAIN_NET ? "ckb" : "ckt"
+      }
+    ];
   }
 
   /** Sign message raw */

@@ -529,8 +529,14 @@ export default class QuantumPurse extends QPSigner {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     const tx = ccc.Transaction.from({
-      outputs: [{ lock: (await ccc.Address.fromString(to, this.client)).script, capacity: ccc.fixedPointFrom(amount) }],
-    });
+        outputs: [
+          {
+            lock: (await ccc.Address.fromString(to, this.client)).script,
+            capacity: ccc.fixedPointFrom(amount)
+          }
+        ]
+      }
+    );
     
     // cell deps
     tx.addCellDeps([
