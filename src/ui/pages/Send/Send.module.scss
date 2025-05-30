@@ -16,21 +16,6 @@
         }
       }
 
-      &.field-from {
-        label {
-          width: 100%;
-
-          .from-label {
-            color: var(--teal-2);
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-          }
-        }
-      }
-
       &.field-to {
         label {
           color: var(--teal-2);
