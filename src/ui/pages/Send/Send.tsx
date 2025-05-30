@@ -111,45 +111,6 @@ const Send: React.FC = () => {
       <div>
         <Form layout="vertical" form={form} className={styles.sendForm}>
           <Form.Item
-            name="from"
-            label={
-              <div className="from-label">
-                From{" "}
-                {fromAccountBalance && (
-                  <Spin spinning={loadingGetAccountBalance}>
-                    <p className="from-balance">
-                      Balance: {formatBalance(fromAccountBalance)}
-                    </p>
-                  </Spin>
-                )}
-              </div>
-            }
-            rules={[
-              { required: true, message: "Please input an account" },
-              {
-                validator: (_, value) => {
-                  if (
-                    fromAccountBalance &&
-                    BigInt(fromAccountBalance) < BigInt(73 * 100000000)
-                  ) {
-                    return Promise.reject(
-                      "Insufficient balance!"
-                    );
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
-            dependencies={["from"]}
-            className={"field-from select-my-account"}
-          >
-            <AccountSelect
-              accounts={wallet.accounts}
-              placeholder="Please select account from your wallet"
-            />
-          </Form.Item>
-
-          <Form.Item
             name="to"
             label={
               <div className="label-container">
