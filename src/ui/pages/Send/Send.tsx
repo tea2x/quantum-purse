@@ -28,9 +28,9 @@ const Send: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
   const authenticationRef = useRef<AuthenticationRef>(null);
   const wallet = useSelector((state: RootState) => state.wallet);
-  const loading = useSelector((state: RootState) => state.loading);
-  const { getAccountBalance: loadingGetAccountBalance } =
-    loading.effects.wallet;
+  // const loading = useSelector((state: RootState) => state.loading);
+  // const { getAccountBalance: loadingGetAccountBalance } =
+  //   loading.effects.wallet;
   const { send: loadingSend } = useSelector(
     (state: RootState) => state.loading.effects.wallet
   );
@@ -45,9 +45,9 @@ const Send: React.FC = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
-  const onFinish = async ({ from, to, amount, password }: any) => {
+  const onFinish = async ({ to, amount, password }: any) => {
     try {
-      const txId = await dispatch.wallet.send({ from, to, amount, password });
+      const txId = await dispatch.wallet.send({ to, amount, password });
       form.resetFields();
       notification.success({
         message: "Send transaction successfully",
