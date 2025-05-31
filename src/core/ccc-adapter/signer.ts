@@ -27,6 +27,7 @@ export class QPSigner extends Signer {
   public accountPointer?: BytesLike;
   protected spxLock: { codeHash: BytesLike, hashType: HashTypeLike };
   protected keyVault?: KeyVault;
+  public requestPassword?: (resolve: (password: string) => void) => void;
 
   constructor(spxLockInfo: { codeHash: BytesLike, hashType: HashTypeLike }) {
     super(new QPClient());
@@ -121,12 +122,23 @@ export class QPSigner extends Signer {
   async signMessageRaw(message: string | BytesLike): Promise<string> {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
     
-    const password = utf8ToBytes("'HXu`'>uw@x5TDs^`}(;'05[jQM24}v%}Qg14DI,jBxw$2b#5c"); //todo replace by an authenticator
+    /* Although small, there's an exposure risk:
+     * JS strings are immutable and may persist in memory until garbage collected.
+    */
+    const passwordPromise = new Promise<string>((resolve) => {
+      if (this.requestPassword) {
+        this.requestPassword(resolve);
+      } else {
+        throw new Error("Password request callback not set");
+      }
+    });
+    const passwordBytes = utf8ToBytes(await passwordPromise);
+
     try {
-      const signature = await this.keyVault.sign(password, this.accountPointer as Hex, hexToByteArray(message as Hex));
+      const signature = await this.keyVault.sign(passwordBytes, this.accountPointer as Hex, hexToByteArray(message as Hex));
       return byteArrayToHex(signature);
     } finally {
-      password.fill(0);
+      passwordBytes.fill(0);
     }
   }
 
@@ -167,20 +179,31 @@ export class QPSigner extends Signer {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
 
     const tx = Transaction.from(txLike);
-    const message = get_ckb_tx_message_all_hash(tx); //todo update when new ccc core support is released
-    const password = utf8ToBytes("'HXu`'>uw@x5TDs^`}(;'05[jQM24}v%}Qg14DI,jBxw$2b#5c"); //todo replace by an authenticator
-    const spxSig = await this.keyVault.sign(
-      password,
-      this.accountPointer as string,
-      message
-    );
+    const message = get_ckb_tx_message_all_hash(tx); // TODO: Update when new CCC core support is released
 
-    // place the signature in the witness
-    const position = 0;
-    const witness = tx.getWitnessArgsAt(position) ?? WitnessArgs.from({});
-    witness.lock = hexFrom(spxSig);
-    tx.setWitnessArgsAt(position, witness);
-    
-    return tx;
+    /* Although small, there's an exposure risk:
+     * JS strings are immutable and may persist in memory until garbage collected.
+    */
+    const passwordPromise = new Promise<string>((resolve) => {
+      if (this.requestPassword) {
+        this.requestPassword(resolve);
+      } else {
+        throw new Error("Password request callback not set");
+      }
+    });
+    const passwordBytes = utf8ToBytes(await passwordPromise);
+
+    try {
+      const spxSig = await this.keyVault.sign(passwordBytes, this.accountPointer as string, message);
+      const position = 0;
+      const witness = tx.getWitnessArgsAt(position) ?? WitnessArgs.from({});
+      witness.lock = hexFrom(spxSig);
+      tx.setWitnessArgsAt(position, witness);
+      return tx;
+    } catch (error) {
+      throw new Error("Failed to sign transaction");
+    } finally {
+      passwordBytes.fill(0);
+    }
   }
 }
