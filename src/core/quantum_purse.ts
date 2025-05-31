@@ -513,16 +513,14 @@ export default class QuantumPurse extends QPSigner {
   }
 
   /**
-   * CKB transfer.
+   * CKB transfer from the current Quantum Purse address.
    *
-   * @param from - The sender's address.
    * @param to - The recipient's address.
    * @param amount - The amount to transfer in CKB.
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async transfer(
-    from: Address,
     to: Address,
     amount: string
   ): Promise<Hex> {

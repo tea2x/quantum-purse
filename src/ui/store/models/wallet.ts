@@ -236,22 +236,12 @@ export const wallet = createModel<RootModel>()({
         throw error;
       }
     },
-    async send({ from, to, amount, password }, rootState) {
+    async send({ to, amount, password }, rootState) {
       try {
-        const txid = await quantum.transfer(from, to, amount);
-        const fromSphincsPlusPubKey = rootState.wallet.accounts.find(
-          (account) => account.address === from
-        )?.spxLockArgs;
-
-        if (
-          from === rootState.wallet.current.address ||
-          to === rootState.wallet.current.address
-        ) {
-          // Load current balance after sending transaction
-          // TODO: It's not working as expected because the blockchain transaction needs time to be confirmed
-          // TODO: We need to listen to the blockchain event and update the balance
-          this.loadCurrentAccount({});
-        }
+        const txid = await quantum.transfer(to, amount);
+        // if (to === rootState.wallet.current.address) {
+        //   this.loadCurrentAccount({});
+        // }
         return txid;
       } catch (error) {
         throw error;
