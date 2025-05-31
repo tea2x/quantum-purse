@@ -44,11 +44,8 @@ export default class QuantumPurse extends QPSigner {
   //*************************************** METHODS **************************************//
   //**************************************************************************************//
   /** Constructor that takes sphincs+ on-chain binary deployment info */
-  private constructor(
-    getPassword: () => Uint8Array,
-    scriptInfo: { codeHash: BytesLike, hashType: HashTypeLike }
-  ) {
-    super(getPassword, scriptInfo);
+  private constructor(scriptInfo: { codeHash: BytesLike, hashType: HashTypeLike }) {
+    super(scriptInfo);
   }
 
   /* init light client and status worker */
@@ -227,13 +224,7 @@ export default class QuantumPurse extends QPSigner {
    */
   public static getInstance() {
     if (!QuantumPurse.instance) {
-      QuantumPurse.instance = new QuantumPurse(
-        () => new Uint8Array(0), // dummy password getter, to be updated
-        {
-          codeHash: SPHINCSPLUS_LOCK.codeHash,
-          hashType: SPHINCSPLUS_LOCK.hashType
-        }
-      );
+      QuantumPurse.instance = new QuantumPurse({codeHash: SPHINCSPLUS_LOCK.codeHash, hashType: SPHINCSPLUS_LOCK.hashType});
     }
     return QuantumPurse.instance;
   }

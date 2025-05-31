@@ -27,14 +27,9 @@ export class QPSigner extends Signer {
   public accountPointer?: BytesLike;
   protected spxLock: { codeHash: BytesLike, hashType: HashTypeLike };
   protected keyVault?: KeyVault;
-  private getPassword: () => Uint8Array;
 
-  constructor(
-    getPassword: () => Uint8Array,
-    spxLockInfo: { codeHash: BytesLike, hashType: HashTypeLike }
-  ) {
+  constructor(spxLockInfo: { codeHash: BytesLike, hashType: HashTypeLike }) {
     super(new QPClient());
-    this.getPassword = getPassword;
     this.spxLock = spxLockInfo;
   }
 
@@ -126,7 +121,7 @@ export class QPSigner extends Signer {
   async signMessageRaw(message: string | BytesLike): Promise<string> {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
     
-    const password = await this.getPassword(); //todo update
+    const password = utf8ToBytes("'HXu`'>uw@x5TDs^`}(;'05[jQM24}v%}Qg14DI,jBxw$2b#5c"); //todo replace by an authenticator
     try {
       const signature = await this.keyVault.sign(password, this.accountPointer as Hex, hexToByteArray(message as Hex));
       return byteArrayToHex(signature);
