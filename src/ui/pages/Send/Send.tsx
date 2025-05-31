@@ -6,7 +6,6 @@ import {
   Input,
   InputNumber,
   notification,
-  Spin,
   Switch,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -19,7 +18,7 @@ import {
 } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { CKB_DECIMALS, CKB_UNIT } from "../../utils/constants";
-import { cx, formatBalance, formatError } from "../../utils/methods";
+import { cx, formatError } from "../../utils/methods";
 import styles from "./Send.module.scss";
 
 const Send: React.FC = () => {
@@ -78,23 +77,17 @@ const Send: React.FC = () => {
   }, [wallet.current.address]);
 
   useEffect(() => {
-    const findFromAccountBalance = async () => {
-      const fromAccount = wallet.accounts.find(
-        (account) => account.address === values?.from
-      );
+    if (!wallet.current?.spxLockArgs) return;
 
-      if (fromAccount?.spxLockArgs) {
-        const balance = await dispatch.wallet.getAccountBalance({
-          spxLockArgs: fromAccount.spxLockArgs,
-        });
-        setFromAccountBalance(balance);
-      }
+    const getBalance = async () => {
+      const balance = await dispatch.wallet.getAccountBalance({
+        spxLockArgs: wallet.current!.spxLockArgs,
+      });
+      setFromAccountBalance(balance);
     };
 
-    if (values?.from) {
-      findFromAccountBalance();
-    }
-  }, [values?.from, wallet.accounts, dispatch.wallet]);
+    getBalance();
+  }, [wallet, dispatch]);
 
   useEffect(() => {
     if (fromAccountBalance !== null) {
@@ -170,10 +163,9 @@ const Send: React.FC = () => {
               {
                 validator: (_, value) => {
                   if (
-                    fromAccountBalance &&
-                    value &&
-                    BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) <
-                      BigInt(value)
+                    fromAccountBalance 
+                    && value
+                    && BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
                   ) {
                     return Promise.reject("Insufficient balance");
                   }
