@@ -129,7 +129,7 @@ export class QPSigner extends Signer {
       if (this.requestPassword) {
         this.requestPassword(resolve);
       } else {
-        throw new Error("Password request callback not set");
+        throw new Error("Password request callback not available");
       }
     });
     const passwordBytes = utf8ToBytes(await passwordPromise);
@@ -188,7 +188,7 @@ export class QPSigner extends Signer {
       if (this.requestPassword) {
         this.requestPassword(resolve);
       } else {
-        throw new Error("Password request callback not set");
+        throw new Error("Password request callback not available");
       }
     });
     const passwordBytes = utf8ToBytes(await passwordPromise);

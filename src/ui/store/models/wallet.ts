@@ -236,7 +236,7 @@ export const wallet = createModel<RootModel>()({
         throw error;
       }
     },
-    async send({ to, amount, password }, rootState) {
+    async send({ to, amount }, rootState) {
       try {
         const txid = await quantum.transfer(to, amount);
         // if (to === rootState.wallet.current.address) {
