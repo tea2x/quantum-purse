@@ -80,7 +80,7 @@ const Send: React.FC = () => {
     }
   };
 
-  // Handle password submission
+  // Handle password submission and pass it to QPsigner::signOnlyTransaction
   const authenCallback = async (password: string) => {
     if (passwordResolver) {
       passwordResolver.resolve(password);
@@ -206,8 +206,13 @@ const Send: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Enter Password to Sign Transaction"
-          description="Please enter your password to sign the transaction."
+          title="Transferring CKB"
+          afterClose={() => {
+            if (passwordResolver) {
+              passwordResolver.reject();
+              setPasswordResolver(null);
+            }
+          }}
         />
       </div>
     </section>

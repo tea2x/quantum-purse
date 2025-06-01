@@ -133,6 +133,7 @@ const Wallet: React.FC = () => {
         </Spin>
       </div>
       <Authentication
+        title="Generating A New Account"
         ref={authenticationRef}
         loading={loadingCreateAccount}
         authenCallback={createAccountHandler}

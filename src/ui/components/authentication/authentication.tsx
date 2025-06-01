@@ -30,7 +30,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     {
       authenCallback,
       title = "Authentication",
-      description = "Enter your password to proceed.",
+      description = "Enter your password to authorize this action.",
       loading,
       ...rest
     },
@@ -55,6 +55,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     const closeHandler = () => {
       setOpen(false);
       setIsForgotPassword(false);
+      form.resetFields();
     };
 
     useImperativeHandle(ref, () => ({
