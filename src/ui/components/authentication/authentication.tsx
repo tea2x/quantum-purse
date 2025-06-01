@@ -5,7 +5,6 @@ import React, {
   useMemo,
   useState,
 } from "react";
-// import { TEMP_PASSWORD } from "../../utils/constants";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import usePasswordValidator from "../../hooks/usePasswordValidator";
