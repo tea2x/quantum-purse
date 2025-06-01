@@ -11,12 +11,10 @@ import {
   Signature,
   BytesLike,
   Script,
-  Hex,
   hexFrom,
   WitnessArgs,
   HashTypeLike
 } from "@ckb-ccc/core";
-import { hexToByteArray, byteArrayToHex } from "../utils";
 import { QPClient } from "./client";
 import { IS_MAIN_NET } from "../config";
 import __wbg_init, { KeyVault, SphincsVariant } from "quantum-purse-key-vault";
@@ -27,7 +25,10 @@ export class QPSigner extends Signer {
   public accountPointer?: BytesLike;
   protected spxLock: { codeHash: BytesLike, hashType: HashTypeLike };
   protected keyVault?: KeyVault;
-  public requestPassword?: (resolve: (password: string) => void) => void;
+  public requestPassword?: (
+    resolve: (password: string) => void,
+    reject: () => void
+  ) => void;
 
   constructor(spxLockInfo: { codeHash: BytesLike, hashType: HashTypeLike }) {
     super(new QPClient());
@@ -104,7 +105,7 @@ export class QPSigner extends Signer {
   /** Get address objects 
    * Due to the current design of Quantum Purse, this function will only return 
    * the address object matching this.accountPointer, not all the address objects.
-  */
+   */
   async getAddressObjs(): Promise<Address[]> {
     return [
       {
@@ -118,30 +119,6 @@ export class QPSigner extends Signer {
     ];
   }
 
-  /** Sign message raw */
-  async signMessageRaw(message: string | BytesLike): Promise<string> {
-    if (!this.keyVault) throw new Error("KeyVault not initialized!");
-    
-    /* Although small, there's an exposure risk:
-     * JS strings are immutable and may persist in memory until garbage collected.
-    */
-    const passwordPromise = new Promise<string>((resolve) => {
-      if (this.requestPassword) {
-        this.requestPassword(resolve);
-      } else {
-        throw new Error("Password request callback not available");
-      }
-    });
-    const passwordBytes = utf8ToBytes(await passwordPromise);
-
-    try {
-      const signature = await this.keyVault.sign(passwordBytes, this.accountPointer as Hex, hexToByteArray(message as Hex));
-      return byteArrayToHex(signature);
-    } finally {
-      passwordBytes.fill(0);
-    }
-  }
-
   /** Verify message */
   async verifyMessage(message: string | BytesLike, signature: string | Signature): Promise<boolean> {
     throw new Error("verifyMessage not implemented yet");
@@ -153,7 +130,6 @@ export class QPSigner extends Signer {
 
     const tx = Transaction.from(txLike);
     const { script } = await this.getRecommendedAddressObj();
-    // await tx.addCellDepsOfKnownScripts(this.client, KnownScript._);
     const witnessSizeMap = {
       [SphincsVariant.Sha2128F]: 17144,
       [SphincsVariant.Shake128F]: 17144,
@@ -181,29 +157,29 @@ export class QPSigner extends Signer {
     const tx = Transaction.from(txLike);
     const message = get_ckb_tx_message_all_hash(tx); // TODO: Update when new CCC core support is released
 
-    /* Although small, there's an exposure risk:
-     * JS strings are immutable and may persist in memory until garbage collected.
-    */
-    const passwordPromise = new Promise<string>((resolve) => {
+    const passwordPromise = new Promise<string>((resolve, reject) => {
       if (this.requestPassword) {
-        this.requestPassword(resolve);
+        this.requestPassword(resolve, reject);
       } else {
-        throw new Error("Password request callback not available");
+        reject(new Error("Password request callback not available"));
       }
     });
-    const passwordBytes = utf8ToBytes(await passwordPromise);
 
+    let passwordBytes: Uint8Array | undefined;
     try {
+      passwordBytes = utf8ToBytes(await passwordPromise);
       const spxSig = await this.keyVault.sign(passwordBytes, this.accountPointer as string, message);
       const position = 0;
       const witness = tx.getWitnessArgsAt(position) ?? WitnessArgs.from({});
       witness.lock = hexFrom(spxSig);
       tx.setWitnessArgsAt(position, witness);
       return tx;
-    } catch (error) {
-      throw new Error("Failed to sign transaction");
+    } catch (error: any) {
+      throw new Error("Failed to sign transaction: " + error);
     } finally {
-      passwordBytes.fill(0);
+      if (passwordBytes) {
+        passwordBytes.fill(0);
+      }
     }
   }
 }
