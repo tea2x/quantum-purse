@@ -8,15 +8,14 @@ import {
   notification,
   Switch,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AccountSelect, Explore } from "../../components";
+import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { CKB_DECIMALS, CKB_UNIT } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./Send.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
-import PasswordModal from "../../components/password-input/password_modal";
 
 const Send: React.FC = () => {
   const [form] = Form.useForm();
@@ -28,11 +27,11 @@ const Send: React.FC = () => {
     (state: RootState) => state.loading.effects.wallet
   );
   const [fromAccountBalance, setFromAccountBalance] = useState<string | null>(null);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [passwordResolver, setPasswordResolver] = useState<{
     resolve: (password: string) => void;
     reject: () => void;
   } | null>(null);
+  const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
 
@@ -49,7 +48,7 @@ const Send: React.FC = () => {
     if (quantumPurse) {
       quantumPurse.requestPassword = (resolve, reject) => {
         setPasswordResolver({ resolve, reject });
-        setIsPasswordModalOpen(true);
+        authenticationRef.current?.open();
       };
       // Cleanup when leaving send page
       return () => {
@@ -58,7 +57,6 @@ const Send: React.FC = () => {
     }
   }, [quantumPurse]);
 
-  // Handle the Send button click
   const handleSend = async () => {
     try {
       const txId = await dispatch.wallet.send({ to: values.to, amount: values.amount });
@@ -83,24 +81,14 @@ const Send: React.FC = () => {
   };
 
   // Handle password submission
-  const handlePasswordSubmit = (password: string) => {
+  const authenCallback = async (password: string) => {
     if (passwordResolver) {
       passwordResolver.resolve(password);
       setPasswordResolver(null);
     }
-    setIsPasswordModalOpen(false);
+    authenticationRef.current?.close();
   };
 
-  // Handle modal cancellation
-  const handleClose = () => {
-    if (passwordResolver) {
-      passwordResolver.reject();
-      setPasswordResolver(null);
-    }
-    setIsPasswordModalOpen(false);
-  };
-
-  // Set the "from" field based on the current wallet address
   useEffect(() => {
     form.setFieldsValue({
       from: wallet.current.address,
@@ -215,10 +203,11 @@ const Send: React.FC = () => {
             </Flex>
           </Form.Item>
         </Form>
-        <PasswordModal
-          isOpen={isPasswordModalOpen}
-          onSubmit={handlePasswordSubmit}
-          onClose={handleClose}
+        <Authentication
+          ref={authenticationRef}
+          authenCallback={authenCallback}
+          title="Enter Password to Sign Transaction"
+          description="Please enter your password to sign the transaction."
         />
       </div>
     </section>
