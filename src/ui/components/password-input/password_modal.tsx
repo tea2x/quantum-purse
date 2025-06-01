@@ -34,6 +34,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onSubmit, onClose
           Submit
         </Button>,
       ]}
+      centered
     >
       <h2>Enter Password</h2>
       <Input.Password
