@@ -17,12 +17,17 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onSubmit, onClose
     onClose();
   };
 
+  const handleClose = () => {
+    setPassword("");
+    onClose();
+  };
+
   return (
     <Modal
       open={isOpen}
-      onCancel={onClose}
+      onCancel={handleClose}
       footer={[
-        <Button key="cancel" onClick={onClose}>
+        <Button key="cancel" onClick={handleClose}>
           Cancel
         </Button>,
         <Button key="submit" type="primary" onClick={handleSubmit}>
