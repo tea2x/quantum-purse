@@ -10,10 +10,7 @@ import {
 } from "antd";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  AccountSelect,
-  Explore,
-} from "../../components";
+import { AccountSelect, Explore } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { CKB_DECIMALS, CKB_UNIT } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
@@ -32,8 +29,11 @@ const Send: React.FC = () => {
   );
   const [fromAccountBalance, setFromAccountBalance] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const [passwordResolver, setPasswordResolver] = useState<((password: string) => void) | null>(null);
-  
+  const [passwordResolver, setPasswordResolver] = useState<{
+    resolve: (password: string) => void;
+    reject: () => void;
+  } | null>(null);
+
   const quantumPurse = QuantumPurse.getInstance();
 
   // Validate form fields to enable/disable the Send button
@@ -44,12 +44,16 @@ const Send: React.FC = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
-  // Set the requestPassword callback on the signer
+  // Set and clean up the requestPassword callback
   useEffect(() => {
     if (quantumPurse) {
-      quantumPurse.requestPassword = (resolve) => {
-        setPasswordResolver(() => resolve);
+      quantumPurse.requestPassword = (resolve, reject) => {
+        setPasswordResolver({ resolve, reject });
         setIsPasswordModalOpen(true);
+      };
+      // Cleanup when leaving send page
+      return () => {
+        quantumPurse.requestPassword = undefined;
       };
     }
   }, [quantumPurse]);
@@ -78,10 +82,19 @@ const Send: React.FC = () => {
     }
   };
 
-  // Handle password submission from the modal
+  // Handle password submission
   const handlePasswordSubmit = (password: string) => {
     if (passwordResolver) {
-      passwordResolver(password);
+      passwordResolver.resolve(password);
+      setPasswordResolver(null);
+    }
+    setIsPasswordModalOpen(false);
+  };
+
+  // Handle modal cancellation
+  const handleClose = () => {
+    if (passwordResolver) {
+      passwordResolver.reject();
       setPasswordResolver(null);
     }
     setIsPasswordModalOpen(false);
@@ -108,7 +121,7 @@ const Send: React.FC = () => {
     getBalance();
   }, [wallet, dispatch]);
 
-  // Re-validate fields when balance updates
+  // pre-validate fields when balance updates
   useEffect(() => {
     if (fromAccountBalance !== null) {
       form.validateFields(["from"]);
@@ -130,10 +143,7 @@ const Send: React.FC = () => {
                 To
                 <div className="switch-container">
                   My Account
-                  <Form.Item
-                    name="isSendToMyAccount"
-                    style={{ marginBottom: 0 }}
-                  >
+                  <Form.Item name="isSendToMyAccount" style={{ marginBottom: 0 }}>
                     <Switch />
                   </Form.Item>
                 </div>
@@ -143,9 +153,7 @@ const Send: React.FC = () => {
               { required: true, message: "Please enter a destination address" },
               {
                 validator: (_, value) => {
-                  if (!value) {
-                    return Promise.resolve();
-                  }
+                  if (!value) return Promise.resolve();
                   try {
                     addressToScript(value);
                     return Promise.resolve();
@@ -155,10 +163,7 @@ const Send: React.FC = () => {
                 },
               },
             ]}
-            className={cx(
-              "field-to",
-              values?.isSendToMyAccount && "select-my-account"
-            )}
+            className={cx("field-to", values?.isSendToMyAccount && "select-my-account")}
           >
             {!values?.isSendToMyAccount ? (
               <Input placeholder="Input the destination address" />
@@ -175,11 +180,7 @@ const Send: React.FC = () => {
             label="Amount"
             rules={[
               { required: true, message: "Please input amount" },
-              {
-                type: "number",
-                min: 73,
-                message: "Amount must be at least 73 CKB",
-              },
+              { type: "number", min: 73, message: "Amount must be at least 73 CKB" },
               {
                 validator: (_, value) => {
                   if (
@@ -217,7 +218,7 @@ const Send: React.FC = () => {
         <PasswordModal
           isOpen={isPasswordModalOpen}
           onSubmit={handlePasswordSubmit}
-          onClose={() => setIsPasswordModalOpen(false)}
+          onClose={handleClose}
         />
       </div>
     </section>
