@@ -45,10 +45,14 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     const navigate = useNavigate();
 
     useEffect(() => {
-      form
-        .validateFields({ validateOnly: true })
-        .then(() => setSubmittable(true))
-        .catch(() => setSubmittable(false));
+      if (values?.password) {
+        form
+          .validateFields()
+          .then(() => setSubmittable(true))
+          .catch(() => setSubmittable(false));
+      } else {
+        setSubmittable(false);
+      }
     }, [form, values]);
 
     const closeHandler = () => {
