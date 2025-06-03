@@ -76,12 +76,10 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
               navigate(ROUTES.WELCOME);
             }
           : form.submit,
-        okClassname: isForgotPassword ? "forgot-btn" : "",
         cancelText: isForgotPassword ? "Back to Authentication" : "Cancel",
         onCancel: isForgotPassword
           ? () => setIsForgotPassword(false)
           : closeHandler,
-        cancelClassname: isForgotPassword ? "forgot-btn" : "",
         okDisabled: isForgotPassword ? false : !submittable,
       };
     }, [isForgotPassword, submittable]);
@@ -98,12 +96,10 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
         className={styles.authentication}
         confirmLoading={loading}
         cancelButtonProps={{
-          className: modalOptions.cancelClassname,
           disabled: loading,
         }}
         closable={!loading}
         okButtonProps={{
-          className: modalOptions.okClassname,
           disabled: modalOptions.okDisabled,
         }}
       >
@@ -111,9 +107,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
           <>
             <h2 className="title">Forgot Password?</h2>
             <p className="description">
-              Quantum Purse wallet does not store your password in somewhere.
-              You can only restore your wallet by using your secret recovery
-              phrase.
+              Restore your wallet by deleting current instance and reimport your secret recovery phrase.
             </p>
           </>
         ) : (
