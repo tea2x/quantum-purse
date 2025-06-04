@@ -488,7 +488,7 @@ export default class QuantumPurse extends QPSigner {
           scriptSearchMode: "prefix",
         };
 
-        const response = await this.client?.getTransactions(searchKey, "asc", 1);
+        const response = await this.client.getTransactions(searchKey, "asc", 1);
         let startBlock = BigInt(0);
         if (response && response.transactions && response.transactions.length > 0) {
           startBlock = response.transactions[0].blockNumber;

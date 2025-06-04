@@ -74,7 +74,11 @@ const Wallet: React.FC = () => {
     if (filteredAccounts.length === 0 && debouncedSearchTerm) {
       return (
         <Empty
-          description="No accounts found matching your search"
+          description={
+            <span style={{ color: 'var(--gray-01)' }}>
+              No accounts found matching your search
+            </span>
+          }
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       );

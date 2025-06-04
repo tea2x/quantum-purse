@@ -269,38 +269,38 @@ export const wallet = createModel<RootModel>()({
       try {
         await quantum.importSeedPhrase(utf8ToBytes(srp), utf8ToBytes(password));
 
-        let accountsLength = 1;
+        let consecutiveEmpty = 0;
+        let accountIndex = 0;
+        let lastAccountWithBalance = -1;
+        const batchSize = FIND_ACCOUNT_THRESHOLD;
 
-        const checkAccount = async (startIndex: number, limit: number) => {
+        while (consecutiveEmpty < batchSize) {
           const accounts = await quantum.genAccountInBatch(
             utf8ToBytes(password),
-            startIndex,
-            limit
+            accountIndex,
+            batchSize
           );
 
-          const accountsWithBalance = await Promise.all(
-            accounts.map(async (spxLockArgs) => {
-              const balance = await quantum.getBalance(spxLockArgs as Hex);
-              return { spxLockArgs, balance };
-            })
-          );
+          for (let i = 0; i < accounts.length; i++) {
+            const spxLockArgs = accounts[i];
+            const balance = await quantum.getBalance(spxLockArgs as Hex);
 
-          const lastAccountWithBalance = accountsWithBalance.reduceRight(
-            (lastIndex, account, currentIndex) =>
-              lastIndex === -1 && account.balance > BigInt(0)
-                ? currentIndex
-                : lastIndex,
-            -1
-          );
-
-          if (lastAccountWithBalance !== -1) {
-            accountsLength = startIndex + lastAccountWithBalance + 1;
-            await checkAccount(accountsLength + 1, limit);
+            if (balance > BigInt(0)) {
+              lastAccountWithBalance = accountIndex + i;
+              consecutiveEmpty = 0;
+            } else {
+              consecutiveEmpty++;
+              if (consecutiveEmpty >= batchSize) {
+                break;
+              }
+            }
           }
-        };
 
-        await checkAccount(0, FIND_ACCOUNT_THRESHOLD);
-        await quantum.recoverAccounts(utf8ToBytes(password), accountsLength);
+          accountIndex += batchSize;
+        }
+
+        const accountsToRecover = lastAccountWithBalance >= 0 ? lastAccountWithBalance + 1 : 1;
+        await quantum.recoverAccounts(utf8ToBytes(password), accountsToRecover);
 
         this.setActive(true);
       } catch (error) {
