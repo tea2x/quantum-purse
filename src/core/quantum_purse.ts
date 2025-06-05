@@ -476,8 +476,7 @@ export default class QuantumPurse extends QPSigner {
       const spxLockArgsList = await this.keyVault.recover_accounts(password, count) as Hex[];
 
       if (!this.hasClientStarted) {
-        console.error("Light client has not initialized");
-        return Promise.resolve();
+        throw new Error("Light client has not initialized");
       }
 
       const startBlocksPromises = spxLockArgsList.map(async (lockArgs) => {
@@ -490,8 +489,14 @@ export default class QuantumPurse extends QPSigner {
 
         const response = await this.client.getTransactions(searchKey, "asc", 1);
         let startBlock = BigInt(0);
-        if (response && response.transactions && response.transactions.length > 0) {
-          startBlock = response.transactions[0].blockNumber;
+        if (response) {
+          if (response.transactions && response.transactions.length > 0) {
+            // found the first transation, set to the block prior
+            startBlock = response.transactions[0].blockNumber - BigInt(1);
+          } else {
+            // no transaction found, meaning account empty -> set to tip block
+            startBlock = await this.client.getTip();
+          }
         }
         return startBlock;
       });
