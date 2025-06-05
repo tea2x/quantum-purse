@@ -15,6 +15,9 @@ import {
   Receive,
   RevealSRP,
   Send,
+  Deposit,
+  Withdraw,
+  Unlock,
   Wallet,
   Welcome,
 } from "./ui/pages";
@@ -39,6 +42,9 @@ const App: React.FC = () => {
           <Route path={ROUTES.WALLET} element={<Wallet />} />
           <Route path={ROUTES.SEND} element={<Send />} />
           <Route path={ROUTES.RECEIVE} element={<Receive />} />
+          <Route path={ROUTES.DAO.DEPOSIT} element={<Deposit />} />
+          <Route path={ROUTES.DAO.WITHDRAW} element={<Withdraw />} />
+          <Route path={ROUTES.DAO.UNLOCK} element={<Unlock />} />
           <Route path={ROUTES.SETTINGS.REVEAL_SRP} element={<RevealSRP />} />
           <Route
             path={ROUTES.SETTINGS.EJECT_WALLET}

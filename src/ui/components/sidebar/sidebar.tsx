@@ -34,17 +34,17 @@ const items: MenuItem[] = [
       {
         key: ROUTES.DAO.DEPOSIT,
         icon: <Icon.Deposit />,
-        label: <NavLink to={ROUTES.COMING_SOON}>Deposit</NavLink>,
+        label: <NavLink to={ROUTES.DAO.DEPOSIT}>Deposit</NavLink>,
       },
       {
         key: ROUTES.DAO.WITHDRAW,
         icon: <Icon.Withdraw />,
-        label: <NavLink to={ROUTES.COMING_SOON}>Withdraw</NavLink>,
+        label: <NavLink to={ROUTES.DAO.WITHDRAW}>Withdraw</NavLink>,
       },
       {
         key: ROUTES.DAO.UNLOCK,
         icon: <Icon.Unlock />,
-        label: <NavLink to={ROUTES.COMING_SOON}>Unlock</NavLink>,
+        label: <NavLink to={ROUTES.DAO.UNLOCK}>Unlock</NavLink>,
       },
     ],
   },

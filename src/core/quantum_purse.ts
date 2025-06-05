@@ -551,14 +551,12 @@ export default class QuantumPurse extends QPSigner {
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#deposit
    * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
-   * @param from - The sender's address.
    * @param to - The recipient's address.
    * @param amount - The amount to deposit in CKB.
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async daoDeposit(
-    from: Address,
     to: Address,
     amount: string
   ): Promise<Hex> {
