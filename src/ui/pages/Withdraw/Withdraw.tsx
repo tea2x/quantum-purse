@@ -25,7 +25,8 @@ const Withdraw: React.FC = () => {
     if (!quantumPurse) {
       return;
     }
-    const fetchDaoCells = async () => {
+
+    (async () => {
       const daos = [];
       for await (const cell of quantumPurse.findCells(
         {
@@ -40,11 +41,9 @@ const Withdraw: React.FC = () => {
         true,
       )) {
         daos.push(cell);
+        setDaoCells(daos);
       }
-      setDaoCells(daos);
-    };
-    const intervalId = setInterval(fetchDaoCells, 3000);
-    return () => clearInterval(intervalId);
+    })();
   }, [quantumPurse]);
 
   useEffect(() => {

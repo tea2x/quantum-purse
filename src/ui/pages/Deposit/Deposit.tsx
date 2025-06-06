@@ -57,6 +57,30 @@ const Deposit: React.FC = () => {
     }
   }, [quantumPurse]);
 
+  // Fetch the account balance
+  useEffect(() => {
+    if (!wallet.current?.spxLockArgs) return;
+
+    const getBalance = async () => {
+      const balance = await dispatch.wallet.getAccountBalance({
+        spxLockArgs: wallet.current!.spxLockArgs,
+      });
+      setFromAccountBalance(balance);
+    };
+
+    getBalance();
+  }, [wallet, dispatch]);
+
+  // Pre-validate fields when balance updates
+  useEffect(() => {
+    if (fromAccountBalance !== null) {
+      form.validateFields(["from"]);
+      if (values?.amount) {
+        form.validateFields(["amount"]);
+      }
+    }
+  }, [fromAccountBalance, form]);
+
   const handleDeposit = async () => {
     try {
       const txId = await dispatch.wallet.deposit({ to: values.to, amount: values.amount });
@@ -88,40 +112,6 @@ const Deposit: React.FC = () => {
     }
     authenticationRef.current?.close();
   };
-
-  // Set default values for "to" and "isDepositToMyAccount"
-  useEffect(() => {
-    if (wallet.current) {
-      form.setFieldsValue({
-        isDepositToMyAccount: true,
-        to: wallet.current.address,
-      });
-    }
-  }, [wallet.current, form]);
-
-  // Fetch the account balance
-  useEffect(() => {
-    if (!wallet.current?.spxLockArgs) return;
-
-    const getBalance = async () => {
-      const balance = await dispatch.wallet.getAccountBalance({
-        spxLockArgs: wallet.current!.spxLockArgs,
-      });
-      setFromAccountBalance(balance);
-    };
-
-    getBalance();
-  }, [wallet, dispatch]);
-
-  // Pre-validate fields when balance updates
-  useEffect(() => {
-    if (fromAccountBalance !== null) {
-      form.validateFields(["from"]);
-      if (values?.amount) {
-        form.validateFields(["amount"]);
-      }
-    }
-  }, [fromAccountBalance, form]);
 
   return (
     <section className={cx(styles.depositForm, "panel")}>
