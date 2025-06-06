@@ -89,11 +89,15 @@ const Deposit: React.FC = () => {
     authenticationRef.current?.close();
   };
 
+  // Set default values for "to" and "isDepositToMyAccount"
   useEffect(() => {
-    form.setFieldsValue({
-      from: wallet.current.address,
-    });
-  }, [wallet.current.address]);
+    if (wallet.current) {
+      form.setFieldsValue({
+        isDepositToMyAccount: true,
+        to: wallet.current.address,
+      });
+    }
+  }, [wallet.current, form]);
 
   // Fetch the account balance
   useEffect(() => {
@@ -109,7 +113,7 @@ const Deposit: React.FC = () => {
     getBalance();
   }, [wallet, dispatch]);
 
-  // pre-validate fields when balance updates
+  // Pre-validate fields when balance updates
   useEffect(() => {
     if (fromAccountBalance !== null) {
       form.validateFields(["from"]);
