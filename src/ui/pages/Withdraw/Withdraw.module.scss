@@ -1,53 +1,30 @@
-.sendForm {
+.withdrawForm {
   :global {
     background: rgba(255, 255, 255, 0.02);
     min-height: 41rem;
-    .ant-form {
-      background: rgba(255, 255, 255, 0) !important;
-    }
-    
-    .ant-form-item {
-      &.select-my-account {
-        .ant-select-selector {
-          min-height: 5.8rem;
-        }
-        .ant-select-single {
-          height: fit-content;
-        }
-      }
-
-      &.field-to {
-        label {
-          color: var(--teal-2);
-          width: 100%;
-          .label-container {
-            display: flex;
-            width: 100%;
-            align-items: center;
-            justify-content: space-between;
-            .switch-container {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            }
-          }
-        }
-      }
-
-      &.amount {
-        label {
-          color: var(--teal-2);
-        }
-      }
-
-      .ant-input-number-group-addon {
-        color: var(--teal-2);
-      }
-    }
     h1 {
       @media (max-width: 768px) {
         font-size: 2rem;
       }
     }
+  }
+}
+
+.depositListContainer {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.depositList {
+  list-style: none;
+  padding: 0;
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #ccc;
+    color: var(--gray-01);
+    font-size: 1.5rem;
   }
 }

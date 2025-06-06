@@ -258,4 +258,8 @@ export class QPClient extends Client {
   public async getHeader(hash: HexLike): Promise<ClientBlockHeader | undefined> {
     return this.lightClient.getHeader(hash);
   }
+
+  public async getTransaction(txHash: HexLike): Promise<ClientTransactionResponse | undefined> {
+    return this.lightClient.getTransaction(txHash);
+  }
 }
