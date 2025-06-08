@@ -22,7 +22,7 @@ const Withdraw: React.FC = () => {
   const quantumPurse = QuantumPurse.getInstance();
 
   useEffect(() => {
-    if (!quantumPurse) {
+    if (!quantumPurse || !quantumPurse.accountPointer) {
       return;
     }
 
@@ -44,7 +44,7 @@ const Withdraw: React.FC = () => {
         setDaoCells(daos);
       }
     })();
-  }, [quantumPurse]);
+  }, [quantumPurse, quantumPurse.accountPointer]);
 
   useEffect(() => {
     if (quantumPurse) {
