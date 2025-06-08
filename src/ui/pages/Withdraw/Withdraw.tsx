@@ -21,6 +21,9 @@ const Withdraw: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const authenticationRef = useRef<AuthenticationRef>(null);
+  const depositCells = daoCells.filter(cell => cell.outputData === "0x0000000000000000");
+  const toError = form.getFieldError('to');
+  const isToValid = values?.to && toError.length === 0;
 
   const quantumPurse = QuantumPurse.getInstance();
 
@@ -113,8 +116,6 @@ const Withdraw: React.FC = () => {
     authenticationRef.current?.close();
   };
 
-  const depositCells = daoCells.filter(cell => cell.outputData === "0x0000000000000000");
-
   return (
     <section className={cx(styles.withdrawForm, "panel")}>
       <h1>Withdraw</h1>
@@ -178,7 +179,7 @@ const Withdraw: React.FC = () => {
               {depositCells.map((cell, index) => (
                 <li key={index}>
                   <span>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</span>
-                  <Button onClick={() => handleWithdraw(cell)}>Withdraw</Button>
+                  <Button onClick={() => handleWithdraw(cell)} disabled={!isToValid}>Withdraw</Button>
                 </li>
               ))}
             </ul>

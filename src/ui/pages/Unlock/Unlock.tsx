@@ -25,6 +25,9 @@ const Unlock: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const authenticationRef = useRef<AuthenticationRef>(null);
+  const withdrawnCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
+  const toError = form.getFieldError('to');
+  const isToValid = values?.to && toError.length === 0;
 
   const quantumPurse = QuantumPurse.getInstance();
 
@@ -131,8 +134,6 @@ const Unlock: React.FC = () => {
     authenticationRef.current?.close();
   };
 
-  const withdrawnCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
-
   return (
     <section className={cx(styles.unlockForm, "panel")}>
       <h1>Unlock</h1>
@@ -196,7 +197,7 @@ const Unlock: React.FC = () => {
               {withdrawnCells.map((cell, index) => (
                 <li key={index}>
                   <span>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</span>
-                  <Button onClick={() => handleUnlock(cell)}>Unlock</Button>
+                  <Button onClick={() => handleUnlock(cell)} disabled={!isToValid}>Unlock</Button>
                 </li>
               ))}
             </ul>
