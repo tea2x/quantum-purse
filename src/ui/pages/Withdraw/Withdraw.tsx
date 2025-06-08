@@ -1,15 +1,18 @@
-import { Button, notification } from "antd";
+import { Button, notification, Form, Switch, Input } from "antd";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Explore, Authentication, AuthenticationRef } from "../../components";
+import { Explore, Authentication, AuthenticationRef, AccountSelect } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./Withdraw.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../core/config";
+import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
 
 const Withdraw: React.FC = () => {
+  const [form] = Form.useForm();
+  const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
   const [daoCells, setDaoCells] = useState<ccc.Cell[]>([]);
@@ -46,12 +49,14 @@ const Withdraw: React.FC = () => {
     })();
   }, [quantumPurse, quantumPurse.accountPointer]);
 
+  // Set and clean up the requestPassword callback
   useEffect(() => {
     if (quantumPurse) {
       quantumPurse.requestPassword = (resolve, reject) => {
         setPasswordResolver({ resolve, reject });
         authenticationRef.current?.open();
       };
+      // Cleanup when leaving send page
       return () => {
         quantumPurse.requestPassword = undefined;
       };
@@ -75,7 +80,12 @@ const Withdraw: React.FC = () => {
       const { depositHeader } = await getNervosDaoInfo(depositCell);
       const depositBlockNum = depositHeader.number;
       const depositBlockHash = depositHeader.hash;
-      const txId = await dispatch.wallet.withdraw({ depositCell, depositBlockNum, depositBlockHash });
+      const txId = await dispatch.wallet.withdraw({
+        to: values.to,
+        depositCell: depositCell,
+        depositBlockNum: depositBlockNum,
+        depositBlockHash: depositBlockHash
+      });
       notification.success({
         message: "Withdraw transaction successful",
         description: (
@@ -108,6 +118,59 @@ const Withdraw: React.FC = () => {
   return (
     <section className={cx(styles.withdrawForm, "panel")}>
       <h1>Withdraw</h1>
+      <div>
+        <Form layout="vertical" form={form}>
+          <Form.Item
+            name="to"
+            label={
+              <div className="label-container">
+                To
+                <div className="switch-container">
+                  My Account
+                  <Form.Item name="isUnlockToMyAccount" style={{ marginBottom: 0 }}>
+                    <Switch />
+                  </Form.Item>
+                </div>
+              </div>
+            }
+            rules={[
+              { required: true, message: "Please enter a destination address" },
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    addressToScript(value);
+                    return Promise.resolve();
+                  } catch (error) {
+                    return Promise.reject("Please input a valid address");
+                  }
+                },
+              },
+            ]}
+            className={cx("field-to", values?.isUnlockToMyAccount && "select-my-account")}
+          >
+            {!values?.isUnlockToMyAccount ? (
+              <Input placeholder="Input the destination address" />
+            ) : (
+              <AccountSelect
+                accounts={wallet.accounts}
+                placeholder="Please select account from your wallet"
+              />
+            )}
+          </Form.Item>
+        </Form>
+        <Authentication
+          ref={authenticationRef}
+          authenCallback={authenCallback}
+          title="Unlocking from Nervos DAO"
+          afterClose={() => {
+            if (passwordResolver) {
+              passwordResolver.reject();
+              setPasswordResolver(null);
+            }
+          }}
+        />
+      </div>
       <div>
         {depositCells.length > 0 ? (
           <div className={styles.depositListContainer}>

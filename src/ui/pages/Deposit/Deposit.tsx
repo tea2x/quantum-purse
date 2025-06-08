@@ -83,7 +83,10 @@ const Deposit: React.FC = () => {
 
   const handleDeposit = async () => {
     try {
-      const txId = await dispatch.wallet.deposit({ to: values.to, amount: values.amount });
+      const txId = await dispatch.wallet.deposit({
+        to: values.to,
+        amount: values.amount
+      });
       form.resetFields();
       notification.success({
         message: "Deposit transaction successfully",
@@ -117,7 +120,7 @@ const Deposit: React.FC = () => {
     <section className={cx(styles.depositForm, "panel")}>
       <h1>Deposit</h1>
       <div>
-        <Form layout="vertical" form={form} className={styles.depositForm}>
+        <Form layout="vertical" form={form}>
           <Form.Item
             name="to"
             label={

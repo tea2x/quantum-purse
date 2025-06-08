@@ -1,4 +1,4 @@
-import { Button, notification, Form, Switch, Input, Flex } from "antd";
+import { Button, notification, Form, Switch, Input } from "antd";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../components";
@@ -53,12 +53,14 @@ const Unlock: React.FC = () => {
     })();
   }, [quantumPurse, quantumPurse.accountPointer]);
 
+  // Set and clean up the requestPassword callback
   useEffect(() => {
     if (quantumPurse) {
       quantumPurse.requestPassword = (resolve, reject) => {
         setPasswordResolver({ resolve, reject });
         authenticationRef.current?.open();
       };
+      // Cleanup when leaving send page
       return () => {
         quantumPurse.requestPassword = undefined;
       };
@@ -95,9 +97,9 @@ const Unlock: React.FC = () => {
       const depositBlockHash = depositHeader.hash;
       const withdrawingBlockHash = withdrawHeader.hash;
       const txId = await dispatch.wallet.unlock(
-        { 
-          withdrawCell: withdrawnCell,
+        {
           to: values.to,
+          withdrawCell: withdrawnCell,
           depositBlockHash: depositBlockHash,
           withdrawingBlockHash: withdrawingBlockHash
         }
@@ -201,7 +203,7 @@ const Unlock: React.FC = () => {
           </div>
         ) : (
           <p style={{ color: 'var(--gray-01)', textAlign: 'center', fontSize: '1.5rem' }}>
-            No deposits found.
+            No withdraw requests found.
           </p>
         )}
       </div>

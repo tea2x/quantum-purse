@@ -59,7 +59,10 @@ const Send: React.FC = () => {
 
   const handleSend = async () => {
     try {
-      const txId = await dispatch.wallet.send({ to: values.to, amount: values.amount });
+      const txId = await dispatch.wallet.send({
+        to: values.to,
+        amount: values.amount
+      });
       form.resetFields();
       notification.success({
         message: "Send transaction successfully",
@@ -123,7 +126,7 @@ const Send: React.FC = () => {
     <section className={cx(styles.sendForm, "panel")}>
       <h1>Send</h1>
       <div>
-        <Form layout="vertical" form={form} className={styles.sendForm}>
+        <Form layout="vertical" form={form}>
           <Form.Item
             name="to"
             label={

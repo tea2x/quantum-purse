@@ -608,12 +608,14 @@ export default class QuantumPurse extends QPSigner {
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-1
    * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
+   * @param to - The recipient's address.
    * @param depositCell - The Nervos DAO deposit cell to make a withdraw request from.
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    * @notice This transaction has no transaction fee
    */
   public async daoWithdrawRequest(
+    to: Address,
     depositCell: Cell,
     depositBlockNumber: bigint,
     depositCellBlockHash: Hex
@@ -627,7 +629,11 @@ export default class QuantumPurse extends QPSigner {
     const tx = ccc.Transaction.from({
       headerDeps: [depositCellBlockHash],
       inputs: [{ previousOutput: depositCell.outPoint }],
-      outputs: [depositCell.cellOutput],
+      outputs: [{
+        capacity: depositCell.cellOutput.capacity,
+        lock: addressToScript(to),
+        type: depositCell.cellOutput.type
+      }],
       outputsData: [ccc.numLeToBytes(depositBlockNumber, 8)],
     });
 
@@ -654,8 +660,8 @@ export default class QuantumPurse extends QPSigner {
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
    * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
-   * @param withdrawingCell - The Nervos DAO wightdrawing cell to be unlocked.
    * @param to - The recipient's address.
+   * @param withdrawingCell - The Nervos DAO wightdrawing cell to be unlocked.
    * @param depositBlockHash - The block hash of the deposit cell.
    * @param withdrawingBlockHash - The block hash of the withdrawing cell.
    * @returns A Promise that resolves to a transaction hash when successful.
@@ -663,8 +669,8 @@ export default class QuantumPurse extends QPSigner {
    * @notice This transaction has no transaction fee
    */
   public async daoUnlock(
-    withdrawingCell: Cell,
     to: Address,
+    withdrawingCell: Cell,
     depositBlockHash: Hex,
     withdrawingBlockHash: Hex
   ): Promise<Hex> {
