@@ -1,32 +1,25 @@
-import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
-import {
-  Button,
-  Flex,
-  Form,
-  Input,
-  InputNumber,
-  notification,
-  Switch,
-} from "antd";
+import { Button, notification, Form, Switch, Input, Flex } from "antd";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../components";
 import { Dispatch, RootState } from "../../store";
-import { CKB_DECIMALS, CKB_UNIT } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./Unlock.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
+import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
+import { NERVOS_DAO } from "../../../core/config";
+import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
 
 const Unlock: React.FC = () => {
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
   const [submittable, setSubmittable] = useState(false);
-  const dispatch = useDispatch<Dispatch>();
-  const wallet = useSelector((state: RootState) => state.wallet);
   const { unlock: loadingUnlock } = useSelector(
     (state: RootState) => state.loading.effects.wallet
   );
-  const [fromAccountBalance, setFromAccountBalance] = useState<string | null>(null);
+  const dispatch = useDispatch<Dispatch>();
+  const wallet = useSelector((state: RootState) => state.wallet);
+  const [daoCells, setDaoCells] = useState<ccc.Cell[]>([]);
   const [passwordResolver, setPasswordResolver] = useState<{
     resolve: (password: string) => void;
     reject: () => void;
@@ -35,34 +28,82 @@ const Unlock: React.FC = () => {
 
   const quantumPurse = QuantumPurse.getInstance();
 
-  // Validate form fields to enable/disable the Unlock button
   useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
-  }, [form, values]);
+    if (!quantumPurse || !quantumPurse.accountPointer) {
+      return;
+    }
 
-  // Set and clean up the requestPassword callback
+    (async () => {
+      const daos = [];
+      for await (const cell of quantumPurse.findCells(
+        {
+          script: {
+            codeHash: NERVOS_DAO.codeHash,
+            hashType: NERVOS_DAO.hashType,
+            args: "0x"
+          },
+          scriptLenRange: [33, 34], // 32(codeHash) + 1 (hashType). No arguments.
+          outputDataLenRange: [8, 9], // 8 bytes DAO data.
+        },
+        true,
+      )) {
+        daos.push(cell);
+        setDaoCells(daos);
+      }
+    })();
+  }, [quantumPurse, quantumPurse.accountPointer]);
+
   useEffect(() => {
     if (quantumPurse) {
       quantumPurse.requestPassword = (resolve, reject) => {
         setPasswordResolver({ resolve, reject });
         authenticationRef.current?.open();
       };
-      // Cleanup when leaving unlock page
       return () => {
         quantumPurse.requestPassword = undefined;
       };
     }
   }, [quantumPurse]);
 
-  const handleUnlock = async () => {
+  // todo update with `withdrawnCell.getNervosDaoInfo` when light client js updates ccc core.
+  const getNervosDaoInfo = async (withdrawnCell: ccc.Cell):Promise<
+    {
+      depositHeader: ClientBlockHeader,
+      withdrawHeader: ClientBlockHeader
+    }
+  > => {
+    const withdrawTx = await quantumPurse.client.getTransaction(withdrawnCell.outPoint.txHash);
+    const withdrawHeader = await quantumPurse.client.getHeader(withdrawTx?.blockHash as Hex);
+    if (!withdrawHeader) {
+      throw new Error("Unable to retrieve DAO withdrawing block header!");
+    }
+
+    const depositInput = withdrawTx?.transaction.inputs[Number(withdrawnCell.outPoint.index)];
+    const depositTx = await quantumPurse.client.getTransaction(depositInput?.previousOutput.txHash as Hex);
+    const depositHeader = await quantumPurse.client.getHeader(depositTx?.blockHash as Hex);
+    if (!depositHeader) {
+      throw new Error("Unable to retrieve DAO withdrawing block header!");
+    }
+
+    return {depositHeader, withdrawHeader};
+  };
+
+  const handleUnlock = async (withdrawnCell: ccc.Cell) => {
     try {
-      const txId = await dispatch.wallet.unlock({ to: values.to, amount: values.amount });
-      form.resetFields();
+      // todo update when light client js updates ccc core.
+      const { depositHeader, withdrawHeader } = await getNervosDaoInfo(withdrawnCell);
+      const depositBlockHash = depositHeader.hash;
+      const withdrawingBlockHash = withdrawHeader.hash;
+      const txId = await dispatch.wallet.unlock(
+        { 
+          withdrawCell: withdrawnCell,
+          to: values.to,
+          depositBlockHash: depositBlockHash,
+          withdrawingBlockHash: withdrawingBlockHash
+        }
+      );
       notification.success({
-        message: "Unlock transaction successfully",
+        message: "Unlock transaction successful",
         description: (
           <div>
             <p>Please check the transaction on the explorer</p>
@@ -80,7 +121,6 @@ const Unlock: React.FC = () => {
     }
   };
 
-  // Handle password submission and pass it to QPsigner::signOnlyTransaction
   const authenCallback = async (password: string) => {
     if (passwordResolver) {
       passwordResolver.resolve(password);
@@ -89,41 +129,13 @@ const Unlock: React.FC = () => {
     authenticationRef.current?.close();
   };
 
-  useEffect(() => {
-    form.setFieldsValue({
-      from: wallet.current.address,
-    });
-  }, [wallet.current.address]);
-
-  // Fetch the account balance
-  useEffect(() => {
-    if (!wallet.current?.spxLockArgs) return;
-
-    const getBalance = async () => {
-      const balance = await dispatch.wallet.getAccountBalance({
-        spxLockArgs: wallet.current!.spxLockArgs,
-      });
-      setFromAccountBalance(balance);
-    };
-
-    getBalance();
-  }, [wallet, dispatch]);
-
-  // pre-validate fields when balance updates
-  useEffect(() => {
-    if (fromAccountBalance !== null) {
-      form.validateFields(["from"]);
-      if (values?.amount) {
-        form.validateFields(["amount"]);
-      }
-    }
-  }, [fromAccountBalance, form]);
+  const withdrawnCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
 
   return (
-    <section className={cx(styles.sendForm, "panel")}>
+    <section className={cx(styles.unlockForm, "panel")}>
       <h1>Unlock</h1>
       <div>
-        <Form layout="vertical" form={form} className={styles.sendForm}>
+        <Form layout="vertical" form={form}>
           <Form.Item
             name="to"
             label={
@@ -131,7 +143,7 @@ const Unlock: React.FC = () => {
                 To
                 <div className="switch-container">
                   My Account
-                  <Form.Item name="isSendToMyAccount" style={{ marginBottom: 0 }}>
+                  <Form.Item name="isUnlockToMyAccount" style={{ marginBottom: 0 }}>
                     <Switch />
                   </Form.Item>
                 </div>
@@ -151,9 +163,9 @@ const Unlock: React.FC = () => {
                 },
               },
             ]}
-            className={cx("field-to", values?.isSendToMyAccount && "select-my-account")}
+            className={cx("field-to", values?.isUnlockToMyAccount && "select-my-account")}
           >
-            {!values?.isSendToMyAccount ? (
+            {!values?.isUnlockToMyAccount ? (
               <Input placeholder="Input the destination address" />
             ) : (
               <AccountSelect
@@ -162,51 +174,11 @@ const Unlock: React.FC = () => {
               />
             )}
           </Form.Item>
-          <Form.Item
-            className="amount"
-            name="amount"
-            label="Amount"
-            rules={[
-              { required: true, message: "Please input amount" },
-              { type: "number", min: 114, message: "Unlock amount must be at least 114 CKB" },
-              {
-                validator: (_, value) => {
-                  if (
-                    fromAccountBalance &&
-                    value &&
-                    BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
-                  ) {
-                    return Promise.reject("Insufficient balance");
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
-          >
-            <InputNumber
-              step={1}
-              addonAfter={CKB_UNIT}
-              controls
-              placeholder="Amount of tokens"
-            />
-          </Form.Item>
-          <Form.Item>
-            <Flex justify="end">
-              <Button
-                type="primary"
-                onClick={handleUnlock}
-                disabled={!submittable || loadingUnlock}
-                loading={loadingUnlock}
-              >
-                Unlock
-              </Button>
-            </Flex>
-          </Form.Item>
         </Form>
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Depositing to Nervos DAO"
+          title="Unlocking from Nervos DAO"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();
@@ -215,6 +187,35 @@ const Unlock: React.FC = () => {
           }}
         />
       </div>
+      <div>
+        {withdrawnCells.length > 0 ? (
+          <div className={styles.unlockListContainer}>
+            <ul className={styles.unlockList}>
+              {withdrawnCells.map((cell, index) => (
+                <li key={index}>
+                  <span>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</span>
+                  <Button onClick={() => handleUnlock(cell)}>Unlock</Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p style={{ color: 'var(--gray-01)', textAlign: 'center', fontSize: '1.5rem' }}>
+            No deposits found.
+          </p>
+        )}
+      </div>
+      <Authentication
+        ref={authenticationRef}
+        authenCallback={authenCallback}
+        title="Unlocking withdrawn deposit from Nervos DAO"
+        afterClose={() => {
+          if (passwordResolver) {
+            passwordResolver.reject();
+            setPasswordResolver(null);
+          }
+        }}
+      />
     </section>
   );
 };
