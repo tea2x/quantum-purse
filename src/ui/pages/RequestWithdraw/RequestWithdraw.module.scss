@@ -1,4 +1,4 @@
-.unlockForm {
+.withdrawForm {
   :global {
     background: rgba(255, 255, 255, 0.02);
     min-height: 41rem;
@@ -44,12 +44,12 @@
   }
 }
 
-.unlockListContainer {
+.requestWithdrawListContainer {
   max-height: 300px;
   overflow-y: auto;
 }
 
-.unlockList {
+.requestWithdrawList {
   list-style: none;
   padding: 0;
   li {

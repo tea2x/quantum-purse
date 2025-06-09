@@ -37,14 +37,14 @@ const items: MenuItem[] = [
         label: <NavLink to={ROUTES.DAO.DEPOSIT}>Deposit</NavLink>,
       },
       {
+        key: ROUTES.DAO.REQUEST_WITHDRAW,
+        icon: <Icon.RequestWithdraw />,
+        label: <NavLink to={ROUTES.DAO.REQUEST_WITHDRAW}>Request Withdraw</NavLink>,
+      },
+      {
         key: ROUTES.DAO.WITHDRAW,
         icon: <Icon.Withdraw />,
         label: <NavLink to={ROUTES.DAO.WITHDRAW}>Withdraw</NavLink>,
-      },
-      {
-        key: ROUTES.DAO.UNLOCK,
-        icon: <Icon.Unlock />,
-        label: <NavLink to={ROUTES.DAO.UNLOCK}>Unlock</NavLink>,
       },
     ],
   },

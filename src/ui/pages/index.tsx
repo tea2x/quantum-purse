@@ -6,7 +6,7 @@ export { default as Receive } from "./Receive/Receive";
 export { default as RevealSRP } from "./RevealSRP/RevealSRP";
 export { default as Send } from "./Send/Send";
 export { default as Deposit } from "./Deposit/Deposit";
+export { default as RequestWithdraw } from "./RequestWithdraw/RequestWithdraw";
 export { default as Withdraw } from "./Withdraw/Withdraw";
-export { default as Unlock } from "./Unlock/Unlock";
 export { default as Wallet } from "./Wallet/Wallet";
 export { default as Welcome } from "./Welcome/Welcome";

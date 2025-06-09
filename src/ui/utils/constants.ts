@@ -12,8 +12,8 @@ export const ROUTES = {
   DAO: {
     HOME: "/dao",
     DEPOSIT: "/dao/deposit",
+    REQUEST_WITHDRAW: "/dao/request-withdraw",
     WITHDRAW: "/dao/withdraw",
-    UNLOCK: "/dao/unlock",
   },
   SETTINGS: {
     HOME: "/settings",
