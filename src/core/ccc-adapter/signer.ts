@@ -121,7 +121,7 @@ export class QPSigner extends Signer {
 
   /** Verify message */
   async verifyMessage(message: string | BytesLike, signature: string | Signature): Promise<boolean> {
-    throw new Error("verifyMessage not implemented yet");
+    throw new Error("Unsupported method: verifyMessage");
   }
 
   /** Prepare transaction */

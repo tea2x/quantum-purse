@@ -58,12 +58,12 @@ export class QPClient extends Client {
 
   /** Fetch known script info */
   async getKnownScript(script: KnownScript): Promise<ScriptInfo> {
-    throw new Error("getKnownScript not implemented yet");
+    throw new Error("Unsupported method: getKnownScript");
   }
 
   /** Estimate fee rate statistics (approximation if not directly supported) */
   async getFeeRateStatistics(blockRange?: NumLike): Promise<{ mean: Num; median: Num }> {
-    throw new Error("getFeeRateStatistics not supported by Light Client");
+    throw new Error("Unsupported method: getFeeRateStatistics");
   }
 
   /** Get the tip block number */
@@ -79,17 +79,17 @@ export class QPClient extends Client {
 
   /** Get block by number */
   async getBlockByNumber(blockNumber: NumLike, verbosity?: number | null, withCycles?: boolean | null): Promise<ClientBlock | undefined> {
-    throw new Error("getBlockByNumber not supported by Light Client");
+    throw new Error("Unsupported method: getBlockByNumber");
   }
 
   /** Get block by hash */
   async getBlockByHash(blockHash: HexLike, verbosity?: number | null, withCycles?: boolean | null): Promise<ClientBlock | undefined> {
-    throw new Error("getBlockByHash not supported by Light Client");
+    throw new Error("Unsupported method: getBlockByHash");
   }
 
   /** Get header by number */
   async getHeaderByNumber(blockNumber: NumLike, verbosity?: number | null): Promise<ClientBlockHeader | undefined> {
-    throw new Error("getHeaderByNumber not supported by Light Client");
+    throw new Error("Unsupported method: getHeaderByNumber");
   }
 
   /** Get header by hash */
@@ -104,7 +104,7 @@ export class QPClient extends Client {
 
   /** Dry run a transaction */
   async sendTransactionDry(transaction: TransactionLike, validator?: OutputsValidator): Promise<Num> {
-    throw new Error("sendTransactionDry not supported by Light Client");
+    throw new Error("Unsupported method: sendTransactionDry");
   }
 
   /** Send a transaction without caching */
