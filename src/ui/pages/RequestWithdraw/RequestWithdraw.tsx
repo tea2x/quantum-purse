@@ -1,4 +1,4 @@
-import { Button, notification, Form, Switch, Input } from "antd";
+import { Button, notification, Form, Switch, Input, Empty } from "antd";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Explore, Authentication, AuthenticationRef, AccountSelect } from "../../components";
@@ -9,6 +9,7 @@ import QuantumPurse from "../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../core/config";
 import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
+import React from "react";
 
 const RequestWithdraw: React.FC = () => {
   const [form] = Form.useForm();
@@ -47,8 +48,8 @@ const RequestWithdraw: React.FC = () => {
         true,
       )) {
         daos.push(cell);
-        setDaoCells(daos);
       }
+      setDaoCells(daos);
     })();
   }, [quantumPurse, quantumPurse.accountPointer]);
 
@@ -155,7 +156,7 @@ const RequestWithdraw: React.FC = () => {
             ) : (
               <AccountSelect
                 accounts={wallet.accounts}
-                placeholder="Please select account from your wallet"
+                placeholder="Please select an account from your wallet"
               />
             )}
           </Form.Item>
@@ -177,17 +178,32 @@ const RequestWithdraw: React.FC = () => {
           <div className={styles.requestWithdrawListContainer}>
             <ul className={styles.requestWithdrawList}>
               {depositCells.map((cell, index) => (
-                <li key={index}>
-                  <span>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</span>
-                  <Button onClick={() => handleWithdraw(cell)} disabled={!isToValid}>Request Withdraw</Button>
-                </li>
+                <React.Fragment key={index}>
+                  <li className={styles.depositItem}>
+                    <span className={styles.capacity}>
+                      {(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB
+                    </span>
+                    <Button
+                      type="primary"
+                      onClick={() => handleWithdraw(cell)}
+                      disabled={!isToValid}
+                    >
+                      Request
+                    </Button>
+                  </li>
+                </React.Fragment>
               ))}
             </ul>
           </div>
         ) : (
-          <p style={{ color: 'var(--gray-01)', textAlign: 'center', fontSize: '1.5rem' }}>
-            No deposits found.
-          </p>
+          <Empty
+            description={
+              <span style={{ color: 'var(--gray-01)' }}>
+                No deposits found.
+              </span>
+            }
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
         )}
       </div>
       <Authentication

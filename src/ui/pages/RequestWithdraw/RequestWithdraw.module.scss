@@ -52,13 +52,26 @@
 .requestWithdrawList {
   list-style: none;
   padding: 0;
-  li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #ccc;
-    color: var(--gray-01);
-    font-size: 1.5rem;
+}
+
+.depositItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  color: var(--gray-01);
+  font-size: 1.4rem;
+  @media (max-width: 768px) {
+    padding: 0.6rem 0.4rem;
   }
+}
+
+.capacity {
+  font-weight: bold;
+  color: var(--gray-01);
+  white-space: nowrap;
+  border: 1px solid;
+  border-radius: 5px;
+  border-color: var(--gray-01);
+  padding: 0.8rem clamp(5rem, 30vw, 35rem) 0.8rem 2rem;
 }

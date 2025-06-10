@@ -161,7 +161,7 @@ const Send: React.FC = () => {
             ) : (
               <AccountSelect
                 accounts={wallet.accounts}
-                placeholder="Please select account from your wallet"
+                placeholder="Please select an account from your wallet"
               />
             )}
           </Form.Item>

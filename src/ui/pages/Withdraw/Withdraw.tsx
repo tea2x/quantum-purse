@@ -1,4 +1,4 @@
-import { Button, notification, Form, Switch, Input } from "antd";
+import { Button, notification, Form, Switch, Input, Empty } from "antd";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../components";
@@ -9,6 +9,7 @@ import QuantumPurse from "../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../core/config";
 import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
+import React from "react";
 
 const Withdraw: React.FC = () => {
   const [form] = Form.useForm();
@@ -51,8 +52,8 @@ const Withdraw: React.FC = () => {
         true,
       )) {
         daos.push(cell);
-        setDaoCells(daos);
       }
+      setDaoCells(daos);
     })();
   }, [quantumPurse, quantumPurse.accountPointer]);
 
@@ -87,10 +88,10 @@ const Withdraw: React.FC = () => {
     const depositTx = await quantumPurse.client.getTransaction(depositInput?.previousOutput.txHash as Hex);
     const depositHeader = await quantumPurse.client.getHeader(depositTx?.blockHash as Hex);
     if (!depositHeader) {
-      throw new Error("Unable to retrieve DAO withdrawing block header!");
+      throw new Error("Unable to retrieve DAO deposit block header!");
     }
 
-    return {depositHeader, withdrawHeader};
+    return { depositHeader, withdrawHeader };
   };
 
   const handleUnlock = async (withdrawnCell: ccc.Cell) => {
@@ -99,14 +100,12 @@ const Withdraw: React.FC = () => {
       const { depositHeader, withdrawHeader } = await getNervosDaoInfo(withdrawnCell);
       const depositBlockHash = depositHeader.hash;
       const withdrawingBlockHash = withdrawHeader.hash;
-      const txId = await dispatch.wallet.unlock(
-        {
-          to: values.to,
-          withdrawCell: withdrawnCell,
-          depositBlockHash: depositBlockHash,
-          withdrawingBlockHash: withdrawingBlockHash
-        }
-      );
+      const txId = await dispatch.wallet.unlock({
+        to: values.to,
+        withdrawCell: withdrawnCell,
+        depositBlockHash: depositBlockHash,
+        withdrawingBlockHash: withdrawingBlockHash
+      });
       notification.success({
         message: "Unlock transaction successful",
         description: (
@@ -173,7 +172,7 @@ const Withdraw: React.FC = () => {
             ) : (
               <AccountSelect
                 accounts={wallet.accounts}
-                placeholder="Please select account from your wallet"
+                placeholder="Please select an account from your wallet"
               />
             )}
           </Form.Item>
@@ -195,17 +194,32 @@ const Withdraw: React.FC = () => {
           <div className={styles.withdrawListContainer}>
             <ul className={styles.withdrawList}>
               {withdrawnCells.map((cell, index) => (
-                <li key={index}>
-                  <span>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</span>
-                  <Button onClick={() => handleUnlock(cell)} disabled={!isToValid}>Withdraw</Button>
-                </li>
+                <React.Fragment key={index}>
+                  <li className={styles.withdrawItem}>
+                    <span className={styles.capacity}>
+                      {(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB
+                    </span>
+                    <Button
+                      type="primary"
+                      onClick={() => handleUnlock(cell)}
+                      disabled={!isToValid}
+                    >
+                      Withdraw
+                    </Button>
+                  </li>
+                </React.Fragment>
               ))}
             </ul>
           </div>
         ) : (
-          <p style={{ color: 'var(--gray-01)', textAlign: 'center', fontSize: '1.5rem' }}>
-            No withdraw requests found.
-          </p>
+          <Empty
+            description={
+              <span style={{ color: 'var(--gray-01)' }}>
+                No withdraw requests found.
+              </span>
+            }
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
         )}
       </div>
       <Authentication
