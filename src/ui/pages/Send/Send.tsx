@@ -141,7 +141,7 @@ const Send: React.FC = () => {
               </div>
             }
             rules={[
-              { required: true, message: "Please enter a destination address" },
+              { required: true, message: "Address required" },
               {
                 validator: (_, value) => {
                   if (!value) return Promise.resolve();
@@ -149,7 +149,7 @@ const Send: React.FC = () => {
                     addressToScript(value);
                     return Promise.resolve();
                   } catch (error) {
-                    return Promise.reject("Please input a valid address");
+                    return Promise.reject("Invalid address");
                   }
                 },
               },
