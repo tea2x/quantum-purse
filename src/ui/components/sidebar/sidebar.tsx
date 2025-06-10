@@ -72,10 +72,28 @@ const items: MenuItem[] = [
   },
 ];
 
+const getDefaultOpenKeys = (pathname: string, items: MenuItem[]): string[] => {
+  for (const item of items) {
+    if (
+      item &&
+      "key" in item &&
+      typeof item.key === "string" &&
+      "children" in item &&
+      item.children
+    ) {
+      if (pathname.startsWith(item.key)) {
+        return [item.key];
+      }
+    }
+  }
+  return [];
+};
+
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 const Sidebar: React.FC<SidebarProps> = () => {
   const location = useLocation();
   const wallet = useSelector((state: RootState) => state.wallet);
+  const defaultOpenKeys = getDefaultOpenKeys(location.pathname, items);
 
   return (
     <nav className={cx("panel", styles.sidebar)}>
@@ -90,6 +108,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
         mode="inline"
         items={items}
         defaultSelectedKeys={[location.pathname]}
+        defaultOpenKeys={defaultOpenKeys}
       />
     </nav>
   );
