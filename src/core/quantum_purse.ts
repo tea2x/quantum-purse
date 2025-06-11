@@ -322,7 +322,7 @@ export default class QuantumPurse extends QPSigner {
   }
 
   /**
-   * Gets account balance via light client protocol.
+   * Gets account available (transferable) balance via light client protocol.
    * @param spxLockArgs - The sphincs+ lock script argument to form an address from which balance is retrieved, via light client.
    * @returns The account balance.
    * @throws Error light client is not initialized.
@@ -337,7 +337,10 @@ export default class QuantumPurse extends QPSigner {
     const searchKey: ClientIndexerSearchKeyLike = {
       scriptType: "lock",
       script: lock,
-      scriptSearchMode: "prefix"
+      scriptSearchMode: "prefix",
+      filter: {
+        outputDataLenRange: [0, 1]
+      }
     };
     const capacity = await this.client.getCellsCapacity(searchKey);
     return capacity;
