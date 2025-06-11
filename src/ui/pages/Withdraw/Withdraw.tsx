@@ -85,6 +85,7 @@ const Withdraw: React.FC = () => {
     }
 
     const depositInput = withdrawTx?.transaction.inputs[Number(withdrawnCell.outPoint.index)];
+    await quantumPurse.client.fetchTransaction(depositInput?.previousOutput.txHash as Hex);
     const depositTx = await quantumPurse.client.getTransaction(depositInput?.previousOutput.txHash as Hex);
     const depositHeader = await quantumPurse.client.getHeader(depositTx?.blockHash as Hex);
     if (!depositHeader) {
@@ -180,7 +181,7 @@ const Withdraw: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Unlocking from Nervos DAO"
+          title="Withdraw from Nervos DAO"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();
@@ -222,17 +223,6 @@ const Withdraw: React.FC = () => {
           />
         )}
       </div>
-      <Authentication
-        ref={authenticationRef}
-        authenCallback={authenCallback}
-        title="Unlocking withdrawn deposit from Nervos DAO"
-        afterClose={() => {
-          if (passwordResolver) {
-            passwordResolver.reject();
-            setPasswordResolver(null);
-          }
-        }}
-      />
     </section>
   );
 };

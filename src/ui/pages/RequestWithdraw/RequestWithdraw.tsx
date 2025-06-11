@@ -164,7 +164,7 @@ const RequestWithdraw: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Unlocking from Nervos DAO"
+          title="Request Withdraw from Nervos DAO"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();
@@ -206,17 +206,6 @@ const RequestWithdraw: React.FC = () => {
           />
         )}
       </div>
-      <Authentication
-        ref={authenticationRef}
-        authenCallback={authenCallback}
-        title="Withdrawing from Nervos DAO"
-        afterClose={() => {
-          if (passwordResolver) {
-            passwordResolver.reject();
-            setPasswordResolver(null);
-          }
-        }}
-      />
     </section>
   );
 };
