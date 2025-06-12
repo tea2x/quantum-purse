@@ -628,6 +628,9 @@ export default class QuantumPurse extends QPSigner {
     let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
     initializeConfig(configuration);
 
+    if (depositCell.cellOutput.lock.occupiedSize != Script.from(addressToScript(to)).occupiedSize)
+      throw new Error("Desitnation Lock Script is different in size");
+
     const tx = ccc.Transaction.from({
       headerDeps: [depositCellBlockHash],
       inputs: [{ previousOutput: depositCell.outPoint }],
