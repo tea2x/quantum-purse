@@ -21,7 +21,7 @@ const RevealSRP: React.FC = () => {
 
   const description = 
     "WARNING: Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" 
-    + paramSet + "\" with the mnemonic seed.";
+    + SphincsVariant[Number(paramSet)] + "\" with the mnemonic seed.";
 
   return (
     <section className={cx(styles.revealSRP, "panel")}>

@@ -21,21 +21,20 @@ const ParamsetSelector: React.FC = () => {
       <Select
         size="large"
         placeholder="Select a SPHINCS+ variant"
-        defaultValue={SphincsVariant.Sha2256S}
       >
-        <Select.OptGroup label="256-bit Security">
+        <Select.OptGroup label="256-bit">
           <Select.Option value={SphincsVariant.Sha2256S}>SHA2_256s</Select.Option>
           <Select.Option value={SphincsVariant.Sha2256F}>SHA2_256f</Select.Option>
           <Select.Option value={SphincsVariant.Shake256S}>SHAKE_256s</Select.Option>
           <Select.Option value={SphincsVariant.Shake256F}>SHAKE_256f</Select.Option>
         </Select.OptGroup>
-        <Select.OptGroup label="192-bit Security">
+        <Select.OptGroup label="192-bit">
           <Select.Option value={SphincsVariant.Sha2192S}>SHA2_192s</Select.Option>
           <Select.Option value={SphincsVariant.Sha2192F}>SHA2_192f</Select.Option>
           <Select.Option value={SphincsVariant.Shake192S}>SHAKE_192s</Select.Option>
           <Select.Option value={SphincsVariant.Shake192F}>SHAKE_192f</Select.Option>
         </Select.OptGroup>
-        <Select.OptGroup label="128-bit Security">
+        <Select.OptGroup label="128-bit">
           <Select.Option value={SphincsVariant.Sha2128S}>SHA2_128s</Select.Option>
           <Select.Option value={SphincsVariant.Sha2128F}>SHA2_128f</Select.Option>
           <Select.Option value={SphincsVariant.Shake128S}>SHAKE_128s</Select.Option>

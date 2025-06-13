@@ -133,7 +133,8 @@ export const StepCreatePassword: React.FC = () => {
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const { createWallet: loadingCreateWallet, exportSRP: loadingExportSRP } =
     useSelector((state: RootState) => state.loading.effects.wallet);
-  const { rules: passwordRules } = usePasswordValidator();
+  const parameterSet = Form.useWatch('parameterSet', form);
+  const { rules: passwordRules } = usePasswordValidator(parameterSet);
 
   useEffect(() => {
     form
@@ -141,6 +142,12 @@ export const StepCreatePassword: React.FC = () => {
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
   }, [form, values]);
+
+  useEffect(() => {
+    if (parameterSet) {
+      form.validateFields(['password']).catch(() => {});
+    }
+  }, [parameterSet, form]);
 
   const onFinish = async (
     { password, parameterSet }: { password: string, parameterSet: SphincsVariant }
@@ -174,7 +181,12 @@ export const StepCreatePassword: React.FC = () => {
   return (
     <div className={styles.stepCreatePassword}>
       <h2>Wallet Type & Password</h2>
-      <Form form={form} layout="vertical" onFinish={onFinish}>
+      <Form 
+        form={form} 
+        layout="vertical" 
+        onFinish={onFinish}
+        initialValues={{ parameterSet: SphincsVariant.Sha2256S }}
+      >
         
         <ParamSetSelectorForm />
 
@@ -191,7 +203,7 @@ export const StepCreatePassword: React.FC = () => {
           label={<span style={{ color: 'var(--gray-01)' }}>Confirm password</span>}
           dependencies={["password"]}
           rules={[
-            { required: true, message: "Please confirm your password!" },
+            { required: true, message: "Confirm your password!" },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue("password") === value) {
@@ -286,7 +298,7 @@ const StepSecureSRP: React.FC = () => {
       title={"Secure Secret Recovery Phrase"}
       description={
         srp
-          ? "WARNING: Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" + QuantumPurse.getInstance().getSphincsPlusParamSet() + "\" with the mnemonic seed."
+          ? "WARNING: Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" + SphincsVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + "\" with the mnemonic seed."
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process."
       }
       exportSrpHandler={exportSrpHandler}

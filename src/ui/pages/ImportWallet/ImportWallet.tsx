@@ -43,6 +43,7 @@ const STEP = {
   SRP: 1,
   PASSWORD: 2,
 };
+
 const ImportWalletProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -77,7 +78,8 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
   const { importWallet: loadingImportWallet, exportSRP: loadingExportSRP } =
     useSelector((state: RootState) => state.loading.effects.wallet);
   const { prev } = useContext(ImportWalletContext);
-  const { rules: passwordRules } = usePasswordValidator();
+  const parameterSet = Form.useWatch("parameterSet", form);
+  const { rules: passwordRules } = usePasswordValidator(parameterSet);
 
   useEffect(() => {
     form
@@ -86,15 +88,21 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
+  useEffect(() => {
+    if (parameterSet) {
+      form.validateFields(['password']).catch(() => {});
+    }
+  }, [parameterSet, form]);
+
   return (
     <div className={styles.stepCreatePassword}>
       <h2>Wallet Type & Password</h2>
 
-      <ParamSetSelector/>
+      <ParamSetSelector />
 
       <Form.Item
         name="password"
-        label={<span style={{ color: 'var(--gray-01)' }}>Password</span>}
+        label={<span style={{ color: "var(--gray-01)" }}>Password</span>}
         rules={passwordRules}
       >
         <Input.Password size="large" />
@@ -102,10 +110,10 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
 
       <Form.Item
         name="confirmPassword"
-        label={<span style={{ color: 'var(--gray-01)' }}>Confirm password</span>}
+        label={<span style={{ color: "var(--gray-01)" }}>Confirm password</span>}
         dependencies={["password"]}
         rules={[
-          { required: true, message: "Please confirm your password!" },
+          { required: true, message: "Confirm your password!" },
           ({ getFieldValue }) => ({
             validator(_, value) {
               if (!value || getFieldValue("password") === value) {
@@ -124,19 +132,18 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         valuePropName="checked"
         rules={[
           {
-            validator: (_, value) => {
-              if (value) {
-                return Promise.resolve();
-              }
-              return Promise.reject(
-                new Error("You must acknowledge this statement!")
-              );
-            },
+            validator: (_, value) =>
+              value
+                ? Promise.resolve()
+                : Promise.reject(
+                    new Error("You must acknowledge this statement!")
+                  ),
           },
         ]}
       >
-        <Checkbox style={{ color: 'var(--gray-01)' }}>
-          I understand that the parameter set must match with the one I backed up with the mnemonic seed previously.
+        <Checkbox style={{ color: "var(--gray-01)" }}>
+          I understand that the parameter set must match with the one I backed
+          up with the mnemonic seed previously.
         </Checkbox>
       </Form.Item>
 
@@ -145,18 +152,16 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         valuePropName="checked"
         rules={[
           {
-            validator: (_, value) => {
-              if (value) {
-                return Promise.resolve();
-              }
-              return Promise.reject(
-                new Error("You must acknowledge this statement!")
-              );
-            },
+            validator: (_, value) =>
+              value
+                ? Promise.resolve()
+                : Promise.reject(
+                    new Error("You must acknowledge this statement!")
+                  ),
           },
         ]}
       >
-        <Checkbox style={{ color: 'var(--gray-01)' }}>
+        <Checkbox style={{ color: "var(--gray-01)" }}>
           I understand that Quantum Purse cannot recover this password if lost.
         </Checkbox>
       </Form.Item>
@@ -217,7 +222,9 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
               const words = value.trim().split(/\s+/);
               if (![36, 54, 72].includes(words.length)) {
                 return Promise.reject(
-                  new Error(`Current word count is ${words.length} but expected to be 36, 54 or 72!`)
+                  new Error(
+                    `Current word count is ${words.length} but expected to be 36, 54 or 72!`
+                  )
                 );
               }
               return Promise.resolve();
@@ -256,10 +263,13 @@ const ImportWalletContent: React.FC = () => {
   const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
 
-  const onFinish = async ({parameterSet}:{parameterSet: SphincsVariant}) => {
+  const onFinish = async ({ parameterSet }: { parameterSet: SphincsVariant }) => {
     QuantumPurse.getInstance().initKeyVault(parameterSet);
     // store chosen param set to storage, so wallet type retains when refreshed
-    localStorage.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+    localStorage.setItem(
+      STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET,
+      parameterSet.toString()
+    );
 
     const { srp, password } = values;
 

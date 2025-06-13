@@ -244,10 +244,10 @@ export default class QuantumPurse extends QPSigner {
     this.initKeyVaultCore(variant);
   }
 
-  /* get the name of sphincs+ paramset of choice*/
-  public getSphincsPlusParamSet(): string {
+  /* get the sphincs+ paramset of choice*/
+  public getSphincsPlusParamSet(): SphincsVariant {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
-    return SphincsVariant[this.keyVault.variant];
+    return this.keyVault.variant;
   }
 
   /* Method to add a listener */
