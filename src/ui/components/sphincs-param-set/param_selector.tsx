@@ -21,24 +21,25 @@ const ParamsetSelector: React.FC = () => {
       <Select
         size="large"
         placeholder="Select a SPHINCS+ variant"
+        defaultValue={SphincsVariant.Sha2256S}
       >
         <Select.OptGroup label="256-bit Security">
-          <Select.Option value={SphincsVariant.Sha2256S}>Sha2_256s</Select.Option>
-          <Select.Option value={SphincsVariant.Sha2256F}>Sha2_256f</Select.Option>
-          <Select.Option value={SphincsVariant.Shake256S}>Shake_256s</Select.Option>
-          <Select.Option value={SphincsVariant.Shake256F}>Shake_256f</Select.Option>
+          <Select.Option value={SphincsVariant.Sha2256S}>SHA2_256s</Select.Option>
+          <Select.Option value={SphincsVariant.Sha2256F}>SHA2_256f</Select.Option>
+          <Select.Option value={SphincsVariant.Shake256S}>SHAKE_256s</Select.Option>
+          <Select.Option value={SphincsVariant.Shake256F}>SHAKE_256f</Select.Option>
         </Select.OptGroup>
         <Select.OptGroup label="192-bit Security">
-          <Select.Option value={SphincsVariant.Sha2192S}>Sha2_192s</Select.Option>
-          <Select.Option value={SphincsVariant.Sha2192F}>Sha2_192f</Select.Option>
-          <Select.Option value={SphincsVariant.Shake192S}>Shake_192s</Select.Option>
-          <Select.Option value={SphincsVariant.Shake192F}>Shake_192f</Select.Option>
+          <Select.Option value={SphincsVariant.Sha2192S}>SHA2_192s</Select.Option>
+          <Select.Option value={SphincsVariant.Sha2192F}>SHA2_192f</Select.Option>
+          <Select.Option value={SphincsVariant.Shake192S}>SHAKE_192s</Select.Option>
+          <Select.Option value={SphincsVariant.Shake192F}>SHAKE_192f</Select.Option>
         </Select.OptGroup>
         <Select.OptGroup label="128-bit Security">
-          <Select.Option value={SphincsVariant.Sha2128S}>Sha2_128s</Select.Option>
-          <Select.Option value={SphincsVariant.Sha2128F}>Sha2_128f</Select.Option>
-          <Select.Option value={SphincsVariant.Shake128S}>Shake_128s</Select.Option>
-          <Select.Option value={SphincsVariant.Shake128F}>Shake_128f</Select.Option>
+          <Select.Option value={SphincsVariant.Sha2128S}>SHA2_128s</Select.Option>
+          <Select.Option value={SphincsVariant.Sha2128F}>SHA2_128f</Select.Option>
+          <Select.Option value={SphincsVariant.Shake128S}>SHAKE_128s</Select.Option>
+          <Select.Option value={SphincsVariant.Shake128F}>SHAKE_128f</Select.Option>
         </Select.OptGroup>
       </Select>
     </Form.Item>
