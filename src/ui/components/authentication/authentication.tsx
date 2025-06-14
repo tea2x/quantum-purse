@@ -11,7 +11,8 @@ import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { Dispatch } from "../../store";
 import { ROUTES } from "../../utils/constants";
 import styles from "./authentication.module.scss";
-import QuantumPurse from "../../../core/quantum_purse";
+import QuantumPurse, { SphincsVariant } from "../../../core/quantum_purse";
+import { STORAGE_KEYS } from "../../utils/constants";
 
 export interface AuthenticationRef {
   open: () => void;
@@ -40,12 +41,18 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     const values = Form.useWatch([], form);
     const [open, setOpen] = useState(false);
     const [submittable, setSubmittable] = useState(false);
-    const { rules: passwordRules } = usePasswordValidator(
-      QuantumPurse.getInstance().getSphincsPlusParamSet()
-    );
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const dispatch = useDispatch<Dispatch>();
     const navigate = useNavigate();
+
+    let paramSet;
+    try {
+      paramSet = QuantumPurse.getInstance().getSphincsPlusParamSet();
+    } catch (e) {
+      const paramId = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
+      paramSet = SphincsVariant[Number(paramId)];
+    }
+    const { rules: passwordRules } = usePasswordValidator(Number(paramSet));
 
     useEffect(() => {
       if (values?.password) {
