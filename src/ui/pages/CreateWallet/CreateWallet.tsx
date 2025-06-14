@@ -146,6 +146,7 @@ export const StepCreatePassword: React.FC = () => {
   useEffect(() => {
     if (parameterSet) {
       form.validateFields(['password']).catch(() => {});
+      form.validateFields(['confirmPassword']).catch(() => {});
     }
   }, [parameterSet, form]);
 
@@ -203,7 +204,7 @@ export const StepCreatePassword: React.FC = () => {
           label={<span style={{ color: 'var(--gray-01)' }}>Confirm password</span>}
           dependencies={["password"]}
           rules={[
-            { required: true, message: "Confirm your password!" },
+            { required: true, message: "Required!" },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue("password") === value) {

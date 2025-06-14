@@ -32,7 +32,7 @@ const usePasswordValidator = (variant: SphincsVariant) => {
   };
 
   const rules = [
-    { required: true, message: "Password required!" },
+    { required: true, message: "Required!" },
     {
       validator: (_: any, value: string) => {
         return entropyValidator(value);

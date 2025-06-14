@@ -113,7 +113,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         label={<span style={{ color: "var(--gray-01)" }}>Confirm password</span>}
         dependencies={["password"]}
         rules={[
-          { required: true, message: "Confirm your password!" },
+          { required: true, message: "Required!" },
           ({ getFieldValue }) => ({
             validator(_, value) {
               if (!value || getFieldValue("password") === value) {
