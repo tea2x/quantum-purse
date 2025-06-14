@@ -102,6 +102,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
           address={wallet.current.address!}
           name={wallet.current.name}
           balance={wallet.current.balance!}
+          lockedInDao={wallet.current.lockedInDao}
         />
       </div>
       <Menu

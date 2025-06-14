@@ -346,6 +346,38 @@ export default class QuantumPurse extends QPSigner {
     return capacity;
   }
 
+  /**
+   * Gets amount of CKB locked in Nervos DAO.
+   * @param spxLockArgs - The sphincs+ lock script argument to form an address from which the balance is retrieved.
+   * @returns The account balance.
+   * @throws Error light client is not initialized.
+   */
+  public async getNervosDaoBalance(spxLockArgs?: Hex): Promise<bigint> {
+    if (!this.hasClientStarted) {
+      console.error("Light client has not initialized");
+      return Promise.resolve(BigInt(0));
+    }
+
+    // replace with this.getAddressObjs
+    const lock = this.getLockScript(spxLockArgs);
+    const searchKey: ClientIndexerSearchKeyLike = {
+      scriptType: "lock",
+      script: lock,
+      scriptSearchMode: "prefix",
+      filter: {
+        script: {
+          codeHash: NERVOS_DAO.codeHash,
+          hashType: NERVOS_DAO.hashType,
+          args: "0x"
+        },
+        scriptLenRange: [33, 34], // 32(codeHash) + 1 (hashType). No arguments.
+        outputDataLenRange: [8, 9], // 8 bytes DAO data.
+      }
+    };
+    const capacity = await this.client.getCellsCapacity(searchKey);
+    return capacity;
+  }
+
   /* Clears all local data of the wallet. */
   public async deleteWallet(): Promise<void> {
     const spxLockArgsList = await this.getAllLockScriptArgs();

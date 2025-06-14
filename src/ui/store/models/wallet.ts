@@ -11,6 +11,7 @@ interface IAccount {
   address: string | null;
   spxLockArgs: string;
   balance?: string;
+  lockedInDao?: string;
 }
 
 interface IWallet {
@@ -40,6 +41,7 @@ const initState: StateType = {
     name: "",
     address: "",
     balance: "0",
+    lockedInDao: "0",
     spxLockArgs: "",
   },
   accounts: [],
@@ -169,9 +171,11 @@ export const wallet = createModel<RootModel>()({
         );
         if (!accountData) return;
         const currentBalance = await quantum.getBalance();
+        const lockInDAO = await quantum.getNervosDaoBalance();
         this.setCurrent({
           address: quantum.getAddress(accountPointer),
           balance: currentBalance.toString(),
+          lockedInDao: lockInDAO.toString(),
           spxLockArgs: accountData.spxLockArgs,
           name: accountData.name,
         });
