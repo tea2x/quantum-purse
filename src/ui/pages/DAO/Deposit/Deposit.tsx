@@ -10,12 +10,12 @@ import {
 } from "antd";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../components";
-import { Dispatch, RootState } from "../../store";
-import { CKB_DECIMALS, CKB_UNIT } from "../../utils/constants";
-import { cx, formatError } from "../../utils/methods";
+import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../../components";
+import { Dispatch, RootState } from "../../../store";
+import { CKB_DECIMALS, CKB_UNIT } from "../../../utils/constants";
+import { cx, formatError } from "../../../utils/methods";
 import styles from "./Deposit.module.scss";
-import QuantumPurse from "../../../core/quantum_purse";
+import QuantumPurse from "../../../../core/quantum_purse";
 
 const Deposit: React.FC = () => {
   const [form] = Form.useForm();

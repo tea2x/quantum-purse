@@ -1,23 +1,19 @@
 import { Button, notification, Form, Switch, Input, Empty } from "antd";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../components";
-import { Dispatch, RootState } from "../../store";
-import { cx, formatError } from "../../utils/methods";
-import styles from "./Withdraw.module.scss";
-import QuantumPurse from "../../../core/quantum_purse";
+import { Explore, Authentication, AuthenticationRef, AccountSelect } from "../../../components";
+import { Dispatch, RootState } from "../../../store";
+import { cx, formatError } from "../../../utils/methods";
+import styles from "./RequestWithdraw.module.scss";
+import QuantumPurse from "../../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
-import { NERVOS_DAO } from "../../../core/config";
+import { NERVOS_DAO } from "../../../../core/config";
 import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
 import React from "react";
 
-const Withdraw: React.FC = () => {
+const RequestWithdraw: React.FC = () => {
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
-  const [submittable, setSubmittable] = useState(false);
-  const { unlock: loadingUnlock } = useSelector(
-    (state: RootState) => state.loading.effects.wallet
-  );
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
   const [daoCells, setDaoCells] = useState<ccc.Cell[]>([]);
@@ -26,7 +22,7 @@ const Withdraw: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const authenticationRef = useRef<AuthenticationRef>(null);
-  const withdrawnCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
+  const depositCells = daoCells.filter(cell => cell.outputData === "0x0000000000000000");
   const toError = form.getFieldError('to');
   const isToValid = values?.to && toError.length === 0;
 
@@ -71,44 +67,31 @@ const Withdraw: React.FC = () => {
     }
   }, [quantumPurse]);
 
-  // todo update with `withdrawnCell.getNervosDaoInfo` when light client js updates ccc core.
-  const getNervosDaoInfo = async (withdrawnCell: ccc.Cell):Promise<
-    {
-      depositHeader: ClientBlockHeader,
-      withdrawHeader: ClientBlockHeader
+  // todo update with `depositCell.getNervosDaoInfo` when light client js updates ccc core.
+  const getNervosDaoInfo = async (depositCell: ccc.Cell):Promise<{depositHeader: ClientBlockHeader}> => {
+    const depositTx = await quantumPurse.client.getTransaction(depositCell.outPoint.txHash);
+    const blockHash = depositTx?.blockHash;
+    const header = await quantumPurse.client.getHeader(blockHash as Hex);
+    if (!header) {
+      throw new Error("Unable to retrieve block header!");
     }
-  > => {
-    const withdrawTx = await quantumPurse.client.getTransaction(withdrawnCell.outPoint.txHash);
-    const withdrawHeader = await quantumPurse.client.getHeader(withdrawTx?.blockHash as Hex);
-    if (!withdrawHeader) {
-      throw new Error("Unable to retrieve DAO withdrawing block header!");
-    }
-
-    const depositInput = withdrawTx?.transaction.inputs[Number(withdrawnCell.outPoint.index)];
-    await quantumPurse.client.fetchTransaction(depositInput?.previousOutput.txHash as Hex);
-    const depositTx = await quantumPurse.client.getTransaction(depositInput?.previousOutput.txHash as Hex);
-    const depositHeader = await quantumPurse.client.getHeader(depositTx?.blockHash as Hex);
-    if (!depositHeader) {
-      throw new Error("Unable to retrieve DAO deposit block header!");
-    }
-
-    return { depositHeader, withdrawHeader };
+    return {depositHeader: header};
   };
 
-  const handleUnlock = async (withdrawnCell: ccc.Cell) => {
+  const handleWithdraw = async (depositCell: ccc.Cell) => {
     try {
       // todo update when light client js updates ccc core.
-      const { depositHeader, withdrawHeader } = await getNervosDaoInfo(withdrawnCell);
+      const { depositHeader } = await getNervosDaoInfo(depositCell);
+      const depositBlockNum = depositHeader.number;
       const depositBlockHash = depositHeader.hash;
-      const withdrawingBlockHash = withdrawHeader.hash;
-      const txId = await dispatch.wallet.unlock({
+      const txId = await dispatch.wallet.withdraw({
         to: values.to,
-        withdrawCell: withdrawnCell,
-        depositBlockHash: depositBlockHash,
-        withdrawingBlockHash: withdrawingBlockHash
+        depositCell: depositCell,
+        depositBlockNum: depositBlockNum,
+        depositBlockHash: depositBlockHash
       });
       notification.success({
-        message: "Unlock transaction successful",
+        message: "Withdraw transaction successful",
         description: (
           <div>
             <p>Please check the transaction on the explorer</p>
@@ -120,7 +103,7 @@ const Withdraw: React.FC = () => {
       });
     } catch (error) {
       notification.error({
-        message: "Unlock transaction failed",
+        message: "Withdraw transaction failed",
         description: formatError(error),
       });
     }
@@ -135,8 +118,8 @@ const Withdraw: React.FC = () => {
   };
 
   return (
-    <section className={cx(styles.unlockForm, "panel")}>
-      <h1>Withdraw</h1>
+    <section className={cx(styles.withdrawForm, "panel")}>
+      <h1>Request Withdraw</h1>
       <div>
         <Form layout="vertical" form={form}>
           <Form.Item
@@ -181,7 +164,7 @@ const Withdraw: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Withdraw from Nervos DAO"
+          title="Request Withdraw from Nervos DAO"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();
@@ -191,21 +174,21 @@ const Withdraw: React.FC = () => {
         />
       </div>
       <div>
-        {withdrawnCells.length > 0 ? (
-          <div className={styles.withdrawListContainer}>
-            <ul className={styles.withdrawList}>
-              {withdrawnCells.map((cell, index) => (
+        {depositCells.length > 0 ? (
+          <div className={styles.requestWithdrawListContainer}>
+            <ul className={styles.requestWithdrawList}>
+              {depositCells.map((cell, index) => (
                 <React.Fragment key={index}>
-                  <li className={styles.withdrawItem}>
+                  <li className={styles.depositItem}>
                     <span className={styles.capacity}>
                       {(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB
                     </span>
                     <Button
                       type="primary"
-                      onClick={() => handleUnlock(cell)}
+                      onClick={() => handleWithdraw(cell)}
                       disabled={!isToValid}
                     >
-                      Withdraw
+                      Request
                     </Button>
                   </li>
                 </React.Fragment>
@@ -216,7 +199,7 @@ const Withdraw: React.FC = () => {
           <Empty
             description={
               <span style={{ color: 'var(--gray-01)' }}>
-                No withdraw requests found.
+                No deposits found.
               </span>
             }
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -227,4 +210,4 @@ const Withdraw: React.FC = () => {
   );
 };
 
-export default Withdraw;
+export default RequestWithdraw;
