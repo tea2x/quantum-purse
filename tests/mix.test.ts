@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import QuantumPurse, { SphincsVariant } from "../src/core/quantum_purse";
+import QuantumPurse, { SpxVariant } from "../src/core/quantum_purse";
 import { utf8ToBytes, bytesToUtf8 } from "../src/core/utils";
 import __wbg_init from "quantum-purse-key-vault";
 import { dummyTx } from "./dummy_tx";
@@ -22,7 +22,7 @@ describe("Quantum Purse Basics", () => {
     const wasmBuffer = await wasmResponse.arrayBuffer();
     await __wbg_init(wasmBuffer);
     wallet = await QuantumPurse.getInstance();
-    wallet.initKeyVault(SphincsVariant.Shake128F);
+    wallet.initKeyVault(SpxVariant.Shake128F);
   });
 
   afterEach(async () => {
@@ -137,7 +137,7 @@ describe("Quantum Purse Basics", () => {
   });
 
   it("Should throw when use 48 word seed phrase for 256/(same 192) sphincs+ variants", async () => {
-    wallet.initKeyVault(SphincsVariant.Sha2256S);
+    wallet.initKeyVault(SpxVariant.Sha2256S);
     const seedPhraseHandler = utf8ToBytes(seedPhrase54);
     const passwordStrHandler = utf8ToBytes(passwordStr);
     try {

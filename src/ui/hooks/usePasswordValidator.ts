@@ -1,25 +1,25 @@
-import QuantumPurse, { SphincsVariant } from "../../core/quantum_purse";
+import QuantumPurse, { SpxVariant } from "../../core/quantum_purse";
 import { utf8ToBytes } from "../../core/utils";
 
-const usePasswordValidator = (variant: SphincsVariant) => {
+const usePasswordValidator = (variant: SpxVariant) => {
   const entropyValidator = (password: string) => {
     if (!password) {
       return Promise.resolve();
     }
 
     const entropyMap = {
-      [SphincsVariant.Sha2128F]: 128,
-      [SphincsVariant.Shake128F]: 128,
-      [SphincsVariant.Sha2128S]: 128,
-      [SphincsVariant.Shake128S]: 128,
-      [SphincsVariant.Sha2192F]: 192,
-      [SphincsVariant.Shake192F]: 192,
-      [SphincsVariant.Sha2192S]: 192,
-      [SphincsVariant.Shake192S]: 192,
-      [SphincsVariant.Sha2256F]: 256,
-      [SphincsVariant.Shake256F]: 256,
-      [SphincsVariant.Sha2256S]: 256,
-      [SphincsVariant.Shake256S]: 256,
+      [SpxVariant.Sha2128F]: 128,
+      [SpxVariant.Shake128F]: 128,
+      [SpxVariant.Sha2128S]: 128,
+      [SpxVariant.Shake128S]: 128,
+      [SpxVariant.Sha2192F]: 192,
+      [SpxVariant.Shake192F]: 192,
+      [SpxVariant.Sha2192S]: 192,
+      [SpxVariant.Shake192S]: 192,
+      [SpxVariant.Sha2256F]: 256,
+      [SpxVariant.Shake256F]: 256,
+      [SpxVariant.Sha2256S]: 256,
+      [SpxVariant.Shake256S]: 256,
     };
     const entropyLevel = entropyMap[variant] || 256;
 

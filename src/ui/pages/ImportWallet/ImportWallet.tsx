@@ -25,7 +25,7 @@ import { WalletStepEnum, STORAGE_KEYS } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./ImportWallet.module.scss";
 import ParamSetSelector from "../../components/sphincs-param-set/param_selector";
-import QuantumPurse, { SphincsVariant } from "../../../core/quantum_purse";
+import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 
 interface ImportWalletContext {
   currentStep?: WalletStepEnum;
@@ -263,7 +263,7 @@ const ImportWalletContent: React.FC = () => {
   const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
 
-  const onFinish = async ({ parameterSet }: { parameterSet: SphincsVariant }) => {
+  const onFinish = async ({ parameterSet }: { parameterSet: SpxVariant }) => {
     QuantumPurse.getInstance().initKeyVault(parameterSet);
     // store chosen param set to storage, so wallet type retains when refreshed
     localStorage.setItem(

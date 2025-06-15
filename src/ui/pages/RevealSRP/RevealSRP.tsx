@@ -3,7 +3,7 @@ import { SrpTextBox } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { cx } from "../../utils/methods";
 import styles from "./RevealSRP.module.scss";
-import QuantumPurse, { SphincsVariant } from "../../../core/quantum_purse";
+import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { STORAGE_KEYS } from "../../utils/constants";
 
 const RevealSRP: React.FC = () => {
@@ -16,12 +16,12 @@ const RevealSRP: React.FC = () => {
     paramSet = QuantumPurse.getInstance().getSphincsPlusParamSet();
   } catch (e) {
     const paramId = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
-    paramSet = SphincsVariant[Number(paramId)];
+    paramSet = SpxVariant[Number(paramId)];
   }
 
   const description = 
     "WARNING: Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" 
-    + SphincsVariant[Number(paramSet)] + "\" with the mnemonic seed.";
+    + SpxVariant[Number(paramSet)] + "\" with the mnemonic seed.";
 
   return (
     <section className={cx(styles.revealSRP, "panel")}>

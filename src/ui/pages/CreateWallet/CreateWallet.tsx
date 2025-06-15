@@ -21,7 +21,7 @@ import { cx, formatError } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
 import ParamSetSelectorForm from "../../components/sphincs-param-set/param_selector";
-import QuantumPurse, { SphincsVariant } from "../../../core/quantum_purse";
+import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: WALLET_STEP.PASSWORD,
@@ -151,7 +151,7 @@ export const StepCreatePassword: React.FC = () => {
   }, [parameterSet, form]);
 
   const onFinish = async (
-    { password, parameterSet }: { password: string, parameterSet: SphincsVariant }
+    { password, parameterSet }: { password: string, parameterSet: SpxVariant }
   ) => {
     if (parameterSet) {
       QuantumPurse.getInstance().initKeyVault(parameterSet);
@@ -186,7 +186,7 @@ export const StepCreatePassword: React.FC = () => {
         form={form} 
         layout="vertical" 
         onFinish={onFinish}
-        initialValues={{ parameterSet: SphincsVariant.Sha2256S }}
+        initialValues={{ parameterSet: SpxVariant.Sha2256S }}
       >
         
         <ParamSetSelectorForm />
@@ -299,7 +299,7 @@ const StepSecureSRP: React.FC = () => {
       title={"Secure Secret Recovery Phrase"}
       description={
         srp
-          ? "WARNING: Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" + SphincsVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + "\" with the mnemonic seed."
+          ? "WARNING: Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" + SpxVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + "\" with the mnemonic seed."
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process."
       }
       exportSrpHandler={exportSrpHandler}

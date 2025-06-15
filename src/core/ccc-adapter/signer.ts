@@ -17,7 +17,7 @@ import {
 } from "@ckb-ccc/core";
 import { QPClient } from "./client";
 import { IS_MAIN_NET } from "../config";
-import __wbg_init, { KeyVault, SphincsVariant } from "quantum-purse-key-vault";
+import __wbg_init, { KeyVault, SpxVariant } from "quantum-purse-key-vault";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { get_ckb_tx_message_all_hash, utf8ToBytes } from "../utils";
 
@@ -58,7 +58,7 @@ export class QPSigner extends Signer {
    * @param variant The SPHINCS+ parameter set to start with
    * @returns void.
    */
-  protected initKeyVaultCore(variant: SphincsVariant) {
+  protected initKeyVaultCore(variant: SpxVariant) {
     if (this.keyVault) {
       this.keyVault.free();
     }
@@ -131,18 +131,18 @@ export class QPSigner extends Signer {
     const tx = Transaction.from(txLike);
     const { script } = await this.getRecommendedAddressObj();
     const witnessSizeMap = {
-      [SphincsVariant.Sha2128F]: 17144,
-      [SphincsVariant.Shake128F]: 17144,
-      [SphincsVariant.Sha2128S]: 7912,
-      [SphincsVariant.Shake128S]: 7912,
-      [SphincsVariant.Sha2192F]: 35736,
-      [SphincsVariant.Shake192F]: 35736,
-      [SphincsVariant.Sha2192S]: 16296,
-      [SphincsVariant.Shake192S]: 16296,
-      [SphincsVariant.Sha2256F]: 49944,
-      [SphincsVariant.Shake256F]: 49944,
-      [SphincsVariant.Sha2256S]: 29880,
-      [SphincsVariant.Shake256S]: 29880,
+      [SpxVariant.Sha2128F]: 17144,
+      [SpxVariant.Shake128F]: 17144,
+      [SpxVariant.Sha2128S]: 7912,
+      [SpxVariant.Shake128S]: 7912,
+      [SpxVariant.Sha2192F]: 35736,
+      [SpxVariant.Shake192F]: 35736,
+      [SpxVariant.Sha2192S]: 16296,
+      [SpxVariant.Shake192S]: 16296,
+      [SpxVariant.Sha2256F]: 49944,
+      [SpxVariant.Shake256F]: 49944,
+      [SpxVariant.Sha2256S]: 29880,
+      [SpxVariant.Shake256S]: 29880,
     };
     const variant = this.keyVault.variant;
     const witnessSize = witnessSizeMap[variant] || 0;

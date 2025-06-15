@@ -3,7 +3,7 @@ import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO, FEE_RATE } from "./config";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { Address, DepType } from "@ckb-lumos/base";
 import { addressToScript } from "@ckb-lumos/helpers";
-import __wbg_init, { KeyVault, Util as KeyVaultUtil, SphincsVariant } from "quantum-purse-key-vault";
+import __wbg_init, { KeyVault, Util as KeyVaultUtil, SpxVariant } from "quantum-purse-key-vault";
 import { randomSecretKey, LightClientSetScriptsCommand, ScriptStatus } from "ckb-light-client-js";
 import Worker from "worker-loader!../../light-client/status_worker.js";
 import testnetConfig from "../../light-client/network.test.toml";
@@ -13,7 +13,7 @@ import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager"
 import { getClaimEpoch, getProfit } from "./epoch";
 import { QPSigner } from "./ccc-adapter/signer";
 
-export { SphincsVariant } from "quantum-purse-key-vault";
+export { SpxVariant } from "quantum-purse-key-vault";
 
 /**
  * Manages a wallet using the SPHINCS+ post-quantum signature scheme on the Nervos CKB blockchain.
@@ -240,12 +240,12 @@ export default class QuantumPurse extends QPSigner {
    * @param variant The SPHINCS+ parameter set to start with
    * @returns void.
    */
-  public initKeyVault(variant: SphincsVariant) {
+  public initKeyVault(variant: SpxVariant) {
     this.initKeyVaultCore(variant);
   }
 
   /* get the sphincs+ paramset of choice*/
-  public getSphincsPlusParamSet(): SphincsVariant {
+  public getSphincsPlusParamSet(): SpxVariant {
     if (!this.keyVault) throw new Error("KeyVault not initialized!");
     return this.keyVault.variant;
   }
