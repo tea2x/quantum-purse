@@ -21,9 +21,7 @@ import { cx, formatError } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
 import ParamSetSelectorForm from "../../components/sphincs-param-set/param_selector";
-import QuantumPurse, { SphincsVariant } from "../../../core/quantum_purse";
-
-const quantumPurse = QuantumPurse.getInstance();
+import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: WALLET_STEP.PASSWORD,
@@ -135,7 +133,8 @@ export const StepCreatePassword: React.FC = () => {
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const { createWallet: loadingCreateWallet, exportSRP: loadingExportSRP } =
     useSelector((state: RootState) => state.loading.effects.wallet);
-  const { rules: passwordRules } = usePasswordValidator();
+  const parameterSet = Form.useWatch('parameterSet', form);
+  const { rules: passwordRules } = usePasswordValidator(parameterSet);
 
   useEffect(() => {
     form
@@ -144,11 +143,18 @@ export const StepCreatePassword: React.FC = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
+  useEffect(() => {
+    if (parameterSet) {
+      form.validateFields(['password']).catch(() => {});
+      form.validateFields(['confirmPassword']).catch(() => {});
+    }
+  }, [parameterSet, form]);
+
   const onFinish = async (
-    { password, parameterSet }: { password: string, parameterSet: SphincsVariant }
+    { password, parameterSet }: { password: string, parameterSet: SpxVariant }
   ) => {
     if (parameterSet) {
-      quantumPurse.initKeyVault(parameterSet);
+      QuantumPurse.getInstance().initKeyVault(parameterSet);
     }
     // store chosen param set to storage, so wallet type retains when refreshed
     localStorage.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
@@ -176,7 +182,12 @@ export const StepCreatePassword: React.FC = () => {
   return (
     <div className={styles.stepCreatePassword}>
       <h2>Wallet Type & Password</h2>
-      <Form form={form} layout="vertical" onFinish={onFinish}>
+      <Form 
+        form={form} 
+        layout="vertical" 
+        onFinish={onFinish}
+        initialValues={{ parameterSet: SpxVariant.Sha2256S }}
+      >
         
         <ParamSetSelectorForm />
 
@@ -193,7 +204,7 @@ export const StepCreatePassword: React.FC = () => {
           label={<span style={{ color: 'var(--gray-01)' }}>Confirm password</span>}
           dependencies={["password"]}
           rules={[
-            { required: true, message: "Please confirm your password!" },
+            { required: true, message: "" },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue("password") === value) {
@@ -288,7 +299,7 @@ const StepSecureSRP: React.FC = () => {
       title={"Secure Secret Recovery Phrase"}
       description={
         srp
-          ? "WARNING: Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" + quantumPurse.getSphincsPlusParamSet() + "\" with the mnemonic seed."
+          ? "WARNING: Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" + SpxVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + "\" with the mnemonic seed."
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process."
       }
       exportSrpHandler={exportSrpHandler}

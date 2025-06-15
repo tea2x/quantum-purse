@@ -7,8 +7,14 @@
 
   :global {
     .name {
-      font-size: 1.2rem;
+      font-size: 1.5rem;
       font-weight: bold;
+    }
+    .balance-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .balance {
       font-size: 2rem;
@@ -16,7 +22,13 @@
       font-family: "Quantico", sans-serif;
       color: var(--teal-2);
     }
-
+    .question-icon {
+      color: var(--gray-01);
+      position: absolute;
+      top: 0;
+      right: -0.7rem;
+      transform: translate(50%, -50%);
+    }
     .address-utilities {
       display: flex;
       align-items: center;
