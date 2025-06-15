@@ -1,6 +1,6 @@
 import { Form, Select, Tooltip } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { SphincsVariant } from "../../../core/quantum_purse";
+import { SpxVariant } from "../../../core/quantum_purse";
 
 const ParamsetSelector: React.FC = () => {
   return (
@@ -16,29 +16,29 @@ const ParamsetSelector: React.FC = () => {
         </span>
       }
       name="parameterSet"
-      rules={[{ required: true, message: "Please select a parameter set" }]}
+      rules={[{ required: true, message: "" }]}
     >
       <Select
         size="large"
         placeholder="Select a SPHINCS+ variant"
       >
-        <Select.OptGroup label="256-bit Security">
-          <Select.Option value={SphincsVariant.Sha2256S}>Sha2_256s</Select.Option>
-          <Select.Option value={SphincsVariant.Sha2256F}>Sha2_256f</Select.Option>
-          <Select.Option value={SphincsVariant.Shake256S}>Shake_256s</Select.Option>
-          <Select.Option value={SphincsVariant.Shake256F}>Shake_256f</Select.Option>
+        <Select.OptGroup label="256-bit">
+          <Select.Option value={SpxVariant.Sha2256S}>SHA2_256s</Select.Option>
+          <Select.Option value={SpxVariant.Sha2256F}>SHA2_256f</Select.Option>
+          <Select.Option value={SpxVariant.Shake256S}>SHAKE_256s</Select.Option>
+          <Select.Option value={SpxVariant.Shake256F}>SHAKE_256f</Select.Option>
         </Select.OptGroup>
-        <Select.OptGroup label="192-bit Security">
-          <Select.Option value={SphincsVariant.Sha2192S}>Sha2_192s</Select.Option>
-          <Select.Option value={SphincsVariant.Sha2192F}>Sha2_192f</Select.Option>
-          <Select.Option value={SphincsVariant.Shake192S}>Shake_192s</Select.Option>
-          <Select.Option value={SphincsVariant.Shake192F}>Shake_192f</Select.Option>
+        <Select.OptGroup label="192-bit">
+          <Select.Option value={SpxVariant.Sha2192S}>SHA2_192s</Select.Option>
+          <Select.Option value={SpxVariant.Sha2192F}>SHA2_192f</Select.Option>
+          <Select.Option value={SpxVariant.Shake192S}>SHAKE_192s</Select.Option>
+          <Select.Option value={SpxVariant.Shake192F}>SHAKE_192f</Select.Option>
         </Select.OptGroup>
-        <Select.OptGroup label="128-bit Security">
-          <Select.Option value={SphincsVariant.Sha2128S}>Sha2_128s</Select.Option>
-          <Select.Option value={SphincsVariant.Sha2128F}>Sha2_128f</Select.Option>
-          <Select.Option value={SphincsVariant.Shake128S}>Shake_128s</Select.Option>
-          <Select.Option value={SphincsVariant.Shake128F}>Shake_128f</Select.Option>
+        <Select.OptGroup label="128-bit">
+          <Select.Option value={SpxVariant.Sha2128S}>SHA2_128s</Select.Option>
+          <Select.Option value={SpxVariant.Sha2128F}>SHA2_128f</Select.Option>
+          <Select.Option value={SpxVariant.Shake128S}>SHAKE_128s</Select.Option>
+          <Select.Option value={SpxVariant.Shake128F}>SHAKE_128f</Select.Option>
         </Select.OptGroup>
       </Select>
     </Form.Item>
