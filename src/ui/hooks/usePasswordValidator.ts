@@ -32,7 +32,7 @@ const usePasswordValidator = (variant: SpxVariant) => {
   };
 
   const rules = [
-    { required: true, message: "Required!" },
+    { required: true, message: "" },
     {
       validator: (_: any, value: string) => {
         return entropyValidator(value);

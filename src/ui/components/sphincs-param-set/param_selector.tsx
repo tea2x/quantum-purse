@@ -16,7 +16,7 @@ const ParamsetSelector: React.FC = () => {
         </span>
       }
       name="parameterSet"
-      rules={[{ required: true, message: "Required!" }]}
+      rules={[{ required: true, message: "" }]}
     >
       <Select
         size="large"
