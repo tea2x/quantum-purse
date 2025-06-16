@@ -16,7 +16,7 @@ const RevealSRP: React.FC = () => {
     paramSet = QuantumPurse.getInstance().getSphincsPlusParamSet();
   } catch (e) {
     const paramId = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
-    paramSet = SpxVariant[Number(paramId)];
+    paramSet = Number(paramId);
   }
 
   const description = 

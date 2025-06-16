@@ -6,7 +6,8 @@ import { Dispatch } from "../../store";
 import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { formatError } from "../../utils/methods";
 import styles from "./srp_text_box.module.scss";
-import QuantumPurse from "../../../core/quantum_purse";
+import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
+import { STORAGE_KEYS } from "../../utils/constants";
 
 interface SrpTextBoxProps {
   value?: string;
@@ -27,9 +28,16 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
 }) => {
   const location = useLocation();
   const dispatch = useDispatch<Dispatch>();
-  const { rules: passwordRules } = usePasswordValidator(
-    QuantumPurse.getInstance().getSphincsPlusParamSet()
-  );
+
+  let paramSet;
+  try {
+    paramSet = QuantumPurse.getInstance().getSphincsPlusParamSet();
+  } catch (e) {
+    const paramId = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
+    paramSet = SpxVariant[Number(paramId)];
+  }
+
+  const { rules: passwordRules } = usePasswordValidator(Number(paramSet));
   const onSubmit = async (values: { password: string }) => {
     try {
       await exportSrpHandler(values.password);
