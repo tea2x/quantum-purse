@@ -8,7 +8,7 @@
     "start:web": "webpack serve --config ./webpack/webpack.dev.js",
     "build:web": "webpack --config ./webpack/webpack.prod.js",
     "start:app": "DEPLOY_TARGET=electron npm run build:web && electron .",
-    "build:app": "DEPLOY_TARGET=electron npm run clean && npm run build:web && electron-builder --mac --win --linux",
+    "build:app": "npm run clean && DEPLOY_TARGET=electron npm run build:web && electron-builder --mac --win --linux",
     "clean": "rm -rf dist/",
     "test": "npx karma start"
   },
