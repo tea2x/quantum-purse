@@ -95,14 +95,20 @@ https://quantum-purse.vercel.app/
 # Install dependencies
 npm install
 
-# Build
-npm run build
+# start web app in development mode
+npm run start:web
+
+# Build web app core
+npm run build:web
+
+# start native app in development mode
+npm run start:app
+
+# Build native app for mac, win, linux
+npm run build:app
 
 # Run test
 npm run test
-
-# Serve quantum purse locally
-npm run start
 ```
 
 ## Contribution
