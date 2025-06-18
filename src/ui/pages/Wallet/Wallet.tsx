@@ -180,7 +180,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
         label: (
           <p className="menu-item">
             <QrcodeOutlined />
-            Details
+            Sync Settings
           </p>
         ),
         onClick: () => setIsModalOpen(true),
@@ -190,7 +190,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
         label: (
           <Explore.Account address={address} className="menu-item">
             <GlobalOutlined />
-            Explore
+            Go To Explorer
           </Explore.Account>
         ),
       },
@@ -251,7 +251,10 @@ export const AccountItem: React.FC<AccountItemProps> = ({
         footer={null}
         centered
       >
-        <AccountSetting account={{ name, address, spxLockArgs }} />
+        <AccountSetting 
+          account={{ name, address, spxLockArgs }} 
+          onClose={() => setIsModalOpen(false)} 
+        />
       </Modal>
       {hasTools && (
         <Modal

@@ -1,24 +1,22 @@
-.settingContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  align-items: center;
-  padding: 2.4rem;
-  background-color: var(--white);
-  border-radius: 0.5rem;
-  box-shadow: 0 0.2rem 0.8rem rgba(0, 0, 0, 0.05);
-  margin-top: 2rem;
+.accountDetails {
+  font-family: "Quantico", sans-serif;
+}
+
+.centeredHeading {
+  text-align: center;
+  margin-bottom: 1.6rem;
 }
 
 .address {
-  font-family: "Quantico", sans-serif;
   font-size: 1.4rem;
   color: var(--gray-02);
   transition: color 0.3s ease-out;
+  display: flex;
+  justify-content: center;
+}
 
-  &:hover {
-    color: var(--teal-2);
-  }
+.address:hover {
+  color: var(--teal-2);
 }
 
 .startingBlock {
