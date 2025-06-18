@@ -122,3 +122,13 @@
     }
   }
 }
+
+.switchAccountModal {
+  width: 40rem !important;
+  :global {
+    .ant-modal-header .ant-modal-title,
+    .ant-modal-body {
+      text-align: center;
+    }
+  }
+}

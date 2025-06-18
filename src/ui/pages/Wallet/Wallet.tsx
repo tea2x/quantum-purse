@@ -255,14 +255,25 @@ export const AccountItem: React.FC<AccountItemProps> = ({
       </Modal>
       {hasTools && (
         <Modal
+          className={styles.switchAccountModal}
           open={isSwitchAccountModalOpen && !isActive}
           onCancel={() => setIsSwitchAccountModalOpen(false)}
-          onOk={() => {
-            dispatch.wallet.switchAccount({ spxLockArgs });
-            setIsSwitchAccountModalOpen(false);
-          }}
           title="Switch Account"
           centered
+          footer={
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+              <Button onClick={() => setIsSwitchAccountModalOpen(false)}>Cancel</Button>
+              <Button
+                type="primary"
+                onClick={() => {
+                  dispatch.wallet.switchAccount({ spxLockArgs });
+                  setIsSwitchAccountModalOpen(false);
+                }}
+              >
+                OK
+              </Button>
+            </div>
+          }
         >
           <p>
             Set <b>{name}</b> as current account?
