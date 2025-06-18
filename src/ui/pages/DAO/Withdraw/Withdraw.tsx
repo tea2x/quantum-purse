@@ -148,7 +148,7 @@ const Withdraw: React.FC = () => {
       const { depositHeader, withdrawHeader } = await getNervosDaoInfo(withdrawnCell);
       const depositBlockHash = depositHeader.hash;
       const withdrawingBlockHash = withdrawHeader.hash;
-      const txId = await dispatch.wallet.unlock({
+      const txId = await dispatch.wallet.withdraw({
         to: values.to,
         withdrawCell: withdrawnCell,
         depositBlockHash: depositBlockHash,

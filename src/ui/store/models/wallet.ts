@@ -259,17 +259,17 @@ export const wallet = createModel<RootModel>()({
         throw error;
       }
     },
-    async withdraw({ to, depositCell, depositBlockNum, depositBlockHash }, rootState) {
+    async requestWithdraw({ to, depositCell, depositBlockNum, depositBlockHash }, rootState) {
       try {
-        const txid = await quantum.daoWithdrawRequest(to, depositCell, depositBlockNum, depositBlockHash);
+        const txid = await quantum.daoRequestWithdraw(to, depositCell, depositBlockNum, depositBlockHash);
         return txid;
       } catch (error) {
         throw error;
       }
     },
-    async unlock({ to, withdrawCell, depositBlockHash, withdrawingBlockHash }, rootState) {
+    async withdraw({ to, withdrawCell, depositBlockHash, withdrawingBlockHash }, rootState) {
       try {
-        const txid = await quantum.daoUnlock(to, withdrawCell, depositBlockHash, withdrawingBlockHash);
+        const txid = await quantum.daoWithdraw(to, withdrawCell, depositBlockHash, withdrawingBlockHash);
         return txid;
       } catch (error) {
         throw error;

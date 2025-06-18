@@ -655,7 +655,7 @@ export default class QuantumPurse extends QPSigner {
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
-  public async daoWithdrawRequest(
+  public async daoRequestWithdraw(
     to: Address,
     depositCell: Cell,
     depositBlockNumber: bigint,
@@ -700,7 +700,7 @@ export default class QuantumPurse extends QPSigner {
   }
 
   /**
-   * Nervos DAO unlock (withdraw phase2).
+   * Nervos DAO withdraw (withdraw phase2).
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
    * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
@@ -711,7 +711,7 @@ export default class QuantumPurse extends QPSigner {
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
-  public async daoUnlock(
+  public async daoWithdraw(
     to: Address,
     withdrawingCell: Cell,
     depositBlockHash: Hex,

@@ -129,7 +129,7 @@ const RequestWithdraw: React.FC = () => {
       const { depositHeader } = await getNervosDaoInfo(depositCell);
       const depositBlockNum = depositHeader.number;
       const depositBlockHash = depositHeader.hash;
-      const txId = await dispatch.wallet.withdraw({
+      const txId = await dispatch.wallet.requestWithdraw({
         to: values.to,
         depositCell: depositCell,
         depositBlockNum: depositBlockNum,
