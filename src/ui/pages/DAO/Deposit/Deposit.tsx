@@ -135,7 +135,7 @@ const Deposit: React.FC = () => {
               </div>
             }
             rules={[
-              { required: true, message: "Address required" },
+              { required: true, message: "Address required!" },
               {
                 validator: (_, value) => {
                   if (!value) return Promise.resolve();

@@ -10,14 +10,11 @@ import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../../core/config";
 import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
 import React from "react";
+import { parseEpoch, getClaimEpoch, getProfit } from "../../../../core/epoch";
 
 const Withdraw: React.FC = () => {
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
-  const [submittable, setSubmittable] = useState(false);
-  const { unlock: loadingUnlock } = useSelector(
-    (state: RootState) => state.loading.effects.wallet
-  );
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
   const [daoCells, setDaoCells] = useState<ccc.Cell[]>([]);
@@ -25,10 +22,11 @@ const Withdraw: React.FC = () => {
     resolve: (password: string) => void;
     reject: () => void;
   } | null>(null);
+  const [tipHeader, setTipHeader] = useState<ClientBlockHeader | null>(null);
+  const [redeemingInfos, setRedeemingInfos] = useState<{ [key: string]: {remain: number, profit: number} }>({});
   const authenticationRef = useRef<AuthenticationRef>(null);
-  const withdrawnCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
-  const toError = form.getFieldError('to');
-  const isToValid = values?.to && toError.length === 0;
+  const withdrawRequestCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
+  const isToValid = values?.to && form.getFieldError('to').length === 0;
 
   const quantumPurse = QuantumPurse.getInstance();
 
@@ -57,6 +55,38 @@ const Withdraw: React.FC = () => {
     })();
   }, [quantumPurse, quantumPurse.accountPointer]);
 
+  useEffect(() => {
+    (async () => {
+      if (quantumPurse) {
+        const header = await quantumPurse.client.getTipHeader();
+        setTipHeader(header);
+      }
+    })();
+  }, [quantumPurse]);
+
+  useEffect(() => {
+    if (!tipHeader || daoCells.length === 0) return;
+
+    const fetchRedeemingInfo = async () => {
+      const daysMap: { [key: string]: {remain: number, profit: number} } = {};
+      for (const cell of withdrawRequestCells) {
+        const key = cell.outPoint.txHash + cell.outPoint.index;
+        try {
+          const { depositHeader, withdrawHeader } = await getNervosDaoInfo(cell);
+          const remain = await calculateRemainingDays(depositHeader, withdrawHeader, tipHeader);
+          const profit = Number(getProfit(cell, depositHeader, withdrawHeader));
+          daysMap[key] = { remain, profit };
+        } catch (error) {
+          console.error('Error calculating remaining days for cell:', cell, error);
+          daysMap[key] = { remain: Infinity, profit: 0 }; // Error indicators
+        }
+      }
+      setRedeemingInfos(daysMap);
+    };
+
+    fetchRedeemingInfo();
+  }, [daoCells, tipHeader]);
+
   // Set and clean up the requestPassword callback
   useEffect(() => {
     if (quantumPurse) {
@@ -70,6 +100,23 @@ const Withdraw: React.FC = () => {
       };
     }
   }, [quantumPurse]);
+
+  const calculateRemainingDays = async(
+    depositHeader: ClientBlockHeader,
+    withdrawHeader: ClientBlockHeader,
+    tipHeader: ClientBlockHeader,
+  ): Promise<number> => {
+    if (!tipHeader) return 0;
+    const remainingCycles = Number(
+      ccc.fixedPointToString(
+        parseEpoch(getClaimEpoch(depositHeader, withdrawHeader)) -
+          parseEpoch(tipHeader.epoch)
+      )
+    ) / 180;
+      
+    const remainingDays = (remainingCycles ?? 1) * 30;
+    return remainingDays;
+  };
 
   // todo update with `withdrawnCell.getNervosDaoInfo` when light client js updates ccc core.
   const getNervosDaoInfo = async (withdrawnCell: ccc.Cell):Promise<
@@ -153,7 +200,7 @@ const Withdraw: React.FC = () => {
               </div>
             }
             rules={[
-              { required: true, message: "Address required" },
+              { required: true, message: "Address required!" },
               {
                 validator: (_, value) => {
                   if (!value) return Promise.resolve();
@@ -191,25 +238,35 @@ const Withdraw: React.FC = () => {
         />
       </div>
       <div>
-        {withdrawnCells.length > 0 ? (
+        {withdrawRequestCells.length > 0 ? (
           <div className={styles.withdrawListContainer}>
             <ul className={styles.withdrawList}>
-              {withdrawnCells.map((cell, index) => (
-                <React.Fragment key={index}>
-                  <li className={styles.withdrawItem}>
-                    <span className={styles.capacity}>
-                      {(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB
-                    </span>
-                    <Button
-                      type="primary"
-                      onClick={() => handleUnlock(cell)}
-                      disabled={!isToValid}
-                    >
-                      Withdraw
-                    </Button>
+              {withdrawRequestCells.map((cell, index) => {
+                const key = cell.outPoint.txHash + cell.outPoint.index;
+                const {remain, profit} = redeemingInfos[key] || {remain: Infinity, profit: 0};
+                const progress = Math.max(0, Math.min(1, (30 - remain) / 30));
+                return (
+                  <li key={index} className={styles.withdrawItem}>
+                    <div
+                      className={styles.progressBackground}
+                      style={{ width: `${progress * 100}%` }}
+                    ></div>
+                    <div className={styles.content}>
+                      <span className={styles.capacity}>
+                        <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
+                        <div>Redeeming extra {(profit/10**8).toFixed(2)} CKB in {Number(remain.toFixed(1))} days</div>
+                      </span>
+                      <Button
+                        type="primary"
+                        onClick={() => handleUnlock(cell)}
+                        disabled={!isToValid || remain > 0}
+                      >
+                        Withdraw
+                      </Button>
+                    </div>
                   </li>
-                </React.Fragment>
-              ))}
+                );
+              })}
             </ul>
           </div>
         ) : (

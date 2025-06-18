@@ -10,6 +10,7 @@ import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../../core/config";
 import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
 import React from "react";
+import { parseEpoch, getProfit } from "../../../../core/epoch";
 
 const RequestWithdraw: React.FC = () => {
   const [form] = Form.useForm();
@@ -21,12 +22,56 @@ const RequestWithdraw: React.FC = () => {
     resolve: (password: string) => void;
     reject: () => void;
   } | null>(null);
+  const [tipHeader, setTipHeader] = useState<ClientBlockHeader | null>(null);
+  const [depositEstimatedInfo, setDepositEstimatedInfo] = useState<{ [key: string]: {tilMaxProfit: number, currentProfit: number} }>({});
   const authenticationRef = useRef<AuthenticationRef>(null);
   const depositCells = daoCells.filter(cell => cell.outputData === "0x0000000000000000");
   const toError = form.getFieldError('to');
   const isToValid = values?.to && toError.length === 0;
 
   const quantumPurse = QuantumPurse.getInstance();
+
+  useEffect(() => {
+    (async () => {
+      if (quantumPurse) {
+        const header = await quantumPurse.client.getTipHeader();
+        setTipHeader(header);
+      }
+    })();
+  }, [quantumPurse]);
+
+  useEffect(() => {
+    if (!tipHeader || daoCells.length === 0) return;
+
+    const fetchRemainingDays = async () => {
+      const estimatedInfos: { [key: string]: {tilMaxProfit: number, currentProfit: number} } = {};
+      for (const cell of depositCells) {
+        const key = cell.outPoint.txHash + cell.outPoint.index;
+        try {
+          // await quantumPurse.client.fetchTransaction(cell.outPoint.txHash);
+          const depositTx = await quantumPurse.client.getTransaction(cell.outPoint.txHash);
+          const depositHeader = await quantumPurse.client.getHeader(depositTx?.blockHash as Hex);
+          if (!depositHeader) {
+            throw new Error("Unable to retrieve DAO deposit block header at tx: " + cell.outPoint.txHash);
+          }
+          const remainingCycles = Number(
+            ccc.fixedPointToString(
+              parseEpoch(tipHeader.epoch) - parseEpoch(depositHeader.epoch)
+            )
+          ) / 180;
+          const tilMaxProfit = 30 - (remainingCycles ?? 1) * 30;
+          const currentProfit = Number(getProfit(cell, depositHeader, tipHeader));
+          estimatedInfos[key] = {tilMaxProfit, currentProfit};
+        } catch (error) {
+          console.error('Error calculating remaining days for cell:', cell, error);
+          estimatedInfos[key] = {tilMaxProfit: Infinity, currentProfit: 0};
+        }
+      }
+      setDepositEstimatedInfo(estimatedInfos);
+    };
+
+    fetchRemainingDays();
+  }, [daoCells, tipHeader]);
 
   useEffect(() => {
     if (!quantumPurse || !quantumPurse.accountPointer) {
@@ -136,7 +181,7 @@ const RequestWithdraw: React.FC = () => {
               </div>
             }
             rules={[
-              { required: true, message: "Address required" },
+              { required: true, message: "Address required!" },
               {
                 validator: (_, value) => {
                   if (!value) return Promise.resolve();
@@ -177,22 +222,33 @@ const RequestWithdraw: React.FC = () => {
         {depositCells.length > 0 ? (
           <div className={styles.requestWithdrawListContainer}>
             <ul className={styles.requestWithdrawList}>
-              {depositCells.map((cell, index) => (
-                <React.Fragment key={index}>
-                  <li className={styles.depositItem}>
-                    <span className={styles.capacity}>
-                      {(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB
-                    </span>
-                    <Button
-                      type="primary"
-                      onClick={() => handleWithdraw(cell)}
-                      disabled={!isToValid}
-                    >
-                      Request
-                    </Button>
+              {depositCells.map((cell, index) => {
+                const key = cell.outPoint.txHash + cell.outPoint.index;
+                const {tilMaxProfit, currentProfit} = depositEstimatedInfo[key] ?? {tilMaxProfit: Infinity, currentProfit: 0};
+                const progress = Math.max(0, Math.min(1, (30 - tilMaxProfit) / 30));
+                return (
+                  <li key={index} className={styles.depositItem}>
+                    <div
+                      className={styles.progressBackground}
+                      style={{ width: `${progress * 100}%` }}
+                    ></div>
+                    <div className={styles.content}>
+                      <span className={styles.capacity}>
+                        <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
+                        <div>Gained extra {Number((currentProfit/10**8).toFixed(5))}</div>
+                        <div>Maximum profit in {Number((tilMaxProfit - 1).toFixed(1))} days</div>
+                      </span>
+                      <Button
+                        type="primary"
+                        onClick={() => handleWithdraw(cell)}
+                        disabled={!isToValid}
+                      >
+                        Request
+                      </Button>
+                    </div>
                   </li>
-                </React.Fragment>
-              ))}
+                );
+              })}
             </ul>
           </div>
         ) : (

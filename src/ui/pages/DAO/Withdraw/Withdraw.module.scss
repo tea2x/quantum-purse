@@ -55,23 +55,47 @@
 }
 
 .withdrawItem {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.progressBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-image: repeating-linear-gradient(45deg, #333 0px, #333 10px, #444 10px, #444 20px);
+  z-index: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 0.6rem 1.6rem;
   color: var(--gray-01);
-  font-size: 1.4rem;
   @media (max-width: 768px) {
     padding: 0.6rem 0.4rem;
   }
 }
 
 .capacity {
-  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
   color: var(--gray-01);
-  white-space: nowrap;
-  border: 1px solid;
-  border-radius: 5px;
-  border-color: var(--gray-01);
-  padding: 0.8rem clamp(5rem, 30vw, 35rem) 0.8rem 2rem;
+  
+  > div {
+    font-size: 1.2rem;
+  }
+  
+  > div:first-child {
+    font-weight: bold;
+    font-size: 1.4rem;
+  }
 }
