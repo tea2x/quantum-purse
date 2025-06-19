@@ -137,7 +137,7 @@ body {
   margin: 0;
   background-color: var(--white);
   background-image: url("./ui/components/assets/background_blur.jpg");
-  /* background-size: cover; */
+  background-position: center top;
 }
 
 :root {

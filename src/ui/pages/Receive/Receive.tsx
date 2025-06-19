@@ -9,8 +9,9 @@ const Receive: React.FC = () => {
   return (
     <section className={cx(styles.receiveContainer, "panel")}>
       <h1>Receive</h1>
-
-      <AccountDetail account={activeAccount} />
+      <div className={styles.content}>
+        <AccountDetail account={activeAccount} />
+      </div>
     </section>
   );
 };

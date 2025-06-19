@@ -16,7 +16,7 @@ function requestSyncStatus() {
   });
 }
 
-/* Start periodic sync status updates every 5 seconds */
+/* Start periodic sync status updates every 1 seconds */
 async function startSyncStatusUpdates() {
   setInterval(async () => {
     syncStatus = await requestSyncStatus();

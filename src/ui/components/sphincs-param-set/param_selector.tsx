@@ -1,6 +1,7 @@
 import { Form, Select, Tooltip } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { SpxVariant } from "../../../core/quantum_purse";
+import { useLocation } from "react-router-dom";
 
 const ParamsetSelector: React.FC = () => {
   return (
@@ -9,7 +10,11 @@ const ParamsetSelector: React.FC = () => {
         <span style={{ color: 'var(--gray-01)' }}>
           Parameter set
           <Tooltip
-            title="There are 12 SPHINCS+ parameter sets in total. Sha2_256s is recommended if you have no reference!"
+            title={
+              useLocation().pathname === "/import-wallet"
+                ? "What SPHINCS+ parameter set did you back up with the input seed phrase?"
+                : "There are 12 SPHINCS+ parameter sets in total. Sha2_256s is recommended if you have no reference!"
+            }
           >
             <QuestionCircleOutlined style={{ marginLeft: 8 }} />
           </Tooltip>
