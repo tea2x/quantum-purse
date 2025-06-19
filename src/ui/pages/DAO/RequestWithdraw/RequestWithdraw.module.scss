@@ -1,7 +1,7 @@
 .withdrawForm {
   :global {
     background: rgba(255, 255, 255, 0.02);
-    min-height: 41rem;
+    height: 100%;
 
     .ant-form-item {
       &.select-my-account {
@@ -45,7 +45,6 @@
 }
 
 .requestWithdrawListContainer {
-  max-height: 300px;
   overflow-y: auto;
 }
 

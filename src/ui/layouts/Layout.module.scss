@@ -1,6 +1,7 @@
 .layout {
   max-width: 100rem;
   margin: 0 auto;
+  height: 100vh;
 
   :global(.container) {
     padding: 1.2rem;
@@ -15,7 +16,7 @@
         .container {
           display: flex;
           gap: 1.2rem;
-          max-height: calc(100vh - 9rem)
+          height: 100vh;
         }
       }
     }
