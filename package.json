@@ -8,8 +8,11 @@
     "start:web": "webpack serve --config ./webpack/webpack.dev.js",
     "build:web": "webpack --config ./webpack/webpack.prod.js",
     "start:app": "DEPLOY_TARGET=electron npm run build:web && electron .",
-    "build:app": "npm run clean && DEPLOY_TARGET=electron npm run build:web && electron-builder --mac --win --linux",
-    "clean": "rm -rf dist/",
+    "build:app:mac:arm64": "npm run clean && DEPLOY_TARGET=electron npm run build:web && electron-builder --mac --arm64",
+    "build:app:mac:x64": "npm run clean && DEPLOY_TARGET=electron npm run build:web && electron-builder --mac --x64",
+    "build:app:linux:x64": "npm run clean && DEPLOY_TARGET=electron npm run build:web && electron-builder --linux --x64",
+    "build:app:win:x64": "npm run clean && DEPLOY_TARGET=electron npm run build:web && electron-builder --win --x64",
+    "clean": "rm -rf dist/ build/",
     "test": "npx karma start"
   },
   "build": {
@@ -55,7 +58,7 @@
     "compression-webpack-plugin": "^7.1.2",
     "copy-webpack-plugin": "^13.0.0",
     "css-loader": "^5.2.7",
-    "electron": "^36.2.0",
+    "electron": "^36.5.0",
     "electron-builder": "^26.0.12",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.1",

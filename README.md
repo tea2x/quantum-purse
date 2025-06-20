@@ -46,6 +46,9 @@ For CKB, `Sha2-128s`, `Sha2-192s` and `Sha2-256s` are recommended because:
 
 If you have no reference, `Sha2-256s` is good to start with.
 
+## Custom BIP39
+Quantum Purse uses custom BIP39 as the mnemonic seed backup format. See https://github.com/tea2x/quantum-purse-key-vault for more details.
+
 ## 73 CKB
 Due to the larger size of the quantum lock script:
 - Minimum CKB per quantum-safe cell is 73 CKB
@@ -90,22 +93,31 @@ https://quantum-purse.vercel.app/
 1. Node >=20.
 2. Chrome-based or safari browsers.
 
-###### <u>Command list (In no sequential order. Pick any command)</u>
+###### <u>Command list</u>
 ```shell
 # Install dependencies
 npm install
 
-# start web app in development mode
-npm run start:web
-
 # Build web app core
 npm run build:web
 
+# start web app in development mode
+npm run start:web
+
+# Build native app for macos on Apple silicon
+npm run build:app:mac:arm64
+
+# Build native app for macos x64
+npm run build:app:mac:x64
+
+# Build native app for linux x64
+npm run build:app:linux:x64
+
+# Build native app for windows x64
+npm run build:app:win:x64
+
 # start native app in development mode
 npm run start:app
-
-# Build native app for mac, win, linux
-npm run build:app
 
 # Run test
 npm run test
