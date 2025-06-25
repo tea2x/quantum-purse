@@ -1,6 +1,6 @@
 {
   "name": "quantum-purse",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CKB SPHINCS+ wallet",
   "private": true,
   "main": "main.js",
@@ -38,7 +38,7 @@
       "icon": "src/ui/components/assets/logo.png"
     }
   },
-  "author": "tea2x",
+  "author": "Tea2x",
   "license": "MIT",
   "repository": {
     "type": "git",
