@@ -72,21 +72,6 @@ describe("Quantum Purse Basics", () => {
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
   });
 
-  // it.skip("Should zeroize password after signing a transaction", async () => {
-  //   let passwordStrHandler = utf8ToBytes(passwordStr);
-  //   const seedPhraseHandler = utf8ToBytes(seedPhrase36);
-  //   await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
-
-  //   passwordStrHandler = utf8ToBytes(passwordStr);
-  //   await wallet.genAccount(passwordStrHandler);
-  //   const accountList = await wallet.getAllLockScriptArgs();
-
-  //   passwordStrHandler = utf8ToBytes(passwordStr);
-  //   await wallet.setAccountPointer(accountList[0]);
-  //   const signedTx = await wallet.sign(dummyTx, passwordStrHandler);
-  //   expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
-  // });
-
   it("Should zeroize password after generating account batch", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
     await wallet.generateMasterSeed(passwordStrHandler);
