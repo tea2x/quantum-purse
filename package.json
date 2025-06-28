@@ -84,6 +84,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.6.1",
+    "@ckb-ccc/core": "^1.9.0",
     "@ckb-lumos/lumos": "^0.23.0",
     "@nervosnetwork/ckb-sdk-utils": "^0.109.5",
     "@rematch/core": "^2.2.0",
@@ -97,5 +98,8 @@
     "react-dom": "^18.2.0",
     "react-redux": "^9.1.0",
     "react-router-dom": "^6.22.3"
+  },
+  "overrides": {
+    "@ckb-ccc/core": "^1.9.0"
   }
 }

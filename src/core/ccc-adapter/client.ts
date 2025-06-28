@@ -22,7 +22,8 @@ import {
   Cell,
   OutPointLike,
   OutPoint,
-  ClientIndexerSearchKeyTransactionLike
+  ClientIndexerSearchKeyTransactionLike,
+  ScriptInfoLike
 } from "@ckb-ccc/core";
 import {
   LightClient,
@@ -37,7 +38,7 @@ import {
   LocalNode
 } from "ckb-light-client-js";
 import { IS_MAIN_NET } from "../config";
-
+import { TESTNET_SCRIPTS, MAINNET_SCRIPTS } from "@ckb-ccc/core/advancedBarrel";
 export class QPClient extends Client {
   private lightClient: LightClient;
 
@@ -57,8 +58,17 @@ export class QPClient extends Client {
   }
 
   /** Fetch known script info */
+  get scripts(): Record<KnownScript, ScriptInfoLike | undefined> {
+    return IS_MAIN_NET ? MAINNET_SCRIPTS : TESTNET_SCRIPTS;
+  }
   async getKnownScript(script: KnownScript): Promise<ScriptInfo> {
-    throw new Error("Unsupported method: getKnownScript");
+    const found = this.scripts[script];
+    if (!found) {
+      throw new Error(
+        `No script information was found for ${script} on ${this.addressPrefix}`,
+      );
+    }
+    return ScriptInfo.from(found);
   }
 
   /** Estimate fee rate statistics (approximation if not directly supported) */
@@ -75,6 +85,26 @@ export class QPClient extends Client {
   /** Get the tip block header */
   async getTipHeader(verbosity?: number | null): Promise<ClientBlockHeader> {
     return await this.lightClient.getTipHeader();
+  }
+
+  /** Get block by number no cache */
+  async getBlockByNumberNoCache(blockNumber: NumLike, verbosity?: number | null, withCycles?: boolean | null): Promise<ClientBlock | undefined> {
+    throw new Error("Unsupported method: getBlockByNumberNoCache");
+  }
+
+  /** Get block by hash no cache */
+  async getBlockByHashNoCache(blockHash: HexLike, verbosity?: number | null, withCycles?: boolean | null): Promise<ClientBlock | undefined> {
+    throw new Error("Unsupported method: getBlockByHashNoCache");
+  }
+
+  /** Get block header by number no cache */
+  async getHeaderByNumberNoCache(blockNumber: NumLike, verbosity?: number | null): Promise<ClientBlockHeader | undefined> {
+    throw new Error("Unsupported method: getHeaderByNumberNoCache");
+  }
+
+  /** Get block header by hash no cache */
+  async getHeaderByHashNoCache(blockHash: HexLike, verbosity?: number | null): Promise<ClientBlockHeader | undefined> {
+    throw new Error("Unsupported method: getHeaderByHashNoCache");
   }
 
   /** Get block by number */
@@ -116,11 +146,11 @@ export class QPClient extends Client {
   async getTransactionNoCache(txHash: HexLike): Promise<ClientTransactionResponse | undefined> {
     const tx = await this.lightClient.getTransaction(txHash);
     if (!tx) return undefined;
-    return {
+    return ClientTransactionResponse.from({
       transaction: tx.transaction,
       status: tx.status,
       blockNumber: tx.blockNumber,
-    };
+    });
   }
 
   /** Get live cell without caching */

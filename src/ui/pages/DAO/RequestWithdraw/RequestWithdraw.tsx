@@ -48,7 +48,7 @@ const RequestWithdraw: React.FC = () => {
       for (const cell of depositCells) {
         const key = cell.outPoint.txHash + cell.outPoint.index;
         try {
-          // await quantumPurse.client.fetchTransaction(cell.outPoint.txHash);
+          await quantumPurse.client.fetchTransaction(cell.outPoint.txHash);
           const depositTx = await quantumPurse.client.getTransaction(cell.outPoint.txHash);
           const depositHeader = await quantumPurse.client.getHeader(depositTx?.blockHash as Hex);
           if (!depositHeader) {

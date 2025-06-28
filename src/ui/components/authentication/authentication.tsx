@@ -31,7 +31,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     {
       authenCallback,
       title = "Authentication",
-      description = "Enter your password to authorize this action.",
+      description = "",
       loading,
       ...rest
     },
