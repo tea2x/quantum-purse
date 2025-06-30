@@ -27,24 +27,24 @@ const items: MenuItem[] = [
     label: <NavLink to={ROUTES.RECEIVE}>Receive</NavLink>,
   },
   {
-    key: ROUTES.DAO.HOME,
+    key: ROUTES.NERVOS_DAO.HOME,
     icon: <Icon.Dao />,
-    label: "DAO",
+    label: "Nervos DAO",
     children: [
       {
-        key: ROUTES.DAO.DEPOSIT,
+        key: ROUTES.NERVOS_DAO.DEPOSIT,
         icon: <Icon.Deposit />,
-        label: <NavLink to={ROUTES.DAO.DEPOSIT}>Deposit</NavLink>,
+        label: <NavLink to={ROUTES.NERVOS_DAO.DEPOSIT}>Deposit</NavLink>,
       },
       {
-        key: ROUTES.DAO.REQUEST_WITHDRAW,
+        key: ROUTES.NERVOS_DAO.REQUEST_WITHDRAW,
         icon: <Icon.RequestWithdraw />,
-        label: <NavLink to={ROUTES.DAO.REQUEST_WITHDRAW}>Request Withdraw</NavLink>,
+        label: <NavLink to={ROUTES.NERVOS_DAO.REQUEST_WITHDRAW}>Request Withdraw</NavLink>,
       },
       {
-        key: ROUTES.DAO.WITHDRAW,
+        key: ROUTES.NERVOS_DAO.WITHDRAW,
         icon: <Icon.Withdraw />,
-        label: <NavLink to={ROUTES.DAO.WITHDRAW}>Withdraw</NavLink>,
+        label: <NavLink to={ROUTES.NERVOS_DAO.WITHDRAW}>Withdraw</NavLink>,
       },
     ],
   },

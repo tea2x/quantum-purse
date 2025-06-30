@@ -23,14 +23,9 @@ import {
 } from "./ui/pages";
 import { ROUTES } from "./ui/utils/constants";
 
-// Detect if running on Github Pages
-const isGithubPages = window.location.hostname.includes("github.io");
-const repoName = isGithubPages ? window.location.pathname.split("/")[1] : "";
-const basename = isGithubPages ? `/${repoName}` : "/";
-
 const App: React.FC = () => {
   return (
-    <Router basename={basename}>
+    <Router basename={"/"}>
       <Routes>
         <Route path={ROUTES.HOME} element={<InactiveLayout />}>
           <Route index element={<Navigate to={ROUTES.WELCOME} />} />
@@ -42,9 +37,9 @@ const App: React.FC = () => {
           <Route path={ROUTES.WALLET} element={<Wallet />} />
           <Route path={ROUTES.SEND} element={<Send />} />
           <Route path={ROUTES.RECEIVE} element={<Receive />} />
-          <Route path={ROUTES.DAO.DEPOSIT} element={<Deposit />} />
-          <Route path={ROUTES.DAO.REQUEST_WITHDRAW} element={<RequestWithdraw />} />
-          <Route path={ROUTES.DAO.WITHDRAW} element={<Withdraw />} />
+          <Route path={ROUTES.NERVOS_DAO.DEPOSIT} element={<Deposit />} />
+          <Route path={ROUTES.NERVOS_DAO.REQUEST_WITHDRAW} element={<RequestWithdraw />} />
+          <Route path={ROUTES.NERVOS_DAO.WITHDRAW} element={<Withdraw />} />
           <Route path={ROUTES.SETTINGS.REVEAL_SRP} element={<RevealSRP />} />
           <Route
             path={ROUTES.SETTINGS.EJECT_WALLET}

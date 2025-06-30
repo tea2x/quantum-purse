@@ -9,7 +9,7 @@ export const ROUTES = {
   SEND: "/send",
   RECEIVE: "/receive",
   WALLET: "/wallet",
-  DAO: {
+  NERVOS_DAO: {
     HOME: "/dao",
     DEPOSIT: "/dao/deposit",
     REQUEST_WITHDRAW: "/dao/request-withdraw",

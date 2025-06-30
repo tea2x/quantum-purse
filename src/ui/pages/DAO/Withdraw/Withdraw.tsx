@@ -23,7 +23,13 @@ const Withdraw: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const [tipHeader, setTipHeader] = useState<ClientBlockHeader | null>(null);
-  const [redeemingInfos, setRedeemingInfos] = useState<{ [key: string]: {remain: number, profit: number} }>({});
+  const [redeemingInfos, setRedeemingInfos] = useState<{
+    [key: string]: {
+      remain: number; 
+      profit: number;
+      blockNum: bigint;
+    };
+  }>({});
   const authenticationRef = useRef<AuthenticationRef>(null);
   const withdrawRequestCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
   const isToValid = values?.to && form.getFieldError('to').length === 0;
@@ -68,17 +74,18 @@ const Withdraw: React.FC = () => {
     if (!tipHeader || daoCells.length === 0) return;
 
     const fetchRedeemingInfo = async () => {
-      const daysMap: { [key: string]: {remain: number, profit: number} } = {};
+      const daysMap: { [key: string]: {remain: number, profit: number, blockNum: bigint} } = {};
       for (const cell of withdrawRequestCells) {
         const key = cell.outPoint.txHash + cell.outPoint.index;
         try {
           const { depositHeader, withdrawHeader } = await getNervosDaoInfo(cell);
           const remain = await calculateRemainingDays(depositHeader, withdrawHeader, tipHeader);
           const profit = Number(getProfit(cell, depositHeader, withdrawHeader));
-          daysMap[key] = { remain, profit };
+          const blockNum = withdrawHeader.number;
+          daysMap[key] = { remain, profit, blockNum };
         } catch (error) {
           console.error('Error calculating remaining days for cell:', cell, error);
-          daysMap[key] = { remain: Infinity, profit: 0 }; // Error indicators
+          daysMap[key] = { remain: Infinity, profit: 0, blockNum: BigInt(0) }; // Error indicators
         }
       }
       setRedeemingInfos(daysMap);
@@ -238,35 +245,44 @@ const Withdraw: React.FC = () => {
         />
       </div>
       <div>
-        {withdrawRequestCells.length > 0 ? (
+        {(withdrawRequestCells.length > 0 && Object.keys(redeemingInfos).length !== 0) ? (
           <div className={styles.withdrawListContainer}>
             <ul className={styles.withdrawList}>
-              {withdrawRequestCells.map((cell, index) => {
-                const key = cell.outPoint.txHash + cell.outPoint.index;
-                const {remain, profit} = redeemingInfos[key] || {remain: Infinity, profit: 0};
-                const progress = Math.max(0, Math.min(1, (30 - remain) / 30));
-                return (
-                  <li key={index} className={styles.withdrawItem}>
-                    <div
-                      className={styles.progressBackground}
-                      style={{ width: `${progress * 100}%` }}
-                    ></div>
-                    <div className={styles.content}>
-                      <span className={styles.capacity}>
-                        <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
-                        <div>Redeeming extra {(profit/10**8).toFixed(2)} CKB in {Number(remain.toFixed(1))} days</div>
-                      </span>
-                      <Button
-                        type="primary"
-                        onClick={() => handleUnlock(cell)}
-                        disabled={!isToValid || remain > 0}
-                      >
-                        Withdraw
-                      </Button>
-                    </div>
-                  </li>
-                );
-              })}
+              {[...withdrawRequestCells]
+                .sort((a,b) => {
+                  const keyA = a.outPoint.txHash + a.outPoint.index;
+                  const keyB = b.outPoint.txHash + b.outPoint.index;
+                  const blockNumA = redeemingInfos[keyA]?.blockNum ?? BigInt(0);
+                  const blockNumB = redeemingInfos[keyB]?.blockNum ?? BigInt(0);
+                  return Number(blockNumB - blockNumA);
+                })
+                .map((cell) => {
+                  const key = cell.outPoint.txHash + cell.outPoint.index;
+                  const {remain, profit} = redeemingInfos[key] ?? {remain: Infinity, profit: 0};
+                  const progress = Math.max(0, Math.min(1, (30 - remain) / 30));
+                  return (
+                    <li key={key} className={styles.withdrawItem}>
+                      <div
+                        className={styles.progressBackground}
+                        style={{ width: `${progress * 100}%` }}
+                      ></div>
+                      <div className={styles.content}>
+                        <span className={styles.capacity}>
+                          <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
+                          <div>Redeeming extra {(profit/10**8).toFixed(2)} CKB in {Number(remain.toFixed(1))} days</div>
+                        </span>
+                        <Button
+                          type="primary"
+                          onClick={() => handleUnlock(cell)}
+                          disabled={!isToValid || remain > 0}
+                        >
+                          Withdraw
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })
+              }
             </ul>
           </div>
         ) : (

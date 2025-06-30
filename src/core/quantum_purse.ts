@@ -518,7 +518,8 @@ export default class QuantumPurse extends QPSigner {
       const spxLockArgsList = await this.keyVault.recover_accounts(password, count) as Hex[];
 
       if (!this.hasClientStarted) {
-        throw new Error("Light client has not initialized");
+        console.error("Light client has not initialized");
+        return;
       }
 
       const startBlocksPromises = spxLockArgsList.map(async (lockArgs) => {

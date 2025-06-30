@@ -18,25 +18,26 @@
       color: var(--gray-01);
       font-size: 1.4rem;
       line-height: 1.2;
-      margin-bottom: 3.6rem;
+      margin-bottom: 5rem;
       @media (max-width: 768px) {
         font-size: 1.1rem;
       }
     }
 
     button {
-      width: 20rem;
+      width: 22rem;
+      height: 4rem;
       text-align: center;
-      border-radius: 99rem;
+      border-radius: 0.5rem;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       padding: 1rem 2rem;
       font-size: 1.4rem;
       &:hover {
-        background-color: var(--teal-2);
-        color: var(--white);
+        background-color: var(--teal-2) !important;
+        color: var(--white) !important;
       }
       + button {
-        margin-top: 1.6rem;
+        margin-top: 1.8rem;
       }
     }
   }
