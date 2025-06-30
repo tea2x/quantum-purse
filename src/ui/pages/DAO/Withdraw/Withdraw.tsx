@@ -257,31 +257,32 @@ const Withdraw: React.FC = () => {
                   return Number(blockNumB - blockNumA);
                 })
                 .map((cell) => {
-                const key = cell.outPoint.txHash + cell.outPoint.index;
-                const {remain, profit} = redeemingInfos[key] ?? {remain: Infinity, profit: 0};
-                const progress = Math.max(0, Math.min(1, (30 - remain) / 30));
-                return (
-                  <li key={key} className={styles.withdrawItem}>
-                    <div
-                      className={styles.progressBackground}
-                      style={{ width: `${progress * 100}%` }}
-                    ></div>
-                    <div className={styles.content}>
-                      <span className={styles.capacity}>
-                        <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
-                        <div>Redeeming extra {(profit/10**8).toFixed(2)} CKB in {Number(remain.toFixed(1))} days</div>
-                      </span>
-                      <Button
-                        type="primary"
-                        onClick={() => handleUnlock(cell)}
-                        disabled={!isToValid || remain > 0}
-                      >
-                        Withdraw
-                      </Button>
-                    </div>
-                  </li>
-                );
-              })}
+                  const key = cell.outPoint.txHash + cell.outPoint.index;
+                  const {remain, profit} = redeemingInfos[key] ?? {remain: Infinity, profit: 0};
+                  const progress = Math.max(0, Math.min(1, (30 - remain) / 30));
+                  return (
+                    <li key={key} className={styles.withdrawItem}>
+                      <div
+                        className={styles.progressBackground}
+                        style={{ width: `${progress * 100}%` }}
+                      ></div>
+                      <div className={styles.content}>
+                        <span className={styles.capacity}>
+                          <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
+                          <div>Redeeming extra {(profit/10**8).toFixed(2)} CKB in {Number(remain.toFixed(1))} days</div>
+                        </span>
+                        <Button
+                          type="primary"
+                          onClick={() => handleUnlock(cell)}
+                          disabled={!isToValid || remain > 0}
+                        >
+                          Withdraw
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })
+              }
             </ul>
           </div>
         ) : (
