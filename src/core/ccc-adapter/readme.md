@@ -1,3 +1,3 @@
-This sub folder contains adapters that helps Quantum Purse (QP) be ccc compatible:
- - CCC client adapter based on CKB light-client-js
+This sub folder contains adapters that help Quantum Purse (QP) be CCC compatible:
+ - CCC client adapter based on ckb-light-client-js
  - CCC signer adapter based on Quantum Purse Key Vault (SPHINCS+)

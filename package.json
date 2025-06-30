@@ -1,6 +1,6 @@
 {
   "name": "quantum-purse",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "CKB SPHINCS+ wallet",
   "private": true,
   "main": "main.js",
@@ -16,7 +16,7 @@
     "test": "npx karma start"
   },
   "build": {
-    "appId": "com.example.quantum-purse",
+    "appId": "",
     "productName": "Quantum Purse",
     "directories": {
       "output": "build"
