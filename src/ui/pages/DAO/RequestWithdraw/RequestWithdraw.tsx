@@ -23,7 +23,13 @@ const RequestWithdraw: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const [tipHeader, setTipHeader] = useState<ClientBlockHeader | null>(null);
-  const [depositEstimatedInfo, setDepositEstimatedInfo] = useState<{ [key: string]: {tilMaxProfit: number, currentProfit: number} }>({});
+  const [depositEstimatedInfo, setDepositEstimatedInfo] = useState<{
+    [key: string]: {
+      tilMaxProfit: number;
+      currentProfit: number;
+      blockNum: bigint;
+    };
+  }>({});
   const authenticationRef = useRef<AuthenticationRef>(null);
   const depositCells = daoCells.filter(cell => cell.outputData === "0x0000000000000000");
   const toError = form.getFieldError('to');
@@ -44,7 +50,7 @@ const RequestWithdraw: React.FC = () => {
     if (!tipHeader || daoCells.length === 0) return;
 
     const fetchRemainingDays = async () => {
-      const estimatedInfos: { [key: string]: {tilMaxProfit: number, currentProfit: number} } = {};
+      const estimatedInfos: { [key: string]: {tilMaxProfit: number, currentProfit: number, blockNum: bigint} } = {};
       for (const cell of depositCells) {
         const key = cell.outPoint.txHash + cell.outPoint.index;
         try {
@@ -61,10 +67,11 @@ const RequestWithdraw: React.FC = () => {
           ) / 180;
           const tilMaxProfit = 30 - (remainingCycles ?? 1) * 30;
           const currentProfit = Number(getProfit(cell, depositHeader, tipHeader));
-          estimatedInfos[key] = {tilMaxProfit, currentProfit};
+          const blockNum = depositHeader.number;
+          estimatedInfos[key] = {tilMaxProfit, currentProfit, blockNum};
         } catch (error) {
           console.error('Error calculating remaining days for cell:', cell, error);
-          estimatedInfos[key] = {tilMaxProfit: Infinity, currentProfit: 0};
+          estimatedInfos[key] = {tilMaxProfit: Infinity, currentProfit: 0, blockNum: BigInt(0)};
         }
       }
       setDepositEstimatedInfo(estimatedInfos);
@@ -219,36 +226,45 @@ const RequestWithdraw: React.FC = () => {
         />
       </div>
       <div>
-        {depositCells.length > 0 ? (
+        {(depositCells.length > 0 && Object.keys(depositEstimatedInfo).length !== 0) ? (
           <div className={styles.requestWithdrawListContainer}>
             <ul className={styles.requestWithdrawList}>
-              {depositCells.map((cell, index) => {
-                const key = cell.outPoint.txHash + cell.outPoint.index;
-                const {tilMaxProfit, currentProfit} = depositEstimatedInfo[key] ?? {tilMaxProfit: Infinity, currentProfit: 0};
-                const progress = Math.max(0, Math.min(1, (30 - tilMaxProfit) / 30));
-                return (
-                  <li key={index} className={styles.depositItem}>
-                    <div
-                      className={styles.progressBackground}
-                      style={{ width: `${progress * 100}%` }}
-                    ></div>
-                    <div className={styles.content}>
-                      <span className={styles.capacity}>
-                        <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
-                        <div>Gained extra {Number((currentProfit/10**8).toFixed(5))}</div>
-                        <div>Maximum profit in {Number((tilMaxProfit - 1).toFixed(1))} days</div>
-                      </span>
-                      <Button
-                        type="primary"
-                        onClick={() => handleWithdraw(cell)}
-                        disabled={!isToValid}
-                      >
-                        Request
-                      </Button>
-                    </div>
-                  </li>
-                );
-              })}
+              {[...depositCells]
+                .sort((a, b) => {
+                  const keyA = a.outPoint.txHash + a.outPoint.index;
+                  const keyB = b.outPoint.txHash + b.outPoint.index;
+                  const blockNumA = depositEstimatedInfo[keyA]?.blockNum ?? BigInt(0);
+                  const blockNumB = depositEstimatedInfo[keyB]?.blockNum ?? BigInt(0);
+                  return Number(blockNumB - blockNumA);
+                })
+                .map((cell) => {
+                  const key = cell.outPoint.txHash + cell.outPoint.index;
+                  const { tilMaxProfit, currentProfit } = depositEstimatedInfo[key] ?? { tilMaxProfit: Infinity, currentProfit: 0 };
+                  const progress = Math.max(0, Math.min(1, (30 - tilMaxProfit) / 30));
+                  return (
+                    <li key={key} className={styles.depositItem}>
+                      <div
+                        className={styles.progressBackground}
+                        style={{ width: `${progress * 100}%` }}
+                      ></div>
+                      <div className={styles.content}>
+                        <span className={styles.capacity}>
+                          <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
+                          <div>Gained extra {Number((currentProfit / 10**8).toFixed(5))}</div>
+                          <div>Maximum profit in {Number((tilMaxProfit - 1).toFixed(1))} days</div>
+                        </span>
+                        <Button
+                          type="primary"
+                          onClick={() => handleWithdraw(cell)}
+                          disabled={!isToValid}
+                        >
+                          Request
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })
+              }
             </ul>
           </div>
         ) : (
