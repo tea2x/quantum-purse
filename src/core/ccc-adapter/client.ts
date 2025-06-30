@@ -169,7 +169,7 @@ export class QPClient extends Client {
 
   /** Find cells with pagination */
   async findCellsPagedNoCache(key: ClientIndexerSearchKeyLike, order?: "asc" | "desc", limit?: NumLike, after?: string): Promise<ClientFindCellsResponse> {
-    const cellsResponse = await this.lightClient.getCells(key, order ?? "asc", limit ?? 10, after as Hex);
+    const cellsResponse = await this.lightClient.getCells(key, order ?? "asc", 100, after as Hex); // todo test limit parameter
     return {
       cells: cellsResponse.cells.map(cell => (Cell.from({
         cellOutput: cell.cellOutput,
@@ -199,56 +199,57 @@ export class QPClient extends Client {
     limit?: NumLike,
     after?: string
   ): Promise<ClientFindTransactionsResponse | ClientFindTransactionsGroupedResponse> {
-    const txsResponse = await this.lightClient.getTransactions(
-      key,
-      order ?? "asc",
-      limit ?? 10,
-      after as Hex
-    );
+    throw new Error("Unsupported method: findTransactionsPaged");
+    // const txsResponse = await this.lightClient.getTransactions(
+    //   key,
+    //   order ?? "asc",
+    //   limit ?? 10,
+    //   after as Hex
+    // );
 
-    if (key.groupByTransaction === true) {
-      const groupedTransactions = txsResponse.transactions.map(tx => ({
-        txHash: tx.transaction.hash(),
-        blockNumber: tx.blockNumber,
-        txIndex: tx.txIndex,
-        cells: [
-          ...tx.transaction.inputs.map((input, i) => ({
-            isInput: true,
-            cellIndex: BigInt(i),
-          })),
-          ...tx.transaction.outputs.map((output, i) => ({
-            isInput: false,
-            cellIndex: BigInt(i),
-          }))
-        ]
-      }));
-      return {
-        transactions: groupedTransactions,
-        lastCursor: txsResponse.lastCursor,
-      } as ClientFindTransactionsGroupedResponse;
-    } else {
-      const nonGroupedTransactions = txsResponse.transactions.flatMap(tx => {
-        const inputCells = tx.transaction.inputs.map((input, i) => ({
-          txHash: tx.transaction.hash(),
-          blockNumber: tx.blockNumber,
-          txIndex: tx.txIndex,
-          isInput: true,
-          cellIndex: BigInt(i),
-        }));
-        const outputCells = tx.transaction.outputs.map((output, i) => ({
-          txHash: tx.transaction.hash(),
-          blockNumber: tx.blockNumber,
-          txIndex: tx.txIndex,
-          isInput: false,
-          cellIndex: BigInt(i),
-        }));
-        return [...inputCells, ...outputCells];
-      });
-      return {
-        transactions: nonGroupedTransactions,
-        lastCursor: txsResponse.lastCursor,
-      } as ClientFindTransactionsResponse;
-    }
+    // if (key.groupByTransaction === true) {
+    //   const groupedTransactions = txsResponse.transactions.map(tx => ({
+    //     txHash: tx.transaction.hash(),
+    //     blockNumber: tx.blockNumber,
+    //     txIndex: tx.txIndex,
+    //     cells: [
+    //       ...tx.transaction.inputs.map((input, i) => ({
+    //         isInput: true,
+    //         cellIndex: BigInt(i),
+    //       })),
+    //       ...tx.transaction.outputs.map((output, i) => ({
+    //         isInput: false,
+    //         cellIndex: BigInt(i),
+    //       }))
+    //     ]
+    //   }));
+    //   return {
+    //     transactions: groupedTransactions,
+    //     lastCursor: txsResponse.lastCursor,
+    //   } as ClientFindTransactionsGroupedResponse;
+    // } else {
+    //   const nonGroupedTransactions = txsResponse.transactions.flatMap(tx => {
+    //     const inputCells = tx.transaction.inputs.map((input, i) => ({
+    //       txHash: tx.transaction.hash(),
+    //       blockNumber: tx.blockNumber,
+    //       txIndex: tx.txIndex,
+    //       isInput: true,
+    //       cellIndex: BigInt(i),
+    //     }));
+    //     const outputCells = tx.transaction.outputs.map((output, i) => ({
+    //       txHash: tx.transaction.hash(),
+    //       blockNumber: tx.blockNumber,
+    //       txIndex: tx.txIndex,
+    //       isInput: false,
+    //       cellIndex: BigInt(i),
+    //     }));
+    //     return [...inputCells, ...outputCells];
+    //   });
+    //   return {
+    //     transactions: nonGroupedTransactions,
+    //     lastCursor: txsResponse.lastCursor,
+    //   } as ClientFindTransactionsResponse;
+    // }
   }
 
   /** Get total capacity of cells */
