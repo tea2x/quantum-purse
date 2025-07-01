@@ -58,7 +58,7 @@ Due to the larger size of the quantum lock script:
 
 ## Light client
 
-Quantum Purse is a true light wallet. It runs its own [CKB light client node](https://github.com/nervosnetwork/ckb-light-client)  and connects directly to the CKB network without middle RPC enpoint. The demo website is also powered by the Light Client protocol - effectively making it one of the first true blockchain clients that run even on mobiles. The light client sync status such as peers connected and sync percentage are displayed on the right side of the app's header:
+Quantum Purse is a true light wallet. It runs its own [CKB light client node](https://github.com/nervosnetwork/ckb-light-client)  and connects directly to the CKB network without middle RPC enpoints. The demo website is also powered by the Light Client protocol - effectively making it one of the first true blockchain clients that runs even on mobiles. The light client sync status such as peers connected and sync percentage are displayed on the right side of the app's header:
 
 <img width="240" alt="Screenshot 2025-04-16 at 5 58 02 PM" src="https://github.com/user-attachments/assets/c99c8750-ef1d-4416-8344-b79aefd5098b" />
 
