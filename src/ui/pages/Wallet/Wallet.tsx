@@ -171,8 +171,6 @@ export const AccountItem: React.FC<AccountItemProps> = ({
   const wallet = useSelector((state: RootState) => state.wallet);
   const isActive = spxLockArgs === wallet.current.spxLockArgs;
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSwitchAccountModalOpen, setIsSwitchAccountModalOpen] =
-    useState(false);
   const menuOptions = useMemo(
     () => [
       {
@@ -203,7 +201,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
       <li {...props} className={cx(styles.accountItem)}>
         <div
           className="account-info"
-          onClick={() => !isActive && setIsSwitchAccountModalOpen(true)}
+          onClick={() => !isActive && dispatch.wallet.switchAccount({ spxLockArgs })}
         >
           <p className="name">
             {name}{" "}
@@ -256,33 +254,6 @@ export const AccountItem: React.FC<AccountItemProps> = ({
           onClose={() => setIsModalOpen(false)} 
         />
       </Modal>
-      {hasTools && (
-        <Modal
-          className={styles.switchAccountModal}
-          open={isSwitchAccountModalOpen && !isActive}
-          onCancel={() => setIsSwitchAccountModalOpen(false)}
-          title="Switch Account"
-          centered
-          footer={
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-              <Button onClick={() => setIsSwitchAccountModalOpen(false)}>Cancel</Button>
-              <Button
-                type="primary"
-                onClick={() => {
-                  dispatch.wallet.switchAccount({ spxLockArgs });
-                  setIsSwitchAccountModalOpen(false);
-                }}
-              >
-                OK
-              </Button>
-            </div>
-          }
-        >
-          <p>
-            Set <b>{name}</b> as current account?
-          </p>
-        </Modal>
-      )}
     </>
   );
 };

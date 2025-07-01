@@ -250,7 +250,7 @@ const RequestWithdraw: React.FC = () => {
                       <div className={styles.content}>
                         <span className={styles.capacity}>
                           <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
-                          <div>Gained extra {Number((currentProfit / 10**8).toFixed(5))}</div>
+                          <div>Has gained extra {Number((currentProfit / 10**8).toFixed(5))}</div>
                           <div>Maximum profit in {Number((tilMaxProfit - 1).toFixed(1))} days</div>
                         </span>
                         <Button

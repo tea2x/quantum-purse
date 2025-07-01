@@ -13,6 +13,7 @@ import { ROUTES } from "../../utils/constants";
 import styles from "./authentication.module.scss";
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { STORAGE_KEYS } from "../../utils/constants";
+import ConfirmDeleteWalletModal from "../../components/delete-wallet-confirm/delete_wallet_confirm";
 
 export interface AuthenticationRef {
   open: () => void;
@@ -42,6 +43,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     const [open, setOpen] = useState(false);
     const [submittable, setSubmittable] = useState(false);
     const [isForgotPassword, setIsForgotPassword] = useState(false);
+    const [isDeleteWalletConfirmModalOpen, setIsDeleteWalletConfirmModalOpen] = useState(false);
     const dispatch = useDispatch<Dispatch>();
     const navigate = useNavigate();
 
@@ -85,10 +87,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
       return {
         okText: isForgotPassword ? "Ok, re-import my wallet" : "Submit",
         onOk: isForgotPassword
-          ? async () => {
-              await dispatch.wallet.ejectWallet();
-              navigate(ROUTES.WELCOME);
-            }
+          ? () => setIsDeleteWalletConfirmModalOpen(true)
           : form.submit,
         cancelText: isForgotPassword ? "Back to Authentication" : "Cancel",
         onCancel: isForgotPassword
@@ -99,58 +98,68 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     }, [isForgotPassword, submittable]);
 
     return (
-      <Modal
-        open={open}
-        {...rest}
-        okText={modalOptions.okText}
-        onOk={modalOptions.onOk}
-        cancelText={modalOptions.cancelText}
-        onCancel={modalOptions.onCancel}
-        centered
-        className={styles.authentication}
-        confirmLoading={loading}
-        cancelButtonProps={{
-          disabled: loading,
-        }}
-        closable={!loading}
-        okButtonProps={{
-          disabled: modalOptions.okDisabled,
-        }}
-      >
-        {isForgotPassword ? (
-          <>
-            <h2 className="title">Forgot Password?</h2>
-            <p className="description">
-              Restore your wallet by deleting current instance and reimport your secret recovery phrase.
-            </p>
-          </>
-        ) : (
-          <>
-            <h2 className="title">{title}</h2>
-            <p className="description">{description}</p>
-            <Form
-              form={form}
-              onFinish={onFinish}
-              layout="vertical"
-              className="form-authentication"
-              disabled={loading}
-            >
-              <Form.Item name="password" rules={passwordRules}>
-                <Input.Password
-                  size="large"
-                  placeholder="Enter your password"
-                />
-              </Form.Item>
-            </Form>
-            <p
-              className="forgot-password"
-              onClick={() => setIsForgotPassword(true)}
-            >
-              Forgot password?
-            </p>
-          </>
-        )}
-      </Modal>
+      <>
+        <Modal
+          open={open}
+          {...rest}
+          okText={modalOptions.okText}
+          onOk={modalOptions.onOk}
+          cancelText={modalOptions.cancelText}
+          onCancel={modalOptions.onCancel}
+          centered
+          className={styles.authentication}
+          confirmLoading={loading}
+          cancelButtonProps={{
+            disabled: loading,
+          }}
+          closable={!loading}
+          okButtonProps={{
+            disabled: modalOptions.okDisabled,
+          }}
+        >
+          {isForgotPassword ? (
+            <>
+              <h2 className="title">Forgot Password?</h2>
+              <p className="description">
+                Restore your wallet by deleting current instance and reimport your secret recovery phrase.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="title">{title}</h2>
+              <p className="description">{description}</p>
+              <Form
+                form={form}
+                onFinish={onFinish}
+                layout="vertical"
+                className="form-authentication"
+                disabled={loading}
+              >
+                <Form.Item name="password" rules={passwordRules}>
+                  <Input.Password
+                    size="large"
+                    placeholder="Enter your password"
+                  />
+                </Form.Item>
+              </Form>
+              <p
+                className="forgot-password"
+                onClick={() => setIsForgotPassword(true)}
+              >
+                Forgot password?
+              </p>
+            </>
+          )}
+        </Modal>
+        <ConfirmDeleteWalletModal
+          isOpen={isDeleteWalletConfirmModalOpen}
+          onOk={async () => {
+            await dispatch.wallet.ejectWallet();
+            navigate(ROUTES.WELCOME);
+          }}
+          onCancel={() => setIsDeleteWalletConfirmModalOpen(false)}
+        />
+      </>
     );
   }
 );
