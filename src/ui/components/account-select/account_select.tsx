@@ -1,7 +1,7 @@
 import { Select, SelectProps } from "antd";
 import type { DefaultOptionType } from "antd/es/select";
 import { useAccountSearch } from "../../hooks/useAccountSearch";
-import { AccountItem } from "../../pages/Wallet/Wallet";
+import { AccountItem } from "../../components/account-item/account_item";
 
 export interface AccountOption {
   address?: string | null;

@@ -1,37 +1,25 @@
 import {
-  CopyOutlined,
-  GlobalOutlined,
-  MoreOutlined,
-  QrcodeOutlined,
-} from "@ant-design/icons";
-import {
   Button,
   Divider,
-  Dropdown,
   Empty,
   Flex,
   Input,
-  Modal,
   notification,
   Spin,
-  Tag,
   Grid,
 } from "antd";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  AccountSetting,
   Authentication,
   AuthenticationRef,
-  Copy,
   Explore,
 } from "../../components";
 import { useAccountSearch } from "../../hooks/useAccountSearch";
 import { Dispatch, RootState } from "../../store";
 import { cx, formatError, shortenAddress } from "../../utils/methods";
 import styles from "./Wallet.module.scss";
-
-const { useBreakpoint } = Grid;
+import { AccountItem } from "../../components/account-item/account_item";
 
 const Wallet: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
@@ -85,7 +73,7 @@ const Wallet: React.FC = () => {
     }
 
     return (
-      <ul className="account-list">
+      <ul className="account-container">
         {filteredAccounts.map(({ address, name, spxLockArgs }, index) => (
           <React.Fragment key={spxLockArgs}>
             {index > 0 && (
@@ -131,7 +119,7 @@ const Wallet: React.FC = () => {
           Gen New Account
         </Button>
       </Flex>
-      <div className={styles.accountList}>
+      <div className={styles.accountListContainer}>
         <Spin size="large" spinning={loadingLoadAccounts}>
           {renderAccountList()}
         </Spin>
@@ -143,118 +131,6 @@ const Wallet: React.FC = () => {
         authenCallback={createAccountHandler}
       />
     </section>
-  );
-};
-
-interface AccountItemProps extends React.HTMLAttributes<HTMLLIElement> {
-  address: string;
-  name: string;
-  spxLockArgs: string;
-  hasTools?: boolean;
-  copyable?: boolean;
-  showBalance?: boolean;
-  isLoading?: boolean;
-}
-
-export const AccountItem: React.FC<AccountItemProps> = ({
-  address,
-  name,
-  spxLockArgs,
-  hasTools = true,
-  copyable = true,
-  showBalance = false,
-  isLoading = false,
-  ...props
-}) => {
-  const screens = useBreakpoint();
-  const dispatch = useDispatch<Dispatch>();
-  const wallet = useSelector((state: RootState) => state.wallet);
-  const isActive = spxLockArgs === wallet.current.spxLockArgs;
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const menuOptions = useMemo(
-    () => [
-      {
-        key: "view-details",
-        label: (
-          <p className="menu-item">
-            <QrcodeOutlined />
-            Sync Settings
-          </p>
-        ),
-        onClick: () => setIsModalOpen(true),
-      },
-      {
-        key: "explore",
-        label: (
-          <Explore.Account address={address} className="menu-item">
-            <GlobalOutlined />
-            Go To Explorer
-          </Explore.Account>
-        ),
-      },
-    ],
-    [isActive, spxLockArgs, address, isLoading, dispatch]
-  );
-
-  return (
-    <>
-      <li {...props} className={cx(styles.accountItem)}>
-        <div
-          className="account-info"
-          onClick={() => !isActive && dispatch.wallet.switchAccount({ spxLockArgs })}
-        >
-          <p className="name">
-            {name}{" "}
-            {isActive && (
-              <Tag color="var(--teal-2)" className="current">
-                Current
-              </Tag>
-            )}
-          </p>
-          <span className="address">
-            {screens.md ? (
-              <span>
-                {shortenAddress(address, 10, 40)}
-              </span>
-            ) : (
-              <span>
-                {shortenAddress(address, 10, 20)}
-              </span>
-            )}
-            {copyable && (
-              <Copy value={address} className="copyable">
-                <CopyOutlined />
-              </Copy>
-            )}
-          </span>
-        </div>
-        <Flex gap={8} align="center">
-          {hasTools && (
-            <Dropdown
-              rootClassName={styles.accountUtils}
-              menu={{
-                items: menuOptions,
-              }}
-            >
-              <Button type="text" className="more-btn" disabled={isLoading}>
-                <MoreOutlined />
-              </Button>
-            </Dropdown>
-          )}
-        </Flex>
-      </li>
-      <Modal
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        footer={null}
-        centered
-      >
-        <AccountSetting 
-          account={{ name, address, spxLockArgs }} 
-          onClose={() => setIsModalOpen(false)} 
-        />
-      </Modal>
-    </>
   );
 };
 
