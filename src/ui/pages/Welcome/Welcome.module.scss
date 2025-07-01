@@ -1,11 +1,12 @@
 .welcome {
   :global {
+    width: 100%;
+    height: 50rem;
     padding: 3.6rem 3.6rem;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 76.8rem;
     min-height: 35rem;
     margin: 0 auto;
     font-family: "Quantico", sans-serif;

@@ -1,5 +1,6 @@
 .unlockForm {
   :global {
+    height: 50rem;
     background: rgba(255, 255, 255, 0.02);
 
     .ant-form-item {
@@ -49,7 +50,7 @@
 
 .withdrawListContainer {
   overflow-y: auto;
-  max-height: 70vh; // tuned w/o exact calculation, adjust as needed
+  max-height: 34rem; // tuned w/o exact calculation, adjust as needed
 }
 
 .withdrawList {
