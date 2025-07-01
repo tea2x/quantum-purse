@@ -159,6 +159,7 @@ body {
 .panel {
   border-radius: 0.5rem;
   overflow: hidden;
+  font-family: "Quantico", sans-serif;
   background-color: var(--white-abs);
   box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.15);
   flex: 1;
@@ -169,7 +170,6 @@ body {
   background-image: url("./ui/components/assets/background_blur.jpg");
 
   h1 {
-    font-family: "Quantico", sans-serif;
     font-size: 2.4rem;
     padding: 0 0 1.2rem 0;
     border-bottom: solid 1px var(--gray-light);
@@ -207,10 +207,11 @@ body {
   }
 }
 
-.ant-btn, .ant-form-item, .ant-select, .ant-form-item-label, .ant-checkbox-wrapper, .ant-select-item-option, .ant-select-item-group {
+.ant-btn, .ant-form-item, .ant-select, .ant-form-item-label, .ant-checkbox-wrapper, .ant-select-item-option, .ant-select-item-group, .ant-modal {
   font-family: "Quantico", sans-serif !important;
 }
 
 .ant-menu, .ant-menu-item, .ant-menu-submenu-title {
   color: var(--gray-01) !important;
+  font-family: "Quantico", sans-serif !important;
 }

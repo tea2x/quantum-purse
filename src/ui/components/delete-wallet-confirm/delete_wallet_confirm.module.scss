@@ -1,0 +1,21 @@
+.deleteWalletModal {
+  width: fit-content !important;
+  :global {
+    .ant-modal-header .ant-modal-title,
+    .ant-modal-body {
+      text-align: center;
+    }
+    .ant-modal-content,
+    .ant-modal-header {
+      background-color: #FFD580;
+    }
+    .ant-btn {
+      background-color: #FF8C00;
+      color: black;
+      &:hover {
+        background-color: #f9652f !important;
+        color: white !important;
+      }
+    }
+  }
+}
