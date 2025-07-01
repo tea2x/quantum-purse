@@ -42,7 +42,12 @@
       .ant-input-number-group-addon {
         color: var(--teal-2);
       }
+
+      .ant-btn:disabled {
+        color: var(--gray-02) !important;
+      }
     }
+
     h1 {
       @media (max-width: 768px) {
         font-size: 2rem;
