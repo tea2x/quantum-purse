@@ -67,7 +67,6 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
       dispatch.wallet.resetSRP();
       notification.success({
         message: "Create wallet successfully!",
-        description: "You can now use your wallet to send and receive tokens.",
       });
     } catch (error) {
       notification.error({

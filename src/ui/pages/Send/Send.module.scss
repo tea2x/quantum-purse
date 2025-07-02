@@ -1,5 +1,6 @@
 .sendForm {
   :global {
+    height: 50rem;
     background: rgba(255, 255, 255, 0.02);
     .ant-form {
       background: rgba(255, 255, 255, 0) !important;
@@ -42,10 +43,9 @@
       .ant-input-number-group-addon {
         color: var(--teal-2);
       }
-    }
-    h1 {
-      @media (max-width: 768px) {
-        font-size: 2rem;
+
+      .ant-btn:disabled {
+        color: var(--gray-02) !important;
       }
     }
   }

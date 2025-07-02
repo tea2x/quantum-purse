@@ -1,5 +1,6 @@
 .withdrawForm {
   :global {
+    height: 50rem;
     background: rgba(255, 255, 255, 0.02);
 
     .ant-form-item {
@@ -35,17 +36,15 @@
       }
     }
 
-    h1 {
-      @media (max-width: 768px) {
-        font-size: 2rem;
-      }
+    .ant-btn:disabled {
+      color: var(--gray-02) !important;
     }
   }
 }
 
 .requestWithdrawListContainer {
   overflow-y: auto;
-  max-height: 70vh; // tuned w/o exact calculation, adjust as needed
+  max-height: 34rem; // tuned w/o exact calculation, adjust as needed
 }
 
 .requestWithdrawList {

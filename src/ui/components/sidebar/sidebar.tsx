@@ -14,7 +14,7 @@ const items: MenuItem[] = [
   {
     key: ROUTES.WALLET,
     icon: <Icon.Wallet />,
-    label: <NavLink to={ROUTES.WALLET}>My Wallet</NavLink>,
+    label: <NavLink to={ROUTES.WALLET}>Accounts</NavLink>,
   },
   {
     key: ROUTES.SEND,

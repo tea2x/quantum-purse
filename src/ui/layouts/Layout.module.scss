@@ -1,9 +1,12 @@
 .layout {
+  height: 100vh;
   max-width: 100rem;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
   :global(.container) {
-    padding: 1.2rem;
     @media (max-width: 768px) {
       padding: 0rem;
     }
@@ -15,7 +18,6 @@
         .container {
           display: flex;
           gap: 1.2rem;
-          height: calc(100vh - 7rem); // minus header height
         }
       }
     }

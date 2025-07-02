@@ -1,9 +1,11 @@
 .sidebar {
-  // height: fit-content;
   overflow: auto;
   flex-grow: 0;
   padding: 0;
   color: var(--teal-2);
+  @media (min-width: 768px) {
+    height: 50rem;
+  }
 
   :global {
     .ant-menu-item:hover,
@@ -28,6 +30,7 @@
   
   :global(.ant-menu) {
     background-image: url("../assets/background_blur.jpg");
+    background-position: center top;
     background-size: cover;
     @media (min-width: 768px) {
       flex-basis: 20rem;

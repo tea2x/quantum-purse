@@ -280,8 +280,7 @@ const ImportWalletContent: React.FC = () => {
       await dispatch.wallet.loadCurrentAccount({});
       dispatch.wallet.resetSRP();
       notification.success({
-        message: "Import wallet successfully!",
-        description: "You can now use your wallet to send and receive tokens.",
+        message: "Import wallet successfully!"
       });
     } catch (error) {
       notification.error({

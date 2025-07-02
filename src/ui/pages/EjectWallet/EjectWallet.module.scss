@@ -2,12 +2,7 @@
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.02);
-  height: 100%;
-  h1 {
-    @media (max-width: 768px) {
-      font-size: 2rem;
-    }
-  }
+  height: 50rem;
 
   p {
     color: orangered;
@@ -17,7 +12,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    // justify-content: center;
+    justify-content: center;
     gap: 1.6rem;
     flex: 1;
     color: var(--gray-01);

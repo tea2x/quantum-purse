@@ -1,6 +1,7 @@
 VERSION=$(node -p "require('./package.json').version")
 
-mkdir -p zips
+rm -rf zips
+mkdir zips
 
 npm run build:app:mac:arm64
 mv build/ zips/mac-arm

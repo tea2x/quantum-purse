@@ -285,8 +285,7 @@ export const wallet = createModel<RootModel>()({
         await quantum.deleteWallet();
         localStorage.removeItem(STORAGE_KEYS.CURRENT_ACCOUNT_POINTER);
         notification.info({
-          message: "Wallet ejected",
-          description: "You have successfully ejected your wallet",
+          message: "Wallet ejected successfully"
         });
         this.reset();
       } catch (error) {
