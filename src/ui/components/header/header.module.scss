@@ -3,8 +3,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  height: 5rem;
-  background-color: var(--teal-2);
+  height: 15rem;
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 0.5rem;
   width: 100%;
   max-width: 128rem;
@@ -19,7 +19,7 @@
       display: flex;
       align-items: center;
       gap: 1rem;
-      color: rgb(28, 28, 28);
+      color: var(--gray-01);
       text-transform: uppercase;
       font-family: "Quantico", sans-serif;
       font-size: 1.7rem;
@@ -88,7 +88,7 @@
   font-size: 2rem;
   align-items: center;
   margin-right: 0.1rem;
-  color: rgb(28, 28, 28);
+  color: var(--gray-01);
 }
 
 .spinAndPause {
@@ -116,9 +116,23 @@
   border-radius: 0.4rem;
   transition: all 0.3s ease;
   &:hover {
-    background-color:rgba(0, 255, 255, 0.252);
+    background-color: rgba(0, 255, 255, 0.252);
     color: gray;
   }
+}
+
+.balanceContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.balanceNumbers {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.2rem;
+  color: var(--white);
+  gap: 0.5rem;
 }
 
 @keyframes harmonicSpin {
@@ -156,7 +170,8 @@
 }
 
 @keyframes zoom {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

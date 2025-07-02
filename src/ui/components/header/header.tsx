@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { CopyOutlined } from "@ant-design/icons";
 import { Copy } from "../../components";
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip } from "recharts";
 
 const { useBreakpoint } = Grid;
 
@@ -18,11 +19,17 @@ interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   const isWalletActive = useSelector((state: RootState) => state.wallet.active);
   const syncStatus = useSelector((state: RootState) => state.wallet.syncStatus);
+  const wallet = useSelector((state: RootState) => state.wallet);
   const navigate = useNavigate();
   const { showSidebar, setShowSidebar } = useContext(LayoutCtx);
   const screens = useBreakpoint();
-
   const location = useLocation();
+  const balance = Number((Number(wallet.current?.balance) / 10**8).toFixed(2)) || 0;
+  const locked = Number((Number(wallet.current?.lockedInDao) / 10**8).toFixed(2)) || 0;
+  const data = [
+    { name: "Available", value: balance },
+    { name: "Locked", value: locked },
+  ];
 
   useEffect(() => {
     if ("md" in screens && !screens.md) {
@@ -33,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   return (
     <header className={cx(styles.header, className)} {...rest}>
       <div className="header-left">
-        <Icon.Logo
+        {/* <Icon.Logo
           className={styles.zoomInOut}
           color="var(--white)"
           onClick={() => {
@@ -42,8 +49,35 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               navigate(ROUTES.HOME);
             }
           }}
-        />
-        <p className={styles.text}>Quantum Purse</p>
+        /> */}
+        {/* <p className={styles.text}>Quantum Purse</p> */}
+        {isWalletActive && (
+          <div className={styles.balanceContainer}>
+            <PieChart width={125} height={125}>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius={20}
+                outerRadius={60}
+                dataKey="value"
+                animationDuration={600}
+                animationEasing="ease-in-out"
+                animationBegin={50}
+              >
+                <Cell fill="#00B27A" />
+                <Cell fill="#FF8C00" />
+              </Pie>
+              <RechartsTooltip formatter={(value, name) => `${value} CKB`} />
+            </PieChart>
+            {screens.md && (
+              <div className={styles.balanceNumbers}>
+                <span>Available: {balance} CKB</span>
+                <span>Nervos DAO: {locked} CKB</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="header-right">

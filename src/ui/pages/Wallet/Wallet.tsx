@@ -94,7 +94,7 @@ const Wallet: React.FC = () => {
 
   return (
     <section className={cx(styles.wallet, "panel")}>
-      <h1>Wallet</h1>
+      <h1>Accounts</h1>
 
       <Flex
         justify="space-between"
