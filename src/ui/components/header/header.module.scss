@@ -13,49 +13,6 @@
   @media (max-width: 768px) {
     margin-bottom: 0;
   }
-
-  :global {
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      color: var(--gray-01);
-      text-transform: uppercase;
-      font-family: "Quantico", sans-serif;
-      font-size: 1.7rem;
-
-      svg {
-        cursor: pointer;
-      }
-      p {
-        overflow: hidden;
-        white-space: nowrap;
-        border-right: 2px solid;
-        width: 0;
-        animation: typing 4s steps(13) infinite alternate,
-          blink-caret 0.75s step-end infinite;
-        margin: 0;
-        letter-spacing: 0.15em;
-        font-weight: bold;
-      }
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-
-      // copy from header-left
-      color: var(--white);
-      text-transform: uppercase;
-      font-family: "Quantico", sans-serif;
-      font-size: 2rem;
-
-      svg {
-        color: var(--white);
-      }
-    }
-  }
 }
 
 .blinker {
@@ -74,31 +31,6 @@
   }
 }
 
-.syncStatusOverlay {
-  text-align: center;
-  padding: 10px;
-  background-color: rgb(93, 149, 149);
-  color: var(--dark-gray);
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  font-size: 14px;
-}
-
-.firstGlance {
-  font-size: 2rem;
-  align-items: center;
-  margin-right: 0.1rem;
-  color: var(--gray-01);
-}
-
-.spinAndPause {
-  animation: spinWithPause 6s ease-in-out infinite;
-}
-
-.spinHarmonic {
-  animation: harmonicSpin 1.5s ease-in-out infinite;
-}
-
 .zoomInOut {
   animation: zoom 1s ease-in-out infinite;
 }
@@ -115,8 +47,9 @@
   padding: 0.4rem;
   border-radius: 0.4rem;
   transition: all 0.3s ease;
+  cursor: pointer;
+  background-color: rgba(94, 102, 116, 0.1);
   &:hover {
-    background-color: rgba(0, 255, 255, 0.252);
     color: gray;
   }
 }
@@ -135,38 +68,16 @@
   gap: 0.5rem;
 }
 
-@keyframes harmonicSpin {
-  0% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(90deg);
-  }
-  50% {
-    transform: rotate(180deg);
-  }
-  75% {
-    transform: rotate(270deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.syncContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-@keyframes spinWithPause {
-  0% {
-    transform: rotate(0deg);
-  }
-  45% {
-    transform: rotate(180deg);
-  }
-  90% {
-    transform: rotate(360deg);
-  }
-  91%,
-  100% {
-    transform: rotate(360deg);
-  }
+.p2pNetworkStatusContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 @keyframes zoom {
