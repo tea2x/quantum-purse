@@ -50,17 +50,31 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
     }
   }, [location.pathname, screens.md]);
 
+  // Define scaling factor and dynamic sizes for mobile view
+  const scalingFactor = screens.md ? 1 : 0.8;
+  const pieChartSize = 125 * scalingFactor;
+  const balanceInnerRadius = 20 * scalingFactor;
+  const balanceOuterRadius = 60 * scalingFactor;
+  const networkInnerRadius = 45 * scalingFactor;
+  const networkOuterRadius = 60 * scalingFactor;
+  const fontSize = Math.round(14 * scalingFactor);
+  const tooltipFontSize = Math.round(10 * scalingFactor);
+  const labelStyle = {
+    fontSize: `${fontSize}px`,
+    fontWeight: 'bold',
+  };
+
   return (
     <header className={cx(styles.header, className)} {...rest}>
       <>
         <div className={styles.balancePieChart}>
-          <PieChart width={125} height={125}>
+          <PieChart width={pieChartSize} height={pieChartSize}>
             <Pie
               data={balanceData}
               cx="50%"
               cy="50%"
-              innerRadius={20}
-              outerRadius={60}
+              innerRadius={balanceInnerRadius}
+              outerRadius={balanceOuterRadius}
               startAngle={90}
               endAngle={-270}
               dataKey="value"
@@ -74,11 +88,14 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
                 value={"CKB"}
                 position="center"
                 fill="var(--gray-01)"
-                style={{ fontSize: '14px', fontWeight: 'bold' }}
+                style={labelStyle}
               />
             </Pie>
             {!screens.md && !noBalance && (
-              <RechartsTooltip formatter={(value, name) => `${value} CKB`} />
+              <RechartsTooltip
+                formatter={(value, name) => `${value} CKB`}
+                contentStyle={{ fontSize: `${tooltipFontSize}px` }}
+              />
             )}
           </PieChart>
           {screens.md && (
@@ -91,13 +108,13 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         </div>
 
         <div className={styles.syncPieChart}>
-          <PieChart width={125} height={125}>
+          <PieChart width={pieChartSize} height={pieChartSize}>
             <Pie
               data={syncData}
               cx="50%"
               cy="50%"
-              innerRadius={45}
-              outerRadius={60}
+              innerRadius={networkInnerRadius}
+              outerRadius={networkOuterRadius}
               startAngle={90}
               endAngle={-270}
               dataKey="value"
@@ -111,13 +128,13 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
                 value={`SYNC ${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
                 position="center"
                 fill="var(--gray-01)"
-                style={{ fontSize: '14px', fontWeight: 'bold' }}
+                style={labelStyle}
               />
             </Pie>
-
             {!screens.md && (
               <RechartsTooltip
                 formatter={(value, name) => `${value}`}
+                contentStyle={{ fontSize: `${tooltipFontSize}px` }}
               />
             )}
           </PieChart>
@@ -131,13 +148,13 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         </div>
 
         <div className={styles.p2pNetworkStatusPieChart}>
-          <PieChart width={125} height={125}>
+          <PieChart width={pieChartSize} height={pieChartSize}>
             <Pie
               data={peersData}
               cx="50%"
               cy="50%"
-              innerRadius={45}
-              outerRadius={60}
+              innerRadius={networkInnerRadius}
+              outerRadius={networkOuterRadius}
               startAngle={90}
               endAngle={-270}
               dataKey="value"
@@ -151,27 +168,27 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
                 value="P2P"
                 position="center"
                 fill="var(--gray-01)"
-                style={{ fontSize: '14px', fontWeight: 'bold' }}
+                style={labelStyle}
               />
             </Pie>
-
             {!screens.md && (
               <RechartsTooltip
                 formatter={(value, name) => `${value}`}
+                contentStyle={{ fontSize: `${tooltipFontSize}px` }}
               />
             )}
           </PieChart>
           {screens.md && (
             <div className={styles.pieChartDetails}>
               <div>
-              Id: {" "}
-              {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
-                <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
-                  <span className={styles.copyable} >{shortenAddress(syncStatus.nodeId, 5, 7)}</span>
-                </Copy>
-              ) : (
-                <span>{syncStatus.nodeId}</span>
-              )}
+                Id: {" "}
+                {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
+                  <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
+                    <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 5, 7)}</span>
+                  </Copy>
+                ) : (
+                  <span>{syncStatus.nodeId}</span>
+                )}
               </div>
               <span>Peers Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}</span>
             </div>

@@ -3,15 +3,15 @@ const path = require('path');
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
-        width: 1000,
-        height: 600,
+        width: 1010,
+        height: 700,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
         },
     });
 
-    mainWindow.setMinimumSize(1000, 600);
+    mainWindow.setMinimumSize(1010, 700);
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         shell.openExternal(url);
