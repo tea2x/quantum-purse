@@ -1,6 +1,6 @@
 {
   "name": "quantum-purse",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "CKB SPHINCS+ wallet",
   "private": true,
   "main": "main.js",
