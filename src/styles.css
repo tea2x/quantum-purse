@@ -170,13 +170,16 @@ body {
   background-image: url("./ui/components/assets/background_blur.jpg");
 
   h1 {
-    font-size: 2.4rem;
+    font-size: 2rem;
     padding: 0 0 1.2rem 0;
     border-bottom: solid 1px var(--gray-light);
     margin: 0 0 1.2rem 0;
     color: var(--teal-2);
     font-weight: bold;
     margin-bottom: 1.3rem;
+    @media (max-width: 768px) {
+      font-size: 1.7rem;
+    }
   }
 }
 

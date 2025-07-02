@@ -1,11 +1,5 @@
 .wallet {
   height: 50rem;
-  h1 {
-    @media (max-width: 768px) {
-      font-size: 2rem;
-    }
-  }
-
   :global {
     display: flex;
     flex-direction: column;

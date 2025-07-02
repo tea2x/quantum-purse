@@ -14,9 +14,6 @@
   max-width: 128rem;
   margin: 0 auto 1.2rem auto;
   box-shadow: 0 0.4rem 0.4rem rgba(0, 0, 0, 0.25);
-  @media (max-width: 768px) {
-    margin-bottom: 0;
-  }
 }
 
 .blinker {
