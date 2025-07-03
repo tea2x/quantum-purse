@@ -95,11 +95,11 @@ export const AccountItem: React.FC<AccountItemProps> = ({
           <span className="address">
             {screens.md ? (
               <span>
-                {shortenAddress(address, 10, 40)}
+                {shortenAddress(address, 20, 30)}
               </span>
             ) : (
               <span>
-                {shortenAddress(address, 10, 20)}
+                {shortenAddress(address, 10, 30)}
               </span>
             )}
             {copyable && (

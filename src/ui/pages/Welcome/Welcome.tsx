@@ -8,7 +8,7 @@ const Welcome: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className={cx(styles.welcome, "panel")}>
+    <section className={styles.welcome}>
       <h1>Welcome to Quantum Purse</h1>
       <p>Strong Security, Simple Purpose — For the CKB Community</p>
       <Button onClick={() => navigate(ROUTES.CREATE_WALLET, {replace: true})}>

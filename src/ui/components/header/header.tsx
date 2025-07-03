@@ -184,13 +184,13 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
                 Id: {" "}
                 {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
                   <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
-                    <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 5, 7)}</span>
+                    <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 2, 3)}</span>
                   </Copy>
                 ) : (
                   <span>{syncStatus.nodeId}</span>
                 )}
               </div>
-              <span>Peers Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}</span>
+              <span>Peers: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}</span>
             </div>
           )}
         </div>

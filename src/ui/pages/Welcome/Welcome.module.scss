@@ -7,14 +7,29 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     min-height: 35rem;
     margin: 0 auto;
     font-family: "Quantico", sans-serif;
     background: rgba(255, 255, 255, 0.02);
+    box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.75);
+
+    h1 {
+      font-size: 3rem;
+      padding: 0 0 1.2rem 0;
+      border-bottom: solid 1px var(--gray-light);
+      margin: 0 0 1.2rem 0;
+      color: var(--teal-2);
+      font-weight: bold;
+      margin-bottom: 1.3rem;
+      @media (max-width: 768px) {
+        font-size: 1.7rem;
+      }
+    }
 
     p {
       color: var(--gray-01);
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       line-height: 1.2;
       margin-bottom: 5rem;
       @media (max-width: 768px) {
@@ -24,10 +39,10 @@
 
     button {
       width: 22rem;
-      height: 3rem;
+      height: 3.5rem;
       text-align: center;
       border-radius: 0.5rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
       padding: 1rem 2rem;
       font-size: 1.4rem;
       &:hover {
