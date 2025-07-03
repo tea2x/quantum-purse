@@ -12,7 +12,7 @@
     margin: 0 auto;
     font-family: "Quantico", sans-serif;
     background: rgba(255, 255, 255, 0.02);
-    box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.75);
+    box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.25);
 
     h1 {
       font-size: 3rem;
@@ -42,7 +42,7 @@
       height: 3.5rem;
       text-align: center;
       border-radius: 0.5rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
       padding: 1rem 2rem;
       font-size: 1.4rem;
       &:hover {
