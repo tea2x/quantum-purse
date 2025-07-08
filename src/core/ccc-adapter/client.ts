@@ -104,7 +104,7 @@ export class QPClient extends Client {
 
   /** Get block header by hash no cache */
   async getHeaderByHashNoCache(blockHash: HexLike, verbosity?: number | null): Promise<ClientBlockHeader | undefined> {
-    throw new Error("Unsupported method: getHeaderByHashNoCache");
+    return await this.lightClient.getHeader(blockHash);
   }
 
   /** Estimate transaction cycles */
