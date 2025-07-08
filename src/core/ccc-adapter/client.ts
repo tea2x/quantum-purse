@@ -107,26 +107,6 @@ export class QPClient extends Client {
     throw new Error("Unsupported method: getHeaderByHashNoCache");
   }
 
-  /** Get block by number */
-  async getBlockByNumber(blockNumber: NumLike, verbosity?: number | null, withCycles?: boolean | null): Promise<ClientBlock | undefined> {
-    throw new Error("Unsupported method: getBlockByNumber");
-  }
-
-  /** Get block by hash */
-  async getBlockByHash(blockHash: HexLike, verbosity?: number | null, withCycles?: boolean | null): Promise<ClientBlock | undefined> {
-    throw new Error("Unsupported method: getBlockByHash");
-  }
-
-  /** Get header by number */
-  async getHeaderByNumber(blockNumber: NumLike, verbosity?: number | null): Promise<ClientBlockHeader | undefined> {
-    throw new Error("Unsupported method: getHeaderByNumber");
-  }
-
-  /** Get header by hash */
-  async getHeaderByHash(blockHash: HexLike, verbosity?: number | null): Promise<ClientBlockHeader | undefined> {
-    return await this.lightClient.getHeader(blockHash);
-  }
-
   /** Estimate transaction cycles */
   async estimateCycles(transaction: TransactionLike): Promise<Num> {
     return this.lightClient.estimateCycles(transaction);
