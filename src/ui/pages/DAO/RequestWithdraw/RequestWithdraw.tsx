@@ -60,12 +60,12 @@ const RequestWithdraw: React.FC = () => {
           if (!depositHeader) {
             throw new Error("Unable to retrieve DAO deposit block header at tx: " + cell.outPoint.txHash);
           }
-          const remainingCycles = Number(
+          const remainingEpochs = Number(
             ccc.fixedPointToString(
               parseEpoch(tipHeader.epoch) - parseEpoch(depositHeader.epoch)
             )
-          ) / 180;
-          const tilMaxProfit = 30 - (remainingCycles ?? 1) * 30;
+          ) % 180;
+          const tilMaxProfit = 30 - (remainingEpochs / 180) * 30;
           const currentProfit = Number(getProfit(cell, depositHeader, tipHeader));
           const blockNum = depositHeader.number;
           estimatedInfos[key] = {tilMaxProfit, currentProfit, blockNum};
@@ -250,8 +250,8 @@ const RequestWithdraw: React.FC = () => {
                       <div className={styles.content}>
                         <span className={styles.capacity}>
                           <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
-                          <div>Has gained extra {Number((currentProfit / 10**8).toFixed(5))}</div>
-                          <div>Maximum profit in {Number((tilMaxProfit - 1).toFixed(1))} days</div>
+                          <div>+ {Number((currentProfit / 10**8).toFixed(5))} CKB gained so far</div>
+                          <div>Next locking cycle will start in {Number(tilMaxProfit.toFixed(1))} days</div>
                         </span>
                         <Button
                           type="primary"
