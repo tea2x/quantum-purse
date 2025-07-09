@@ -1,7 +1,7 @@
 # chain = "mainnet"
 # chain = "testnet"
 # chain = "your_path_to/dev.toml"
-chain = "dev"
+chain = "testnet"
 
 [store]
 path = "data/store"
