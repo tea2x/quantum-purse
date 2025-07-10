@@ -63,15 +63,15 @@ const Withdraw: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      if (quantumPurse) {
+      if (quantumPurse && quantumPurse.hasClientStarted) {
         const header = await quantumPurse.client.getTipHeader();
         setTipHeader(header);
       }
     })();
-  }, [quantumPurse]);
+  }, [quantumPurse, quantumPurse.hasClientStarted]);
 
   useEffect(() => {
-    if (!tipHeader || daoCells.length === 0) return;
+    if (!tipHeader || daoCells.length === 0 || !quantumPurse.hasClientStarted) return;
 
     const fetchRedeemingInfo = async () => {
       const daysMap: { [key: string]: {remain: number, profit: number, blockNum: bigint} } = {};
@@ -92,7 +92,7 @@ const Withdraw: React.FC = () => {
     };
 
     fetchRedeemingInfo();
-  }, [daoCells, tipHeader]);
+  }, [daoCells, tipHeader, quantumPurse.hasClientStarted]);
 
   // Set and clean up the requestPassword callback
   useEffect(() => {

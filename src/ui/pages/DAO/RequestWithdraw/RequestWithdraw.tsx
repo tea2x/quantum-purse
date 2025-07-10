@@ -39,15 +39,15 @@ const RequestWithdraw: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      if (quantumPurse) {
+      if (quantumPurse && quantumPurse.hasClientStarted) {
         const header = await quantumPurse.client.getTipHeader();
         setTipHeader(header);
       }
     })();
-  }, [quantumPurse]);
+  }, [quantumPurse, quantumPurse.hasClientStarted]);
 
   useEffect(() => {
-    if (!tipHeader || daoCells.length === 0) return;
+    if (!tipHeader || daoCells.length === 0 || !quantumPurse.hasClientStarted) return;
 
     const fetchRemainingDays = async () => {
       const estimatedInfos: { [key: string]: {tilMaxProfit: number, currentProfit: number, blockNum: bigint} } = {};
@@ -78,7 +78,7 @@ const RequestWithdraw: React.FC = () => {
     };
 
     fetchRemainingDays();
-  }, [daoCells, tipHeader]);
+  }, [daoCells, tipHeader, quantumPurse.hasClientStarted]);
 
   useEffect(() => {
     if (!quantumPurse || !quantumPurse.accountPointer) {

@@ -24,7 +24,7 @@ export default class QuantumPurse extends QPSigner {
   //*********************************** ATRIBUTES ****************************************//
   //**************************************************************************************//
   private static instance?: QuantumPurse;
-  private hasClientStarted: boolean = false;
+  public hasClientStarted: boolean = false;
   
   /* CKB light client status worker */
   private worker: Worker | undefined;
