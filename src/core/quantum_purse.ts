@@ -768,10 +768,6 @@ export default class QuantumPurse extends QPSigner {
     await tx.completeInputsByCapacity(this);
     await tx.completeFeeChangeToOutput(this, 0, FEE_RATE);
 
-    // adding output
-    const outputCapacity = getProfit(withdrawingCell, depositBlockHeader!, withdrawBlockHeader!);
-    tx.outputs[0].capacity += outputCapacity;
-
     const hash = await this.sendTransaction(tx);
     return hash;
   }
