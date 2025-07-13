@@ -23,7 +23,7 @@ export function get_ckb_tx_message_all_hash(tx: Transaction): Uint8Array {
         tx_hash: input.previousOutput.txHash,
         index: input.previousOutput.index,
       },
-      since: "0x0",
+      since: input.since,
     })),
     outputs: tx.outputs.map((output) => ({
       capacity: output.capacity,
@@ -49,7 +49,7 @@ export function get_ckb_tx_message_all_hash(tx: Transaction): Uint8Array {
         tx_hash: input.previousOutput.txHash,
         index: input.previousOutput.index,
       },
-      since: "0x0",
+      since: input.since,
     },
     output: {
       capacity: input.cellOutput?.capacity,
