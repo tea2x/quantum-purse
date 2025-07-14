@@ -150,7 +150,7 @@ export const StepCreatePassword: React.FC = () => {
   }, [parameterSet, form]);
 
   const onFinish = async (
-    { password, parameterSet }: { password: string, parameterSet: SpxVariant }
+    { password, parameterSet }: { password: string; parameterSet: SpxVariant }
   ) => {
     if (parameterSet) {
       QuantumPurse.getInstance().initKeyVault(parameterSet);
@@ -195,7 +195,7 @@ export const StepCreatePassword: React.FC = () => {
           label={<span style={{ color: 'var(--gray-01)' }}>Password</span>}
           rules={passwordRules}
         >
-          <Input.Password size="large" placeholder="Enter your password" />
+          <Input.Password size="large" placeholder="Please choose a strong password" />
         </Form.Item>
 
         <Form.Item
