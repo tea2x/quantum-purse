@@ -420,13 +420,12 @@ export default class QuantumPurse extends QPSigner {
   /**
    * Calculates the entropy of an alphabetical password in bits.
    * @param password - The password as a Uint8Array (UTF-8 encoded). Will be zeroed out after processing.
-   * @param threshold - The lower bound entropy threshold in bit security.
    * @returns The entropy in bits (e.g., 1, 2, 128, 256, 444, etc.), or 0 for invalid/empty input.
    * @remark The input password is overwritten with zeros after calculation.
    */
-  public static checkPassword(password: Uint8Array, threshold: number): number {
+  public static checkPassword(password: Uint8Array): number {
     try {
-      return KeyVaultUtil.password_checker(password, threshold);
+      return KeyVaultUtil.password_checker(password);
     } finally {
       password.fill(0);
     }
