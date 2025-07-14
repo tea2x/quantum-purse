@@ -209,7 +209,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
 
   return (
     <div className={styles.stepInputSRP}>
-      <h2>Import SRP</h2>
+      <h2>Import Your Secret Recovery Phrase</h2>
       <Form.Item
         name="srp"
         rules={[
@@ -235,7 +235,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
       >
         <Input.TextArea
           size="large"
-          placeholder="Enter your seed recovery phrase"
+          placeholder="Enter mnemonic seed phrase"
           rows={9}
         />
       </Form.Item>
@@ -316,8 +316,8 @@ const ImportWalletContent: React.FC = () => {
 
   return (
     <section className={cx(styles.importWallet, "panel")}>
-      <h1>Import wallet</h1>
-      <Steps current={currentStep} items={steps} />
+      <h1>Import A Wallet</h1>
+      {/* <Steps current={currentStep} items={steps} /> */}
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Tabs
           items={steps.map((step) => ({

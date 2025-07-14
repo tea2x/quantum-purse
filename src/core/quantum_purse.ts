@@ -9,7 +9,7 @@ import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
 import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, Script, BytesLike, HashTypeLike } from "@ckb-ccc/core";
 import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
-import { getClaimEpoch, getProfit } from "./epoch";
+import { getClaimEpoch } from "./epoch";
 import { QPSigner } from "./ccc-adapter/signer";
 
 export { SpxVariant } from "quantum-purse-key-vault";

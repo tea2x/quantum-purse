@@ -10,7 +10,7 @@ const Welcome: React.FC = () => {
   return (
     <section className={styles.welcome}>
       <h1>Welcome to Quantum Purse</h1>
-      <p>Strong Security, Simple Purpose — For the CKB Community</p>
+      <p>Strong Security, Simple Purpose — Powered by CKB</p>
       <Button onClick={() => navigate(ROUTES.CREATE_WALLET, {replace: true})}>
         Create a New Wallet
       </Button>

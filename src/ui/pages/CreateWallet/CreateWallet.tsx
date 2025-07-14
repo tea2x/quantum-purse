@@ -117,8 +117,8 @@ const CreateWalletContent: React.FC = () => {
 
   return (
     <section className={cx(styles.createWallet, "panel")}>
-      <h1>Create a new wallet</h1>
-      <Steps current={currentStep} items={steps} />
+      <h1>Create A New Wallet</h1>
+      {/* <Steps current={currentStep} items={steps} /> */}
       <div>{steps.find((step) => step.key === currentStep)?.content}</div>
     </section>
   );

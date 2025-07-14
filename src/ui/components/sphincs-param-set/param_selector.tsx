@@ -8,7 +8,7 @@ const ParamsetSelector: React.FC = () => {
     <Form.Item
       label={
         <span style={{ color: 'var(--gray-01)' }}>
-          Parameter set
+          Wallet Type
           <Tooltip
             title={
               useLocation().pathname === "/import-wallet"
