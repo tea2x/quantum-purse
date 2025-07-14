@@ -72,7 +72,7 @@ const Layout: React.FC<AuthLayoutProps> = ({
 
   return (
     <div className={cx(styles.layout, className)} {...rest}>
-      {useLocation().pathname === "/wallet" && <Header />}
+      {!["/welcome", "/create-wallet", "/import-wallet"].includes(useLocation().pathname) && <Header />}
       <div className="container">{children}</div>
       {/* <Footer /> */}
     </div>
