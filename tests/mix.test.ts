@@ -93,7 +93,7 @@ describe("Quantum Purse Basics", () => {
 
   it("Should zeroize password after checking password", async () => {
     let passwordStrHandler = utf8ToBytes(passwordStr);
-    await QuantumPurse.checkPassword(passwordStrHandler, 128);
+    await QuantumPurse.checkPassword(passwordStrHandler);
     expect(passwordStrHandler.every((byte) => byte === 0)).to.be.true;
   });
 
