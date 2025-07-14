@@ -142,13 +142,6 @@ export const StepCreatePassword: React.FC = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
-  useEffect(() => {
-    if (parameterSet) {
-      form.validateFields(['password']).catch(() => {});
-      form.validateFields(['confirmPassword']).catch(() => {});
-    }
-  }, [parameterSet, form]);
-
   const onFinish = async (
     { password, parameterSet }: { password: string; parameterSet: SpxVariant }
   ) => {
