@@ -203,7 +203,7 @@ const Deposit: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Deposit to Nervos DAO"
+          title="Deposit to the DAO"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();

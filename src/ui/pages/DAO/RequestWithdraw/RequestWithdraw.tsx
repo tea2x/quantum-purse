@@ -171,7 +171,7 @@ const RequestWithdraw: React.FC = () => {
 
   return (
     <section className={cx(styles.withdrawForm, "panel")}>
-      <h1>Request Withdraw</h1>
+      <h1>Make A Withdraw Request</h1>
       <div>
         <Form layout="vertical" form={form}>
           <Form.Item
@@ -216,7 +216,7 @@ const RequestWithdraw: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Request Withdraw from Nervos DAO"
+          title="Make a Withdraw Request from the DAO"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();

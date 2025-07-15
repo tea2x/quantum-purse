@@ -235,7 +235,7 @@ const Withdraw: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Withdraw from Nervos DAO"
+          title="Withdraw from the DAO"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();

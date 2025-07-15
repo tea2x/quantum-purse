@@ -19,22 +19,19 @@ const RevealSRP: React.FC = () => {
     paramSet = Number(paramId);
   }
 
-  const description = 
-    "WARNING: Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" 
-    + SpxVariant[Number(paramSet)] + "\" with the mnemonic seed.";
-
   return (
     <section className={cx(styles.revealSRP, "panel")}>
-      <h1>Reveal SRP</h1>
+      <h1>Reveal Secret Recovery Phrase</h1>
       <div className={styles.content}>
+        <p>WARNING! Never copy or screenshot! Only handwrite to backup your mnemonic seed phrase with your chosen SPHINCS+ variant "{SpxVariant[Number(paramSet)]}".</p>
         <SrpTextBox
           value={srp}
           exportSrpHandler={exportSrpHandler}
           onConfirm={() => {
             dispatch.wallet.resetSRP();
           }}
-          title="Reveal Secret Recovery Phrase"
-          description={description}
+          title=""
+          description=""
         />
       </div>
     </section>

@@ -15,5 +15,10 @@
     max-width: 50rem;
     margin: 0 auto;
     color: var(--gray-01);
+    p {
+      font-size: 1.4rem;
+      text-align: center;
+      color: orangered;
+    }
   }
 }

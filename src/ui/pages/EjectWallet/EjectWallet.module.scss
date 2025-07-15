@@ -4,10 +4,6 @@
   background: rgba(255, 255, 255, 0.02);
   height: 50rem;
 
-  p {
-    color: orangered;
-  }
-
   .content {
     display: flex;
     flex-direction: column;
@@ -17,12 +13,12 @@
     flex: 1;
     color: var(--gray-01);
     padding: 2rem 0;
+    max-width: 50rem;
+    margin: 0 auto;
     p {
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       text-align: center;
-    }
-    button {
-      width: fit-content;
+      color: orangered;
     }
   }
 }

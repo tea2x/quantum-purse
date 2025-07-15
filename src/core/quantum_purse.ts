@@ -591,7 +591,7 @@ export default class QuantumPurse extends QPSigner {
   /**
    * Nervos DAO deposit.
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#deposit
-   * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
+   * Reusing some codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
    * @param to - The recipient's address.
    * @param amount - The amount to deposit in CKB.
@@ -648,7 +648,7 @@ export default class QuantumPurse extends QPSigner {
   /**
    * Nervos DAO withdraw request.
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-1
-   * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
+   * Reusing some codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
    * @param to - The recipient's address.
    * @param depositCell - The Nervos DAO deposit cell to make a withdraw request from.
@@ -702,7 +702,7 @@ export default class QuantumPurse extends QPSigner {
   /**
    * Nervos DAO withdraw (withdraw phase2).
    * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#withdraw-phase-2
-   * Reusing codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
+   * Reusing some codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
    * @param to - The recipient's address.
    * @param withdrawingCell - The Nervos DAO wightdrawing cell to be unlocked.
