@@ -87,6 +87,9 @@
       height: 3.2rem;
       font-weight: bolder;
       color: var(--gray-01);
+      &:hover {
+        color: var(--white-abs) !important;
+      }
     }
   }
 }

@@ -2,9 +2,13 @@
   overflow: auto;
   flex-grow: 0;
   padding: 0;
+  padding-top: 3rem;
   color: var(--teal-2);
   @media (min-width: 768px) {
     height: 50rem;
+  }
+  @media (max-width: 768px) {
+    padding-top: 1.2rem;
   }
 
   :global {

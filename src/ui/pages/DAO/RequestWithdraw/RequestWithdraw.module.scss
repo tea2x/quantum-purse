@@ -1,4 +1,4 @@
-.withdrawForm {
+.withdrawRequestForm {
   :global {
     height: 50rem;
     background: rgba(255, 255, 255, 0.02);
@@ -22,6 +22,9 @@
             width: 100%;
             align-items: center;
             justify-content: space-between;
+            .label-with-icon {
+              align-items: left;
+            }
             .switch-container {
               display: flex;
               align-items: center;
@@ -44,7 +47,7 @@
 
 .requestWithdrawListContainer {
   overflow-y: auto;
-  max-height: 32rem; // tuned w/o exact calculation, adjust as needed
+  max-height: 35rem; // tuned w/o exact calculation, adjust as needed
 }
 
 .requestWithdrawList {

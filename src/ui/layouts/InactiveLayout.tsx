@@ -13,7 +13,7 @@ const InactiveLayout: React.FC<AuthLayoutProps> = ({ ...rest }) => {
   const { global: loadingGlobal } = loading;
 
   if (wallet.current.address && !loadingGlobal) {
-    return <Navigate to={ROUTES.WALLET} />;
+    return <Navigate to={ROUTES.RECEIVE} />;
   }
 
   return (

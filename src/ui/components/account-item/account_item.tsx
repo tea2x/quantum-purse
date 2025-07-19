@@ -50,7 +50,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
   const isActive = spxLockArgs === wallet.current.spxLockArgs;
-  const isWalletPage = useLocation().pathname === "/wallet";
+  const isWalletPage = useLocation().pathname === "/settings/accounts";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const menuOptions = useMemo(
     () => [

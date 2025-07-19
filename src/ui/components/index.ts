@@ -8,6 +8,5 @@ export { default as SrpTextBox } from "./srp-text-box/srp_text_box";
 export { default as AccountDetail } from "./account-detail/account_detail";
 export { default as AccountSetting } from "./account-setting/account_setting";
 export { default as Copy } from "./copy/copy";
-export { default as CurrentAccount } from "./current-account/current_account";
 export { Explore } from "./explore/explore";
 

@@ -7,7 +7,9 @@ import {
   InputNumber,
   notification,
   Switch,
+  Tooltip
 } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../../components";
@@ -92,7 +94,6 @@ const Deposit: React.FC = () => {
         message: "Deposit transaction successfully",
         description: (
           <div>
-            <p>Please check the transaction on the explorer</p>
             <p>
               <Explore.Transaction txId={txId as string} />
             </p>
@@ -118,14 +119,21 @@ const Deposit: React.FC = () => {
 
   return (
     <section className={cx(styles.depositForm, "panel")}>
-      <h1>Deposit</h1>
+      {/* <h1>Deposit</h1> */}
       <div>
         <Form layout="vertical" form={form}>
           <Form.Item
             name="to"
             label={
               <div className="label-container">
-                To
+
+                <div className="label-with-icon">
+                  Deposit To
+                  <Tooltip title="Depositing to an address transfers the deposit's ownership too.">
+                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                  </Tooltip>
+                </div>
+
                 <div className="switch-container">
                   My Account
                   <Form.Item name="isDepositToMyAccount" style={{ marginBottom: 0 }}>

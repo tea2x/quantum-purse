@@ -18,7 +18,7 @@ import {
   Deposit,
   RequestWithdraw,
   Withdraw,
-  Wallet,
+  Accounts,
   Welcome,
 } from "./ui/pages";
 import { ROUTES } from "./ui/utils/constants";
@@ -34,17 +34,14 @@ const App: React.FC = () => {
           <Route path={ROUTES.IMPORT_WALLET} element={<ImportWallet />} />
         </Route>
         <Route path={ROUTES.HOME} element={<ActiveLayout />}>
-          <Route path={ROUTES.WALLET} element={<Wallet />} />
-          <Route path={ROUTES.SEND} element={<Send />} />
           <Route path={ROUTES.RECEIVE} element={<Receive />} />
+          <Route path={ROUTES.SEND} element={<Send />} />
           <Route path={ROUTES.NERVOS_DAO.DEPOSIT} element={<Deposit />} />
           <Route path={ROUTES.NERVOS_DAO.REQUEST_WITHDRAW} element={<RequestWithdraw />} />
           <Route path={ROUTES.NERVOS_DAO.WITHDRAW} element={<Withdraw />} />
+          <Route path={ROUTES.SETTINGS.ACCOUNTS} element={<Accounts />} />
           <Route path={ROUTES.SETTINGS.REVEAL_SRP} element={<RevealSRP />} />
-          <Route
-            path={ROUTES.SETTINGS.EJECT_WALLET}
-            element={<EjectWallet />}
-          />
+          <Route path={ROUTES.SETTINGS.EJECT_WALLET} element={<EjectWallet />} />
         </Route>
         <Route path={ROUTES.COMING_SOON} element={<CommingSoon />} />
         <Route path="*" element={<Navigate to={ROUTES.HOME} />} />

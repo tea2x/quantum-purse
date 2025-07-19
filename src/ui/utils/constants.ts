@@ -8,7 +8,6 @@ export const ROUTES = {
   IMPORT_WALLET: "/import-wallet",
   SEND: "/send",
   RECEIVE: "/receive",
-  WALLET: "/wallet",
   NERVOS_DAO: {
     HOME: "/dao",
     DEPOSIT: "/dao/deposit",
@@ -17,6 +16,7 @@ export const ROUTES = {
   },
   SETTINGS: {
     HOME: "/settings",
+    ACCOUNTS: "/settings/accounts",
     REVEAL_SRP: "/settings/reveal-srp",
     EJECT_WALLET: "/settings/eject-wallet",
   },
@@ -29,7 +29,7 @@ export const PASSWORD_ENTROPY_THRESHOLDS = {
   VERY_STRONG: 300,
 };
 
-export const CKB_DECIMALS = 100000000; // 1 CKB = 10^8 Shannons
+export const CKB_DECIMALS = 10**8; // 1 CKB = 10^8 Shannons
 export const CKB_UNIT = "CKB";
 export const CKB_EXPLORER_URL = IS_MAIN_NET
   ? "https://explorer.nervos.org"

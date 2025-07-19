@@ -1,4 +1,5 @@
-import { Button, notification, Form, Switch, Input, Empty } from "antd";
+import { Button, notification, Form, Switch, Input, Empty, Tooltip } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Explore, Authentication, AuthenticationRef, AccountSelect } from "../../../components";
@@ -130,7 +131,7 @@ const RequestWithdraw: React.FC = () => {
     return {depositHeader: header};
   };
 
-  const handleWithdraw = async (depositCell: ccc.Cell) => {
+  const handleWithdrawRequest = async (depositCell: ccc.Cell) => {
     try {
       // todo update when light client js updates ccc core.
       const { depositHeader } = await getNervosDaoInfo(depositCell);
@@ -143,10 +144,9 @@ const RequestWithdraw: React.FC = () => {
         depositBlockHash: depositBlockHash
       });
       notification.success({
-        message: "Withdraw transaction successful",
+        message: "Withdraw request transaction successful",
         description: (
           <div>
-            <p>Please check the transaction on the explorer</p>
             <p>
               <Explore.Transaction txId={txId as string} />
             </p>
@@ -155,7 +155,7 @@ const RequestWithdraw: React.FC = () => {
       });
     } catch (error) {
       notification.error({
-        message: "Withdraw transaction failed",
+        message: "Withdraw request transaction failed",
         description: formatError(error),
       });
     }
@@ -170,15 +170,22 @@ const RequestWithdraw: React.FC = () => {
   };
 
   return (
-    <section className={cx(styles.withdrawForm, "panel")}>
-      <h1>Make A Withdraw Request</h1>
+    <section className={cx(styles.withdrawRequestForm, "panel")}>
+      {/* <h1>Make A Withdraw Request</h1> */}
       <div>
         <Form layout="vertical" form={form}>
           <Form.Item
             name="to"
             label={
               <div className="label-container">
-                To
+
+                <div className="label-with-icon">
+                  Request To
+                  <Tooltip title="You can make a withdraw request to any address, or select an account from your wallet. The destination address will have the permission to withdraw/unlock.">
+                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                  </Tooltip>
+                </div>
+
                 <div className="switch-container">
                   My Account
                   <Form.Item name="isUnlockToMyAccount" style={{ marginBottom: 0 }}>
@@ -255,7 +262,7 @@ const RequestWithdraw: React.FC = () => {
                         </span>
                         <Button
                           type="primary"
-                          onClick={() => handleWithdraw(cell)}
+                          onClick={() => handleWithdrawRequest(cell)}
                           disabled={!isToValid}
                         >
                           Request
@@ -270,8 +277,8 @@ const RequestWithdraw: React.FC = () => {
         ) : (
           <Empty
             description={
-              <span style={{ color: 'var(--gray-01)' }}>
-                No deposits found.
+              <span style={{ color: 'var(--gray-01)', fontFamily: "Quantico, sans-serif" }}>
+                No deposits found to make a request from! 🫠
               </span>
             }
             image={Empty.PRESENTED_IMAGE_SIMPLE}

@@ -13,11 +13,11 @@ interface AccountDetailProps {
 const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
   return (
     <div className={styles.detailContainer}>
-      <h2>{account.name}</h2>
+      {/* <h2>{account.name}</h2> */}
 
       <Copy value={account.address!}>
         <Flex align="center" gap={8} className={styles.address}>
-          {shortenAddress(account.address!, 10, 10)}
+          {shortenAddress(account.address!, 10, 18)}
           <CopyOutlined />
         </Flex>
       </Copy>
@@ -26,7 +26,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
         {account.address && (
           <QRCodeSVG
             value={account.address}
-            size={200}
+            size={225}
             level="H" // Highest error correction level
           />
         )}

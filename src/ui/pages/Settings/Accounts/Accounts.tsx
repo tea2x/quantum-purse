@@ -13,14 +13,14 @@ import {
   Authentication,
   AuthenticationRef,
   Explore,
-} from "../../components";
-import { useAccountSearch } from "../../hooks/useAccountSearch";
-import { Dispatch, RootState } from "../../store";
-import { cx, formatError, shortenAddress } from "../../utils/methods";
-import styles from "./Wallet.module.scss";
-import { AccountItem } from "../../components/account-item/account_item";
+} from "../../../components";
+import { useAccountSearch } from "../../../hooks/useAccountSearch";
+import { Dispatch, RootState } from "../../../store";
+import { cx, formatError, shortenAddress } from "../../../utils/methods";
+import styles from "./Accounts.module.scss";
+import { AccountItem } from "../../../components/account-item/account_item";
 
-const Wallet: React.FC = () => {
+const Accounts: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
   const wallet = useSelector((state: RootState) => state.wallet);
   const {
@@ -38,12 +38,11 @@ const Wallet: React.FC = () => {
     try {
       const newAccount = await dispatch.wallet.createAccount({ password });
       notification.success({
-        message: "Create account successfully",
+        message: `Create ${newAccount.name} successfully`,
         description: (
           <div>
-            <p>{newAccount.name} has been created successfully</p>
             <Explore.Account address={newAccount.address}>
-              {shortenAddress(newAccount.address!, 10, 10)}
+              {shortenAddress(newAccount.address!, 10, 20)}
             </Explore.Account>
           </div>
         ),
@@ -93,13 +92,13 @@ const Wallet: React.FC = () => {
 
   return (
     <section className={cx(styles.wallet, "panel")}>
-      <h1>Accounts</h1>
+      {/* <h1>Accounts</h1> */}
 
       <Flex
         justify="space-between"
         align="center"
         gap={8}
-        style={{ marginBottom: 16 }}
+        style={{ marginBottom: 16, marginTop: 4 }}
       >
         <Input.Search
           placeholder="Search by name or address"
@@ -133,4 +132,4 @@ const Wallet: React.FC = () => {
   );
 };
 
-export default Wallet;
+export default Accounts;

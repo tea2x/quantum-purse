@@ -25,6 +25,9 @@
             width: 100%;
             align-items: center;
             justify-content: space-between;
+            .label-with-icon {
+              align-items: left;
+            }
             .switch-container {
               display: flex;
               align-items: center;

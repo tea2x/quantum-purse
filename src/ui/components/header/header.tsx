@@ -2,7 +2,7 @@ import { Button, Grid } from "antd";
 import React, { useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import LayoutCtx from "../../context/layout_ctx";
-import { cx, shortenAddress } from "../../utils/methods";
+import { cx, shortenAddress, formatBalance } from "../../utils/methods";
 import Icon from "../icon/icon";
 import styles from "./header.module.scss";
 import { useSelector } from "react-redux";
@@ -22,9 +22,9 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   
   const screens = useBreakpoint();
   const location = useLocation();
-  const balance = Number((Number(wallet.current?.balance) / 10**8).toFixed(2)) || 0;
-  const locked = Number((Number(wallet.current?.lockedInDao) / 10**8).toFixed(2)) || 0;
-  const noBalance = (balance === 0 && locked === 0);
+  const balance = wallet.current?.balance;
+  const locked = wallet.current?.lockedInDao;
+  const noBalance = (balance == "0" && locked == "0");
   const balanceData = noBalance
     ? [
         // fake data for no balance, creating "en empty pie" effect
@@ -32,8 +32,8 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         { name: "Locked", value: 10**8 },
     ]
     : [
-        { name: "Available", value: balance },
-        { name: "Locked", value: locked },
+        { name: "Available", value: Number(balance) },
+        { name: "Locked", value: Number(locked) },
       ];
   const syncData = [
     { name: "Synced", value: Number(Number(syncStatus?.syncedStatus).toFixed(2)) || 0 },
@@ -53,11 +53,9 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   // Define scaling factor and dynamic sizes for mobile view
   const scalingFactor = screens.md ? 1 : 0.8;
   const pieChartSize = 125 * scalingFactor;
-  const balanceInnerRadius = 20 * scalingFactor;
-  const balanceOuterRadius = 60 * scalingFactor;
-  const networkInnerRadius = 45 * scalingFactor;
-  const networkOuterRadius = 60 * scalingFactor;
-  const fontSize = Math.round(14 * scalingFactor);
+  const innerRadius = 25 * scalingFactor;
+  const outerRadius = 45 * scalingFactor;
+  const fontSize = Math.round(12 * scalingFactor);
   const tooltipFontSize = Math.round(10 * scalingFactor);
   const labelStyle = {
     fontSize: `${fontSize}px`,
@@ -67,25 +65,26 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   return (
     <header className={cx(styles.header, className)} {...rest}>
       <>
-        <div className={styles.balancePieChart}>
+        <div className={styles.pieChartContainer}>
           <PieChart width={pieChartSize} height={pieChartSize}>
             <Pie
               data={balanceData}
               cx="50%"
               cy="50%"
-              innerRadius={balanceInnerRadius}
-              outerRadius={balanceOuterRadius}
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
               startAngle={90}
               endAngle={-270}
               dataKey="value"
-              animationDuration={700}
+              animationDuration={500}
               animationEasing="ease-in-out"
-              animationBegin={50}
+              animationBegin={10}
+              stroke="none"
             >
               <Cell fill="#00B27A" />
-              <Cell fill={noBalance ? "#444" : "#f9652f"} />
+              <Cell fill="#444" />
               <Label
-                value={"CKB"}
+                value={`Acc ${wallet.current.name.split(" ")[1]}`}
                 position="center"
                 fill="var(--gray-01)"
                 style={labelStyle}
@@ -93,39 +92,39 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             </Pie>
             {!screens.md && !noBalance && (
               <RechartsTooltip
-                formatter={(value, name) => `${value} CKB`}
+                formatter={(value, name) => `${(Number(value)/10**8).toFixed(0)} CKB`}
                 contentStyle={{ fontSize: `${tooltipFontSize}px` }}
               />
             )}
           </PieChart>
           {screens.md && (
             <div className={styles.pieChartDetails}>
-              <span>{wallet.current.name}</span>
-              <span>Liquid: {balance} CKB</span>
-              <span>DAO: {locked} CKB</span>
+              <span>Liquid: {formatBalance(balance as string)}</span>
+              <span>Locked: {formatBalance(locked as string)}</span>
             </div>
           )}
         </div>
 
-        <div className={styles.syncPieChart}>
+        <div className={styles.pieChartContainer}>
           <PieChart width={pieChartSize} height={pieChartSize}>
             <Pie
               data={syncData}
               cx="50%"
               cy="50%"
-              innerRadius={networkInnerRadius}
-              outerRadius={networkOuterRadius}
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
               startAngle={90}
               endAngle={-270}
               dataKey="value"
-              animationDuration={1500}
+              animationDuration={2000}
               animationEasing="ease-in-out"
               animationBegin={20}
+              stroke="none"
             >
               <Cell fill="#2196F3" />
               <Cell fill="#444" />
               <Label
-                value={`SYNC ${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
+                value={`${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
                 position="center"
                 fill="var(--gray-01)"
                 style={labelStyle}
@@ -147,22 +146,23 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           )}
         </div>
 
-        <div className={styles.p2pNetworkStatusPieChart}>
+        <div className={styles.pieChartContainer}>
           <PieChart width={pieChartSize} height={pieChartSize}>
             <Pie
               data={peersData}
               cx="50%"
               cy="50%"
-              innerRadius={networkInnerRadius}
-              outerRadius={networkOuterRadius}
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
               startAngle={90}
               endAngle={-270}
               dataKey="value"
-              animationDuration={200}
+              animationDuration={500}
               animationEasing="ease-in-out"
-              animationBegin={200}
+              animationBegin={20}
+              stroke="none"
             >
-              <Cell fill="#FFEB3B" />
+              <Cell fill="#f9652f" />
               <Cell fill="#444" />
               <Label
                 value="P2P"

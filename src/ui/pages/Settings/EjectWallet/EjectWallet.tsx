@@ -1,12 +1,12 @@
-import { Button, Modal } from "antd";
+import { Button } from "antd";
 import { useDispatch } from "react-redux";
-import { Dispatch } from "../../store";
-import { cx } from "../../utils/methods";
+import { Dispatch } from "../../../store";
+import { cx } from "../../../utils/methods";
 import styles from "./EjectWallet.module.scss";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "../../utils/constants";
+import { ROUTES } from "../../../utils/constants";
 import React, { useState } from "react";
-import ConfirmDeleteWalletModal from "../../components/delete-wallet-confirm/delete_wallet_confirm";
+import ConfirmDeleteWalletModal from "../../../components/delete-wallet-confirm/delete_wallet_confirm";
 
 const EjectWallet: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const EjectWallet: React.FC = () => {
 
   return (
     <section className={cx(styles.ejectWallet, "panel")}>
-      <h1>Eject Wallet</h1>
+      {/* <h1>Eject Wallet</h1> */}
       <div className={styles.content}>
         <p>WARNING! This action removes all keys and the mnemonic seed.<br />Be sure to have a backup of your mnemonic seed phrase!</p>
         <Button 

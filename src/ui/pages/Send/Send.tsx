@@ -7,7 +7,9 @@ import {
   InputNumber,
   notification,
   Switch,
+  Tooltip
 } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../components";
@@ -68,7 +70,6 @@ const Send: React.FC = () => {
         message: "Send transaction successfully",
         description: (
           <div>
-            <p>Please check the transaction on the explorer</p>
             <p>
               <Explore.Transaction txId={txId as string} />
             </p>
@@ -124,14 +125,21 @@ const Send: React.FC = () => {
 
   return (
     <section className={cx(styles.sendForm, "panel")}>
-      <h1>Send</h1>
+      {/* <h1>Send</h1> */}
       <div>
         <Form layout="vertical" form={form}>
           <Form.Item
             name="to"
             label={
               <div className="label-container">
-                To
+
+                <div className="label-with-icon">
+                  Send To
+                  <Tooltip title="You can send to any address, or send to yourself by selecting an account from your wallet.">
+                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                  </Tooltip>
+                </div>
+
                 <div className="switch-container">
                   My Account
                   <Form.Item name="isSendToMyAccount" style={{ marginBottom: 0 }}>
