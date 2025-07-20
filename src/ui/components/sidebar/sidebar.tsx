@@ -1,10 +1,13 @@
-import { Menu, MenuProps } from "antd";
+import { Menu, MenuProps, Grid } from "antd";
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ROUTES } from "../../utils/constants";
 import { cx } from "../../utils/methods";
 import styles from "./sidebar.module.scss";
 import Icon from "../icon/icon";
+import CurrentAccount from "../current-account/current_account";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 
 type MenuItem = Required<MenuProps>["items"][number];
 const items: MenuItem[] = [
@@ -90,9 +93,22 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 const Sidebar: React.FC<SidebarProps> = () => {
   const location = useLocation();
   const defaultOpenKeys = getDefaultOpenKeys(location.pathname, items);
+  const wallet = useSelector((state: RootState) => state.wallet);
+  const { useBreakpoint } = Grid;
+  const screens = useBreakpoint();
 
   return (
     <nav className={cx("panel", styles.sidebar)}>
+      <div className="current-account">
+        {!screens.md && (
+          <CurrentAccount
+            address={wallet.current.address!}
+            name={wallet.current.name}
+            balance={wallet.current.balance!}
+            lockedInDao={wallet.current.lockedInDao}
+          />
+        )}
+      </div>
       <Menu
         mode="inline"
         items={items}
