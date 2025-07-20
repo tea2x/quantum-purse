@@ -181,7 +181,7 @@ const RequestWithdraw: React.FC = () => {
 
                 <div className="label-with-icon">
                   Request To
-                  <Tooltip title="You can make a withdraw request to any address, or select an account from your wallet. The destination address will have the permission to withdraw/unlock.">
+                  <Tooltip title="You can make a withdraw request to any address, or select an account from your wallet.">
                     <QuestionCircleOutlined style={{ marginLeft: 4 }} />
                   </Tooltip>
                 </div>

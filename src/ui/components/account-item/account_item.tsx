@@ -95,7 +95,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
           <span className="address">
             {screens.md ? (
               <span>
-                {shortenAddress(address, 20, 30)}
+                {shortenAddress(address, 10, 70)}
               </span>
             ) : (
               <span>

@@ -129,7 +129,7 @@ const Deposit: React.FC = () => {
 
                 <div className="label-with-icon">
                   Deposit To
-                  <Tooltip title="Depositing to an address transfers the deposit's ownership too.">
+                  <Tooltip title="Notice: Depositing to an address transfers the deposit's ownership too.">
                     <QuestionCircleOutlined style={{ marginLeft: 4 }} />
                   </Tooltip>
                 </div>

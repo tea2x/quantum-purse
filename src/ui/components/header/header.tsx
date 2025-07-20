@@ -53,8 +53,8 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   // Define scaling factor and dynamic sizes for mobile view
   const scalingFactor = screens.md ? 1 : 0.8;
   const pieChartSize = 125 * scalingFactor;
-  const innerRadius = 25 * scalingFactor;
-  const outerRadius = 45 * scalingFactor;
+  const innerRadius = 45 * scalingFactor;
+  const outerRadius = 50 * scalingFactor;
   const fontSize = Math.round(12 * scalingFactor);
   const tooltipFontSize = Math.round(10 * scalingFactor);
   const labelStyle = {
@@ -84,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               <Cell fill="#00B27A" />
               <Cell fill="#444" />
               <Label
-                value={`Acc ${wallet.current.name.split(" ")[1]}`}
+                value={wallet.current.name}
                 position="center"
                 fill="var(--gray-01)"
                 style={labelStyle}
@@ -124,7 +124,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               <Cell fill="#2196F3" />
               <Cell fill="#444" />
               <Label
-                value={`${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
+                value={`SYNC ${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
                 position="center"
                 fill="var(--gray-01)"
                 style={labelStyle}
