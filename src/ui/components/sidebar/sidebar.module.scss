@@ -30,10 +30,14 @@
     .ant-menu-item-selected svg path {
       fill: var(--black);
     }
+
+    .ant-menu-item-divider {
+      border-color: var(--black);
+    }
   }
   
   :global(.ant-menu) {
-    background-image: url("../assets/background_blur.jpg");
+    background-color: rgb(29, 29, 29);
     background-position: center top;
     background-size: cover;
     @media (min-width: 768px) {
@@ -48,7 +52,7 @@
     right: 0;
     z-index: 1000;
     max-width: 30rem;
-    margin: 0 auto;
+    margin: 2rem auto;
     box-shadow: 0 0.4rem 1.2rem rgba(255, 255, 255, 0.25);
   }
 

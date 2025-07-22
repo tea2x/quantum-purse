@@ -91,7 +91,7 @@ const Deposit: React.FC = () => {
       });
       form.resetFields();
       notification.success({
-        message: "Deposit transaction successfully",
+        message: "Deposit transaction successful",
         description: (
           <div>
             <p>

@@ -17,9 +17,15 @@ const items: MenuItem[] = [
     label: <NavLink to={ROUTES.RECEIVE}>Receive</NavLink>,
   },
   {
+    type: "divider",
+  },
+  {
     key: ROUTES.SEND,
     icon: <Icon.Send />,
     label: <NavLink to={ROUTES.SEND}>Send</NavLink>,
+  },
+  {
+    type: "divider",
   },
   {
     key: ROUTES.NERVOS_DAO.HOME,

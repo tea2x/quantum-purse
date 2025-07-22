@@ -52,8 +52,8 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
 
   // Define scaling factor and dynamic sizes for mobile view
   const scalingFactor = screens.md ? 1 : 0.8;
-  const pieChartSize = 125 * scalingFactor;
-  const innerRadius = 45 * scalingFactor;
+  const pieChartSize = 110 * scalingFactor;
+  const innerRadius = 30 * scalingFactor;
   const outerRadius = 50 * scalingFactor;
   const fontSize = Math.round(12 * scalingFactor);
   const tooltipFontSize = Math.round(10 * scalingFactor);
@@ -65,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   return (
     <header className={cx(styles.header, className)} {...rest}>
       <>
-        <div className={styles.pieChartContainer}>
+        <div className={styles.statusSection}>
           <PieChart width={pieChartSize} height={pieChartSize}>
             <Pie
               data={balanceData}
@@ -84,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               <Cell fill="#00B27A" />
               <Cell fill="#444" />
               <Label
-                value={wallet.current.name}
+                value="CKB"
                 position="center"
                 fill="var(--gray-01)"
                 style={labelStyle}
@@ -98,14 +98,17 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             )}
           </PieChart>
           {screens.md && (
-            <div className={styles.pieChartDetails}>
-              <span>Liquid: {formatBalance(balance as string)}</span>
-              <span>Locked: {formatBalance(locked as string)}</span>
+            <div className={styles.statusDetails}>
+              <span>{wallet.current.name}</span>
+              <span>Available: {formatBalance(balance as string)}</span>
+              <span>Deposited: {formatBalance(locked as string)}</span>
             </div>
           )}
+
+          
         </div>
 
-        <div className={styles.pieChartContainer}>
+        <div className={styles.statusSection}>
           <PieChart width={pieChartSize} height={pieChartSize}>
             <Pie
               data={syncData}
@@ -124,7 +127,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
               <Cell fill="#2196F3" />
               <Cell fill="#444" />
               <Label
-                value={`SYNC ${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
+                value={`${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
                 position="center"
                 fill="var(--gray-01)"
                 style={labelStyle}
@@ -138,7 +141,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             )}
           </PieChart>
           {screens.md && (
-            <div className={styles.pieChartDetails}>
+            <div className={styles.statusDetails}>
               <span>Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}</span>
               <span>Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()}</span>
               <span>Start: {syncStatus && syncStatus.startBlock.toLocaleString()}</span>
@@ -146,7 +149,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
           )}
         </div>
 
-        <div className={styles.pieChartContainer}>
+        <div className={styles.statusSection}>
           <PieChart width={pieChartSize} height={pieChartSize}>
             <Pie
               data={peersData}
@@ -179,18 +182,18 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             )}
           </PieChart>
           {screens.md && (
-            <div className={styles.pieChartDetails}>
+            <div className={styles.statusDetails}>
               <div>
                 Id: {" "}
                 {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
                   <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
-                    <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 2, 3)}</span>
+                    <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 3, 5)}</span>
                   </Copy>
                 ) : (
                   <span>{syncStatus.nodeId}</span>
                 )}
               </div>
-              <span>Peers: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}</span>
+              <span>Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}</span>
             </div>
           )}
         </div>

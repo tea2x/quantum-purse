@@ -67,7 +67,7 @@ const Send: React.FC = () => {
       });
       form.resetFields();
       notification.success({
-        message: "Send transaction successfully",
+        message: "Send transaction successful",
         description: (
           <div>
             <p>
