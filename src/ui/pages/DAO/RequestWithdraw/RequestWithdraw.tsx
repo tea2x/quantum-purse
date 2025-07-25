@@ -189,7 +189,7 @@ const RequestWithdraw: React.FC = () => {
                 <div className="switch-container">
                   My Account
                   <Form.Item name="isUnlockToMyAccount" style={{ marginBottom: 0 }}>
-                    <Switch />
+                    <Switch size="small"/>
                   </Form.Item>
                 </div>
               </div>

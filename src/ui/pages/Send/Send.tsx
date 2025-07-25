@@ -59,12 +59,45 @@ const Send: React.FC = () => {
     }
   }, [quantumPurse]);
 
+  // Fetch the account balance
+  useEffect(() => {
+    if (!wallet.current?.spxLockArgs) return;
+
+    const getBalance = async () => {
+      const balance = await dispatch.wallet.getAccountBalance({
+        spxLockArgs: wallet.current!.spxLockArgs,
+      });
+      setFromAccountBalance(balance);
+    };
+
+    getBalance();
+  }, [wallet, dispatch]);
+
+  // pre-validate fields when balance updates
+  useEffect(() => {
+    if (fromAccountBalance !== null) {
+      form.validateFields(["from"]);
+      if (values?.amount) {
+        form.validateFields(["amount"]);
+      }
+    }
+  }, [fromAccountBalance, form]);
+
+  // fill amount when send max
+  useEffect(() => {
+    if (values?.isMax && fromAccountBalance) {
+      const maxAmount = Number(fromAccountBalance) / CKB_DECIMALS;
+      form.setFieldsValue({ amount: maxAmount });
+    } else if (values?.isMax === false) {
+      form.setFieldsValue({ amount: undefined });
+    }
+  }, [values?.isMax, fromAccountBalance]);
+
   const handleSend = async () => {
     try {
-      const txId = await dispatch.wallet.send({
-        to: values.to,
-        amount: values.amount
-      });
+      const txId = values?.isMax
+        ? await dispatch.wallet.sendAll({ to: values.to })
+        : await dispatch.wallet.send({ to: values.to, amount: values.amount});
       form.resetFields();
       notification.success({
         message: "Send transaction successful",
@@ -93,36 +126,6 @@ const Send: React.FC = () => {
     authenticationRef.current?.close();
   };
 
-  useEffect(() => {
-    form.setFieldsValue({
-      from: wallet.current.address,
-    });
-  }, [wallet.current.address]);
-
-  // Fetch the account balance
-  useEffect(() => {
-    if (!wallet.current?.spxLockArgs) return;
-
-    const getBalance = async () => {
-      const balance = await dispatch.wallet.getAccountBalance({
-        spxLockArgs: wallet.current!.spxLockArgs,
-      });
-      setFromAccountBalance(balance);
-    };
-
-    getBalance();
-  }, [wallet, dispatch]);
-
-  // pre-validate fields when balance updates
-  useEffect(() => {
-    if (fromAccountBalance !== null) {
-      form.validateFields(["from"]);
-      if (values?.amount) {
-        form.validateFields(["amount"]);
-      }
-    }
-  }, [fromAccountBalance, form]);
-
   return (
     <section className={cx(styles.sendForm, "panel")}>
       {/* <h1>Send</h1> */}
@@ -130,6 +133,7 @@ const Send: React.FC = () => {
         <Form layout="vertical" form={form}>
           <Form.Item
             name="to"
+            className={cx("field-to", values?.isSendToMyAccount && "select-my-account")}
             label={
               <div className="label-container">
 
@@ -141,9 +145,9 @@ const Send: React.FC = () => {
                 </div>
 
                 <div className="switch-container">
-                  My Account
+                  My Wallet
                   <Form.Item name="isSendToMyAccount" style={{ marginBottom: 0 }}>
-                    <Switch />
+                    <Switch size="small"/>
                   </Form.Item>
                 </div>
               </div>
@@ -162,7 +166,6 @@ const Send: React.FC = () => {
                 },
               },
             ]}
-            className={cx("field-to", values?.isSendToMyAccount && "select-my-account")}
           >
             {!values?.isSendToMyAccount ? (
               <Input placeholder="Input the destination address" />
@@ -173,16 +176,33 @@ const Send: React.FC = () => {
               />
             )}
           </Form.Item>
+
           <Form.Item
-            className="amount"
+            // className="amount"
+            className={cx("field-to")} //using the same class for style consistency
             name="amount"
-            label="Amount"
+            label={
+              <div className="label-container">
+
+                <div className="label-with-icon">
+                  Amount
+                </div>
+
+                <div className="switch-container">
+                  Maximum
+                  <Form.Item name="isMax" style={{ marginBottom: 0 }}>
+                    <Switch size="small"/>
+                  </Form.Item>
+                </div>
+              </div>
+            }
             rules={[
-              { required: true, message: "Please input amount" },
-              { type: "number", min: 73, message: "Amount must be at least 73 CKB" },
+              { required: true, message: "Amount required!" },
+              // { type: "number", min: 73, message: "Amount must be at least 73 CKB" },
               {
                 validator: (_, value) => {
                   if (
+                    !values?.isMax &&
                     fromAccountBalance &&
                     value &&
                     BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
@@ -195,12 +215,12 @@ const Send: React.FC = () => {
             ]}
           >
             <InputNumber
-              step={1}
-              addonAfter={CKB_UNIT}
-              controls
-              placeholder="Amount of tokens"
+              placeholder="Enter amount"
+              controls={false}
+              style={{ width: "100%" }}
             />
           </Form.Item>
+
           <Form.Item>
             <Flex justify="end">
               <Button
@@ -208,6 +228,7 @@ const Send: React.FC = () => {
                 onClick={handleSend}
                 disabled={!submittable || loadingSend}
                 loading={loadingSend}
+                style={{ width: "100%" }}
               >
                 Send
               </Button>

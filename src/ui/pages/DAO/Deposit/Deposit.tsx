@@ -83,12 +83,21 @@ const Deposit: React.FC = () => {
     }
   }, [fromAccountBalance, form]);
 
+  // fill amount when deposit max
+  useEffect(() => {
+    if (values?.isMax && fromAccountBalance) {
+      const maxAmount = Number(fromAccountBalance) / CKB_DECIMALS;
+      form.setFieldsValue({ amount: maxAmount });
+    } else if (values?.isMax === false) {
+      form.setFieldsValue({ amount: undefined });
+    }
+  }, [values?.isMax, fromAccountBalance]);
+
   const handleDeposit = async () => {
     try {
-      const txId = await dispatch.wallet.deposit({
-        to: values.to,
-        amount: values.amount
-      });
+      const txId = values?.isMax
+        ? await dispatch.wallet.depositAll({to: values.to})
+        : await dispatch.wallet.deposit({to: values.to, amount: values.amount});
       form.resetFields();
       notification.success({
         message: "Deposit transaction successful",
@@ -124,6 +133,7 @@ const Deposit: React.FC = () => {
         <Form layout="vertical" form={form}>
           <Form.Item
             name="to"
+            className={cx("field-to", values?.isDepositToMyAccount && "select-my-account")}
             label={
               <div className="label-container">
 
@@ -135,9 +145,9 @@ const Deposit: React.FC = () => {
                 </div>
 
                 <div className="switch-container">
-                  My Account
+                  My Wallet
                   <Form.Item name="isDepositToMyAccount" style={{ marginBottom: 0 }}>
-                    <Switch />
+                    <Switch size="small"/>
                   </Form.Item>
                 </div>
               </div>
@@ -156,7 +166,6 @@ const Deposit: React.FC = () => {
                 },
               },
             ]}
-            className={cx("field-to", values?.isDepositToMyAccount && "select-my-account")}
           >
             {!values?.isDepositToMyAccount ? (
               <Input placeholder="Input the destination address" />
@@ -167,16 +176,33 @@ const Deposit: React.FC = () => {
               />
             )}
           </Form.Item>
+
           <Form.Item
-            className="amount"
+            // className="amount"
+            className={cx("field-to")} //using the same class for style consistency
             name="amount"
-            label="Amount"
+            label={
+              <div className="label-container">
+
+                <div className="label-with-icon">
+                  Amount
+                </div>
+
+                <div className="switch-container">
+                  Maximum
+                  <Form.Item name="isMax" style={{ marginBottom: 0 }}>
+                    <Switch size="small"/>
+                  </Form.Item>
+                </div>
+              </div>
+            }
             rules={[
-              { required: true, message: "Please input amount" },
-              { type: "number", min: 114, message: "Deposit amount must be at least 114 CKB" },
+              { required: true, message: "Amount required!" },
+              // { type: "number", min: 114, message: "Deposit amount must be at least 114 CKB" },
               {
                 validator: (_, value) => {
                   if (
+                    !values?.isMax &&
                     fromAccountBalance &&
                     value &&
                     BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
@@ -189,10 +215,9 @@ const Deposit: React.FC = () => {
             ]}
           >
             <InputNumber
-              step={1}
-              addonAfter={CKB_UNIT}
-              controls
-              placeholder="Amount of tokens"
+              controls={false}
+              placeholder="Enter amount"
+              style={{ width: "100%" }}
             />
           </Form.Item>
           <Form.Item>
@@ -202,6 +227,7 @@ const Deposit: React.FC = () => {
                 onClick={handleDeposit}
                 disabled={!submittable || loadingDeposit}
                 loading={loadingDeposit}
+                style={{ width: "100%" }}
               >
                 Deposit
               </Button>

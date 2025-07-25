@@ -567,8 +567,45 @@ export default class QuantumPurse extends QPSigner {
     const tx = ccc.Transaction.from({
         outputs: [
           {
-            lock: (await ccc.Address.fromString(to, this.client)).script,
-            capacity: ccc.fixedPointFrom(amount)
+            lock: (await ccc.Address.fromString(to, this.client)).script
+          }
+        ]
+      }
+    );
+
+    if (ccc.fixedPointFrom(amount) < tx.outputs[0].capacity) {
+      throw(Error("Minimal transfer amount is " + ccc.fixedPointToString(tx.outputs[0].capacity)));
+    }
+    tx.outputs[0].capacity = ccc.fixedPointFrom(amount);
+    
+    // cell deps
+    tx.addCellDeps([
+      {
+        outPoint: SPHINCSPLUS_LOCK.outPoint,
+        depType: SPHINCSPLUS_LOCK.depType as DepType,
+      }
+    ]);
+
+    await tx.completeInputsByCapacity(this);
+    await tx.completeFeeBy(this, FEE_RATE);
+    const hash = await this.sendTransaction(tx);
+    return hash;
+  }
+
+  /**
+   * CKB transfer all from the current Quantum Purse address.
+   *
+   * @param to - The recipient's address.
+   * @returns A Promise that resolves to a transaction hash when successful.
+   * @throws Error if Light client is not ready / insufficient balance.
+   */
+  public async transferAll(to: Address): Promise<Hex> {
+    if (!this.hasClientStarted) throw new Error("Light client has not initialized");
+
+    const tx = ccc.Transaction.from({
+        outputs: [
+          {
+            lock: (await ccc.Address.fromString(to, this.client)).script
           }
         ]
       }
@@ -582,8 +619,9 @@ export default class QuantumPurse extends QPSigner {
       }
     ]);
 
-    await tx.completeInputsByCapacity(this);
-    await tx.completeFeeBy(this, FEE_RATE);
+    await tx.completeInputsAll(this);
+    await tx.completeFeeChangeToOutput(this, 0, FEE_RATE);
+
     const hash = await this.sendTransaction(tx);
     return hash;
   }
@@ -622,7 +660,7 @@ export default class QuantumPurse extends QPSigner {
       outputsData: ["00".repeat(8)],
     });
 
-    if (tx.outputs[0].capacity > ccc.fixedPointFrom(amount)) {
+    if (ccc.fixedPointFrom(amount) < tx.outputs[0].capacity) {
       throw(Error("Minimal deposit amount is " + ccc.fixedPointToString(tx.outputs[0].capacity)));
     }
     tx.outputs[0].capacity = ccc.fixedPointFrom(amount);
@@ -641,6 +679,54 @@ export default class QuantumPurse extends QPSigner {
 
     await tx.completeInputsByCapacity(this);
     await tx.completeFeeBy(this, FEE_RATE);
+    const hash = await this.sendTransaction(tx);
+    return hash;
+  }
+
+  /**
+   * Nervos DAO deposit all.
+   * See https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0023-dao-deposit-withdraw/0023-dao-deposit-withdraw.md#deposit
+   * Reusing some codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
+   *
+   * @param to - The recipient's address.
+   * @returns A Promise that resolves to a transaction hash when successful.
+   * @throws Error if Light client is not ready / insufficient balance.
+   */
+  public async daoDepositAll(to: Address): Promise<Hex> {
+    if (!this.hasClientStarted) throw new Error("Light client has not initialized");
+
+    // initialize configuration
+    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
+    initializeConfig(configuration);
+
+    const tx = ccc.Transaction.from({
+      outputs: [
+        {
+          lock: addressToScript(to),
+          type: {
+            codeHash: NERVOS_DAO.codeHash,
+            hashType: NERVOS_DAO.hashType as HashType,
+            args: "0x",
+          },
+        },
+      ],
+      outputsData: ["00".repeat(8)],
+    });
+
+    // cell deps
+    tx.addCellDeps([
+      {
+        outPoint: SPHINCSPLUS_LOCK.outPoint,
+        depType: SPHINCSPLUS_LOCK.depType as DepType,
+      },
+      {
+        outPoint: NERVOS_DAO.outPoint,
+        depType: NERVOS_DAO.depType as DepType,
+      }
+    ]);
+    
+    await tx.completeInputsAll(this);
+    await tx.completeFeeChangeToOutput(this, 0, FEE_RATE);
     const hash = await this.sendTransaction(tx);
     return hash;
   }

@@ -208,7 +208,7 @@ const Withdraw: React.FC = () => {
                 <div className="switch-container">
                   My Account
                   <Form.Item name="withdrawToMyAccount" style={{ marginBottom: 0 }}>
-                    <Switch />
+                    <Switch size="small"/>
                   </Form.Item>
                 </div>
               </div>

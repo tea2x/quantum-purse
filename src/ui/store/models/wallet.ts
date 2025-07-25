@@ -243,9 +243,14 @@ export const wallet = createModel<RootModel>()({
     async send({ to, amount }, rootState) {
       try {
         const txid = await quantum.transfer(to, amount);
-        // if (to === rootState.wallet.current.address) {
-        //   this.loadCurrentAccount({});
-        // }
+        return txid;
+      } catch (error) {
+        throw error;
+      }
+    },
+    async sendAll({ to }, rootState) {
+      try {
+        const txid = await quantum.transferAll(to);
         return txid;
       } catch (error) {
         throw error;
@@ -254,6 +259,14 @@ export const wallet = createModel<RootModel>()({
     async deposit({ to, amount }, rootState) {
       try {
         const txid = await quantum.daoDeposit(to, amount);
+        return txid;
+      } catch (error) {
+        throw error;
+      }
+    },
+    async depositAll({ to }, rootState) {
+      try {
+        const txid = await quantum.daoDepositAll(to);
         return txid;
       } catch (error) {
         throw error;
