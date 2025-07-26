@@ -8,7 +8,8 @@
     height: 50rem;
   }
   @media (max-width: 768px) {
-    padding-top: 1.2rem;
+    background: rgb(29,29,29);
+    border-radius: 0.5rem;
   }
 
   :global {
@@ -38,8 +39,6 @@
   
   :global(.ant-menu) {
     background-color: rgb(29, 29, 29);
-    background-position: center top;
-    background-size: cover;
     @media (min-width: 768px) {
       flex-basis: 20rem;
       background: rgba(255, 255, 255, 0);

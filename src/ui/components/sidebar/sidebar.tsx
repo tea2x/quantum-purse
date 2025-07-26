@@ -104,17 +104,15 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const screens = useBreakpoint();
 
   return (
-    <nav className={cx("panel", styles.sidebar)}>
-      <div className="current-account">
-        {!screens.md && (
-          <CurrentAccount
-            address={wallet.current.address!}
-            name={wallet.current.name}
-            balance={wallet.current.balance!}
-            lockedInDao={wallet.current.lockedInDao}
-          />
-        )}
-      </div>
+    <nav className={cx(styles.sidebar)}>
+      {!screens.md && (
+        <CurrentAccount
+          address={wallet.current.address!}
+          name={wallet.current.name}
+          balance={wallet.current.balance!}
+          lockedInDao={wallet.current.lockedInDao}
+        />
+      )}
       <Menu
         mode="inline"
         items={items}

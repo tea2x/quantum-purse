@@ -135,8 +135,9 @@ html {
 
 body {
   margin: 0;
-  background-color: rgb(24, 24, 24);
-  background-position: center top;
+  /* background-color: rgb(24, 24, 24); */
+  background-image: url('./ui/components/assets/background.jpg');
+  background-size: cover;
 }
 
 :root {
