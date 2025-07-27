@@ -9,4 +9,4 @@ export { default as AccountDetail } from "./account-detail/account_detail";
 export { default as AccountSetting } from "./account-setting/account_setting";
 export { default as Copy } from "./copy/copy";
 export { Explore } from "./explore/explore";
-
+export { default as FeeRateSelect } from "./fee-rate/fee_rate";

@@ -106,7 +106,10 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         label={<span style={{ color: "var(--gray-01)" }}>Password</span>}
         rules={passwordRules}
       >
-        <Input.Password size="large" />
+        <Input.Password
+          size="large"
+          className={styles.inputField}
+        />
       </Form.Item>
 
       <Form.Item
@@ -125,7 +128,10 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
           }),
         ]}
       >
-        <Input.Password size="large" />
+        <Input.Password
+          size="large"
+          className={styles.inputField}
+        />
       </Form.Item>
 
       <Form.Item
@@ -215,7 +221,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
         rules={[
           {
             required: true,
-            message: "Please input your seed recovery phrase",
+            message: "",
           },
           {
             validator: (_, value) => {

@@ -1,0 +1,63 @@
+.feeRate {
+  font-family: quantico, sans-serif;
+
+  .feeRateContainer {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .feeOption {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+
+    &.selected {
+      border: 1px solid var(--teal-2);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    &:hover {
+      border: 1px solid var(--teal-2);
+    }
+  }
+
+  .feeContent {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feeName {
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+
+  .feeValue {
+    font-size: 1.2rem;
+    color: #595959;
+  }
+
+  .customInput {
+    margin-top: 3rem;
+
+    .customInputField {
+      width: 100%;
+      height: 5rem;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      color: var(--gray-02);
+      background: transparent;
+
+      &:focus {
+        outline: none;
+        border-color: #1890ff;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+      }
+    }
+  }
+}

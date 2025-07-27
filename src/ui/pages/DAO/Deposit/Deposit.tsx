@@ -4,7 +4,6 @@ import {
   Flex,
   Form,
   Input,
-  InputNumber,
   notification,
   Switch,
   Tooltip
@@ -12,7 +11,7 @@ import {
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../../components";
+import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
 import { CKB_DECIMALS, CKB_UNIT } from "../../../utils/constants";
 import { cx, formatError } from "../../../utils/methods";
@@ -33,6 +32,7 @@ const Deposit: React.FC = () => {
     resolve: (password: string) => void;
     reject: () => void;
   } | null>(null);
+  const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -93,11 +93,16 @@ const Deposit: React.FC = () => {
     }
   }, [values?.isMax, fromAccountBalance]);
 
+  // Catch fee rate changes from FeeRateSelect component
+  const handleFeeRateChange = (feeRate: number) => {
+    setFeeRate(feeRate);
+  };
+
   const handleDeposit = async () => {
     try {
       const txId = values?.isMax
-        ? await dispatch.wallet.depositAll({to: values.to})
-        : await dispatch.wallet.deposit({to: values.to, amount: values.amount});
+        ? await dispatch.wallet.depositAll({to: values.to, feeRate})
+        : await dispatch.wallet.deposit({to: values.to, amount: values.amount, feeRate});
       form.resetFields();
       notification.success({
         message: "Deposit transaction successful",
@@ -168,7 +173,10 @@ const Deposit: React.FC = () => {
             ]}
           >
             {!values?.isDepositToMyAccount ? (
-              <Input placeholder="Input the destination address" />
+              <Input
+                placeholder="Input the destination address"
+                className={styles.inputField}
+              />
             ) : (
               <AccountSelect
                 accounts={wallet.accounts}
@@ -214,12 +222,20 @@ const Deposit: React.FC = () => {
               },
             ]}
           >
-            <InputNumber
-              controls={false}
-              placeholder="Enter amount"
-              style={{ width: "100%" }}
+            <Input
+              placeholder="Enter deposit amount"
+              className={styles.inputField}
             />
           </Form.Item>
+
+          <Form.Item
+            className={cx("field-to")}
+            name="feeRate"
+            label={"Fee Rate"}
+          >
+            <FeeRateSelect onFeeRateChange={handleFeeRateChange} />
+          </Form.Item>
+
           <Form.Item>
             <Flex justify="end">
               <Button
@@ -227,7 +243,7 @@ const Deposit: React.FC = () => {
                 onClick={handleDeposit}
                 disabled={!submittable || loadingDeposit}
                 loading={loadingDeposit}
-                style={{ width: "100%" }}
+                className={styles.depositButton}
               >
                 Deposit
               </Button>

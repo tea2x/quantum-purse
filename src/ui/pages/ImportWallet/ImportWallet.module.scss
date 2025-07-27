@@ -1,8 +1,8 @@
 .importWallet {
   width: 100%;
-  height: 50rem;
+  height: 55rem;
   padding: 24px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
   margin: 0 auto;
   padding: 3.6rem 3.6rem;
   display: flex;
@@ -98,8 +98,9 @@
   }
   textarea {
     width: 42rem;
+    height: fit-content;
     font-family: monospace;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     line-height: 1.5;
     margin: 0;
     word-break: break-word;
@@ -109,4 +110,12 @@
       width: 35rem;
     }
   }
+}
+
+.inputField {
+  width: 100%;
+  height: 4rem;
+  background-color: transparent !important;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }

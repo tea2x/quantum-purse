@@ -240,49 +240,49 @@ export const wallet = createModel<RootModel>()({
         throw error;
       }
     },
-    async send({ to, amount }, rootState) {
+    async send({ to, amount, feeRate }, rootState) {
       try {
-        const txid = await quantum.transfer(to, amount);
+        const txid = await quantum.transfer(to, amount, feeRate);
         return txid;
       } catch (error) {
         throw error;
       }
     },
-    async sendAll({ to }, rootState) {
+    async sendAll({ to, feeRate }, rootState) {
       try {
-        const txid = await quantum.transferAll(to);
+        const txid = await quantum.transferAll(to, feeRate);
         return txid;
       } catch (error) {
         throw error;
       }
     },
-    async deposit({ to, amount }, rootState) {
+    async deposit({ to, amount, feeRate }, rootState) {
       try {
-        const txid = await quantum.daoDeposit(to, amount);
+        const txid = await quantum.daoDeposit(to, amount, feeRate);
         return txid;
       } catch (error) {
         throw error;
       }
     },
-    async depositAll({ to }, rootState) {
+    async depositAll({ to, feeRate }, rootState) {
       try {
-        const txid = await quantum.daoDepositAll(to);
+        const txid = await quantum.daoDepositAll(to, feeRate);
         return txid;
       } catch (error) {
         throw error;
       }
     },
-    async requestWithdraw({ to, depositCell, depositBlockNum, depositBlockHash }, rootState) {
+    async requestWithdraw({ to, depositCell, depositBlockNum, depositBlockHash, feeRate }, rootState) {
       try {
-        const txid = await quantum.daoRequestWithdraw(to, depositCell, depositBlockNum, depositBlockHash);
+        const txid = await quantum.daoRequestWithdraw(to, depositCell, depositBlockNum, depositBlockHash, feeRate);
         return txid;
       } catch (error) {
         throw error;
       }
     },
-    async withdraw({ to, withdrawCell, depositBlockHash, withdrawingBlockHash }, rootState) {
+    async withdraw({ to, withdrawCell, depositBlockHash, withdrawingBlockHash, feeRate }, rootState) {
       try {
-        const txid = await quantum.daoWithdraw(to, withdrawCell, depositBlockHash, withdrawingBlockHash);
+        const txid = await quantum.daoWithdraw(to, withdrawCell, depositBlockHash, withdrawingBlockHash, feeRate);
         return txid;
       } catch (error) {
         throw error;

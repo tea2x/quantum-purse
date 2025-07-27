@@ -1,9 +1,9 @@
 .wallet {
-  height: 50rem;
+  height: 55rem;
   :global {
     display: flex;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.03);
 
     .account-container {
       display: flex;

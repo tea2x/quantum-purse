@@ -2,7 +2,7 @@ import { Button, notification, Form, Switch, Input, Empty, Tooltip } from "antd"
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../../components";
+import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
 import { cx, formatError } from "../../../utils/methods";
 import styles from "./Withdraw.module.scss";
@@ -23,6 +23,7 @@ const Withdraw: React.FC = () => {
     resolve: (password: string) => void;
     reject: () => void;
   } | null>(null);
+  const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
   const [tipHeader, setTipHeader] = useState<ClientBlockHeader | null>(null);
   const [redeemingInfos, setRedeemingInfos] = useState<{
     [key: string]: {
@@ -150,6 +151,11 @@ const Withdraw: React.FC = () => {
     return { depositHeader, withdrawHeader };
   };
 
+  // Catch fee rate changes from FeeRateSelect component
+  const handleFeeRateChange = (feeRate: number) => {
+    setFeeRate(feeRate);
+  };
+
   const handleWithdraw = async (withdrawnCell: ccc.Cell) => {
     try {
       // todo update when light client js updates ccc core.
@@ -160,7 +166,8 @@ const Withdraw: React.FC = () => {
         to: values.to,
         withdrawCell: withdrawnCell,
         depositBlockHash: depositBlockHash,
-        withdrawingBlockHash: withdrawingBlockHash
+        withdrawingBlockHash: withdrawingBlockHash,
+        feeRate
       });
       notification.success({
         message: "Withdraw transaction successful",
@@ -230,7 +237,10 @@ const Withdraw: React.FC = () => {
             className={cx("field-to", values?.withdrawToMyAccount && "select-my-account")}
           >
             {!values?.withdrawToMyAccount ? (
-              <Input placeholder="Input the destination address" />
+              <Input
+                placeholder="Input the destination address"
+                className={styles.inputField}
+              />
             ) : (
               <AccountSelect
                 accounts={wallet.accounts}
@@ -238,6 +248,15 @@ const Withdraw: React.FC = () => {
               />
             )}
           </Form.Item>
+
+          <Form.Item
+            className={cx("field-to")}
+            name="feeRate"
+            label={"Fee Rate"}
+          >
+            <FeeRateSelect onFeeRateChange={handleFeeRateChange}/>
+          </Form.Item>
+
         </Form>
         <Authentication
           ref={authenticationRef}

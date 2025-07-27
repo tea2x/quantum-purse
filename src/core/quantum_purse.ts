@@ -1,5 +1,5 @@
 // QuantumPurse.ts
-import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO, FEE_RATE } from "./config";
+import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO } from "./config";
 import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { Address, DepType } from "@ckb-lumos/base";
 import { addressToScript } from "@ckb-lumos/helpers";
@@ -555,12 +555,14 @@ export default class QuantumPurse extends QPSigner {
    *
    * @param to - The recipient's address.
    * @param amount - The amount to transfer in CKB.
+   * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async transfer(
     to: Address,
-    amount: string
+    amount: string,
+    feeRate: bigint = BigInt(1500)
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
@@ -587,7 +589,7 @@ export default class QuantumPurse extends QPSigner {
     ]);
 
     await tx.completeInputsByCapacity(this);
-    await tx.completeFeeBy(this, FEE_RATE);
+    await tx.completeFeeBy(this, feeRate);
     const hash = await this.sendTransaction(tx);
     return hash;
   }
@@ -596,10 +598,14 @@ export default class QuantumPurse extends QPSigner {
    * CKB transfer all from the current Quantum Purse address.
    *
    * @param to - The recipient's address.
+   * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
-  public async transferAll(to: Address): Promise<Hex> {
+  public async transferAll(
+    to: Address,
+    feeRate: bigint = BigInt(1500)
+  ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     const tx = ccc.Transaction.from({
@@ -620,7 +626,7 @@ export default class QuantumPurse extends QPSigner {
     ]);
 
     await tx.completeInputsAll(this);
-    await tx.completeFeeChangeToOutput(this, 0, FEE_RATE);
+    await tx.completeFeeChangeToOutput(this, 0, feeRate);
 
     const hash = await this.sendTransaction(tx);
     return hash;
@@ -633,12 +639,14 @@ export default class QuantumPurse extends QPSigner {
    *
    * @param to - The recipient's address.
    * @param amount - The amount to deposit in CKB.
+   * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async daoDeposit(
     to: Address,
-    amount: string
+    amount: string,
+    feeRate: bigint = BigInt(1500)
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
@@ -678,7 +686,7 @@ export default class QuantumPurse extends QPSigner {
     ]);
 
     await tx.completeInputsByCapacity(this);
-    await tx.completeFeeBy(this, FEE_RATE);
+    await tx.completeFeeBy(this, feeRate);
     const hash = await this.sendTransaction(tx);
     return hash;
   }
@@ -689,10 +697,14 @@ export default class QuantumPurse extends QPSigner {
    * Reusing some codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
    * @param to - The recipient's address.
+   * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
-  public async daoDepositAll(to: Address): Promise<Hex> {
+  public async daoDepositAll(
+    to: Address,
+    feeRate: bigint = BigInt(1500)
+  ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     // initialize configuration
@@ -726,7 +738,7 @@ export default class QuantumPurse extends QPSigner {
     ]);
     
     await tx.completeInputsAll(this);
-    await tx.completeFeeChangeToOutput(this, 0, FEE_RATE);
+    await tx.completeFeeChangeToOutput(this, 0, feeRate);
     const hash = await this.sendTransaction(tx);
     return hash;
   }
@@ -738,6 +750,9 @@ export default class QuantumPurse extends QPSigner {
    *
    * @param to - The recipient's address.
    * @param depositCell - The Nervos DAO deposit cell to make a withdraw request from.
+   * @param depositBlockNumber - The block number of the deposit cell.
+   * @param depositCellBlockHash - The block hash of the deposit cell.
+   * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
@@ -745,7 +760,8 @@ export default class QuantumPurse extends QPSigner {
     to: Address,
     depositCell: Cell,
     depositBlockNumber: bigint,
-    depositCellBlockHash: Hex
+    depositCellBlockHash: Hex,
+    feeRate: bigint = BigInt(1500)
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
@@ -780,7 +796,7 @@ export default class QuantumPurse extends QPSigner {
     ]);
 
     await tx.completeInputsByCapacity(this);
-    await tx.completeFeeBy(this, FEE_RATE);
+    await tx.completeFeeBy(this, feeRate);
     const hash = await this.sendTransaction(tx);
     return hash;
   }
@@ -791,9 +807,10 @@ export default class QuantumPurse extends QPSigner {
    * Reusing some codes from NERVDAO project https://github.com/ckb-devrel/nervdao.
    *
    * @param to - The recipient's address.
-   * @param withdrawingCell - The Nervos DAO wightdrawing cell to be unlocked.
+   * @param withdrawingCell - The Nervos DAO withdrawing cell to be unlocked.
    * @param depositBlockHash - The block hash of the deposit cell.
    * @param withdrawingBlockHash - The block hash of the withdrawing cell.
+   * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
@@ -801,7 +818,8 @@ export default class QuantumPurse extends QPSigner {
     to: Address,
     withdrawingCell: Cell,
     depositBlockHash: Hex,
-    withdrawingBlockHash: Hex
+    withdrawingBlockHash: Hex,
+    feeRate: bigint = BigInt(1500)
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
@@ -851,7 +869,7 @@ export default class QuantumPurse extends QPSigner {
     ]);
 
     await tx.completeInputsByCapacity(this);
-    await tx.completeFeeChangeToOutput(this, 0, FEE_RATE);
+    await tx.completeFeeChangeToOutput(this, 0, feeRate);
 
     const hash = await this.sendTransaction(tx);
     return hash;

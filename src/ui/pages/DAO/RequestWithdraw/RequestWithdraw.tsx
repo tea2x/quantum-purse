@@ -2,7 +2,7 @@ import { Button, notification, Form, Switch, Input, Empty, Tooltip } from "antd"
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Explore, Authentication, AuthenticationRef, AccountSelect } from "../../../components";
+import { Explore, Authentication, AuthenticationRef, AccountSelect, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
 import { cx, formatError } from "../../../utils/methods";
 import styles from "./RequestWithdraw.module.scss";
@@ -23,6 +23,7 @@ const RequestWithdraw: React.FC = () => {
     resolve: (password: string) => void;
     reject: () => void;
   } | null>(null);
+  const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
   const [tipHeader, setTipHeader] = useState<ClientBlockHeader | null>(null);
   const [depositEstimatedInfo, setDepositEstimatedInfo] = useState<{
     [key: string]: {
@@ -131,6 +132,11 @@ const RequestWithdraw: React.FC = () => {
     return {depositHeader: header};
   };
 
+  // Catch fee rate changes from FeeRateSelect component
+  const handleFeeRateChange = (feeRate: number) => {
+    setFeeRate(feeRate);
+  };
+
   const handleWithdrawRequest = async (depositCell: ccc.Cell) => {
     try {
       // todo update when light client js updates ccc core.
@@ -141,7 +147,8 @@ const RequestWithdraw: React.FC = () => {
         to: values.to,
         depositCell: depositCell,
         depositBlockNum: depositBlockNum,
-        depositBlockHash: depositBlockHash
+        depositBlockHash: depositBlockHash,
+        feeRate
       });
       notification.success({
         message: "Withdraw request transaction successful",
@@ -211,7 +218,10 @@ const RequestWithdraw: React.FC = () => {
             className={cx("field-to", values?.isUnlockToMyAccount && "select-my-account")}
           >
             {!values?.isUnlockToMyAccount ? (
-              <Input placeholder="Input the destination address" />
+              <Input
+                placeholder="Input the destination address"
+                className={styles.inputField}
+              />
             ) : (
               <AccountSelect
                 accounts={wallet.accounts}
@@ -219,7 +229,17 @@ const RequestWithdraw: React.FC = () => {
               />
             )}
           </Form.Item>
+
+          <Form.Item
+            className={cx("field-to")}
+            name="feeRate"
+            label={"Fee Rate"}
+          >
+            <FeeRateSelect onFeeRateChange={handleFeeRateChange}/>
+          </Form.Item>
+          
         </Form>
+
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}

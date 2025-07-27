@@ -188,7 +188,11 @@ export const StepCreatePassword: React.FC = () => {
           label={<span style={{ color: 'var(--gray-01)' }}>Password</span>}
           rules={passwordRules}
         >
-          <Input.Password size="large" placeholder="Please choose a strong password" />
+          <Input.Password
+            size="large"
+            placeholder="Please choose a strong password"
+            className={styles.inputField}
+          />
         </Form.Item>
 
         <Form.Item
@@ -207,7 +211,11 @@ export const StepCreatePassword: React.FC = () => {
             }),
           ]}
         >
-          <Input.Password size="large" placeholder="Confirm your password" />
+          <Input.Password
+            size="large"
+            placeholder="Confirm your password"
+            className={styles.inputField}
+          />
         </Form.Item>
 
         <Form.Item

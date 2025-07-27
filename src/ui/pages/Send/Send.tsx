@@ -4,7 +4,6 @@ import {
   Flex,
   Form,
   Input,
-  InputNumber,
   notification,
   Switch,
   Tooltip
@@ -12,7 +11,7 @@ import {
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AccountSelect, Explore, Authentication, AuthenticationRef } from "../../components";
+import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { CKB_DECIMALS, CKB_UNIT } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
@@ -33,6 +32,7 @@ const Send: React.FC = () => {
     resolve: (password: string) => void;
     reject: () => void;
   } | null>(null);
+  const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -73,7 +73,7 @@ const Send: React.FC = () => {
     getBalance();
   }, [wallet, dispatch]);
 
-  // pre-validate fields when balance updates
+  // Pre-validate fields when balance updates
   useEffect(() => {
     if (fromAccountBalance !== null) {
       form.validateFields(["from"]);
@@ -83,7 +83,7 @@ const Send: React.FC = () => {
     }
   }, [fromAccountBalance, form]);
 
-  // fill amount when send max
+  // Fill amount when send max
   useEffect(() => {
     if (values?.isMax && fromAccountBalance) {
       const maxAmount = Number(fromAccountBalance) / CKB_DECIMALS;
@@ -93,11 +93,16 @@ const Send: React.FC = () => {
     }
   }, [values?.isMax, fromAccountBalance]);
 
+  // Catch fee rate changes from FeeRateSelect component
+  const handleFeeRateChange = (feeRate: number) => {
+    setFeeRate(feeRate);
+  };
+
   const handleSend = async () => {
     try {
       const txId = values?.isMax
-        ? await dispatch.wallet.sendAll({ to: values.to })
-        : await dispatch.wallet.send({ to: values.to, amount: values.amount});
+        ? await dispatch.wallet.sendAll({ to: values.to, feeRate })
+        : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
       form.resetFields();
       notification.success({
         message: "Send transaction successful",
@@ -128,7 +133,6 @@ const Send: React.FC = () => {
 
   return (
     <section className={cx(styles.sendForm, "panel")}>
-      {/* <h1>Send</h1> */}
       <div>
         <Form layout="vertical" form={form}>
           <Form.Item
@@ -136,14 +140,12 @@ const Send: React.FC = () => {
             className={cx("field-to", values?.isSendToMyAccount && "select-my-account")}
             label={
               <div className="label-container">
-
                 <div className="label-with-icon">
                   Send To
                   <Tooltip title="You can send to any address, or send to yourself by selecting an account from your wallet.">
                     <QuestionCircleOutlined style={{ marginLeft: 4 }} />
                   </Tooltip>
                 </div>
-
                 <div className="switch-container">
                   My Wallet
                   <Form.Item name="isSendToMyAccount" style={{ marginBottom: 0 }}>
@@ -168,7 +170,10 @@ const Send: React.FC = () => {
             ]}
           >
             {!values?.isSendToMyAccount ? (
-              <Input placeholder="Input the destination address" />
+              <Input
+                placeholder="Input the destination address"
+                className={styles.inputField}
+              />
             ) : (
               <AccountSelect
                 accounts={wallet.accounts}
@@ -178,16 +183,13 @@ const Send: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            // className="amount"
-            className={cx("field-to")} //using the same class for style consistency
+            className={cx("field-to")}
             name="amount"
             label={
               <div className="label-container">
-
                 <div className="label-with-icon">
                   Amount
                 </div>
-
                 <div className="switch-container">
                   Maximum
                   <Form.Item name="isMax" style={{ marginBottom: 0 }}>
@@ -198,7 +200,6 @@ const Send: React.FC = () => {
             }
             rules={[
               { required: true, message: "Amount required!" },
-              // { type: "number", min: 73, message: "Amount must be at least 73 CKB" },
               {
                 validator: (_, value) => {
                   if (
@@ -214,11 +215,18 @@ const Send: React.FC = () => {
               },
             ]}
           >
-            <InputNumber
-              placeholder="Enter amount"
-              controls={false}
-              style={{ width: "100%" }}
+            <Input
+              placeholder="Enter transfer amount"
+              className={styles.inputField}
             />
+          </Form.Item>
+
+          <Form.Item
+            className={cx("field-to")}
+            name="feeRate"
+            label="Fee Rate"
+          >
+            <FeeRateSelect onFeeRateChange={handleFeeRateChange} />
           </Form.Item>
 
           <Form.Item>
@@ -228,7 +236,7 @@ const Send: React.FC = () => {
                 onClick={handleSend}
                 disabled={!submittable || loadingSend}
                 loading={loadingSend}
-                style={{ width: "100%" }}
+                className={styles.sendButton}
               >
                 Send
               </Button>
