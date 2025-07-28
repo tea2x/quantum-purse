@@ -4,12 +4,12 @@
   padding: 0;
   padding-top: 3rem;
   color: var(--teal-2);
+  border-radius: 0.5rem;
   @media (min-width: 768px) {
     height: 55rem;
   }
   @media (max-width: 768px) {
     background: rgb(29,29,29);
-    border-radius: 0.5rem;
   }
 
   :global {
@@ -33,7 +33,7 @@
     }
 
     .ant-menu-item-divider {
-      border-color: var(--black);
+      border-color: var(--gray-03);
       width: 66%;
       margin: 0 auto;
     }
@@ -59,6 +59,8 @@
 
   @media (min-width: 768px) {
     flex-basis: 22rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 }

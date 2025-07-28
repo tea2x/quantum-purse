@@ -7,8 +7,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  height: 14rem;
-  background: rgba(255, 255, 255, 0.02);
+  height: 12rem;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
   border-radius: 0.5rem;
   width: 100%;
   max-width: 128rem;
@@ -77,6 +80,7 @@
   // font-weight: bold;
   color: var(--gray-01);
   gap: 0.75rem;
+  margin-left: 0.5rem;
 }
 
 @keyframes zoom {

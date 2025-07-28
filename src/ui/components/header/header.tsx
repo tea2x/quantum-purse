@@ -52,9 +52,9 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
 
   // Define scaling factor and dynamic sizes for mobile view
   const scalingFactor = screens.md ? 1 : 0.8;
-  const pieChartSize = 110 * scalingFactor;
-  const innerRadius = 30 * scalingFactor;
-  const outerRadius = 50 * scalingFactor;
+  const pieChartSize = 90 * scalingFactor;
+  const innerRadius = 25 * scalingFactor;
+  const outerRadius = 45 * scalingFactor;
   const fontSize = Math.round(12 * scalingFactor);
   const tooltipFontSize = Math.round(10 * scalingFactor);
   const labelStyle = {
