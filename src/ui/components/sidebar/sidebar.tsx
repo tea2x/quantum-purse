@@ -40,7 +40,7 @@ const items: MenuItem[] = [
       {
         key: ROUTES.NERVOS_DAO.REQUEST_WITHDRAW,
         icon: <Icon.RequestWithdraw />,
-        label: <NavLink to={ROUTES.NERVOS_DAO.REQUEST_WITHDRAW}>Request Withdraw</NavLink>,
+        label: <NavLink to={ROUTES.NERVOS_DAO.REQUEST_WITHDRAW}>Request</NavLink>,
       },
       {
         key: ROUTES.NERVOS_DAO.WITHDRAW,

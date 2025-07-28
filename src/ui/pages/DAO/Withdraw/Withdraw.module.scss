@@ -1,7 +1,7 @@
 .withdrawForm {
   :global {
     height: 55rem;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 
@@ -108,5 +108,5 @@
   height: 5rem;
   background-color: transparent !important;
   border-radius: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }

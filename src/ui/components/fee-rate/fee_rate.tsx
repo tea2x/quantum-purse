@@ -1,12 +1,15 @@
 import { cx } from "../../utils/methods";
 import styles from "./fee_rate.module.scss";
 import { useState } from "react";
+import { Grid } from "antd";
 
 interface FeeRateSelectProps {
   onFeeRateChange?: (feeRate: number) => void;
 }
 
 const FeeRateSelect: React.FC<FeeRateSelectProps> = ({ onFeeRateChange }) => {
+  const { useBreakpoint } = Grid;
+  const screens = useBreakpoint();
   const [selectedFee, setSelectedFee] = useState<number>(1500); // Default to medium
   const feeOptions = [
     { name: "Slow", value: 1000 },
@@ -42,9 +45,9 @@ const FeeRateSelect: React.FC<FeeRateSelectProps> = ({ onFeeRateChange }) => {
           >
             <div className={styles.feeContent}>
               <span className={styles.feeName}>{option.name}</span>
-              <span className={styles.feeValue}>
+              {screens.md && (<span className={styles.feeValue}>
                 {option.value > 0 ? `${option.value} shannons/kB` : "User specified"}
-              </span>
+              </span>)}
             </div>
           </div>
         ))}
