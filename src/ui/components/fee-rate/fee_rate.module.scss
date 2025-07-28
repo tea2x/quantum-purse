@@ -42,23 +42,18 @@
     color: #595959;
   }
 
-  .customInput {
-    margin-top: 3rem;
+  .customInputField {
+    width: 100% !important;
+    height: 100% !important;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    color: var(--gray-02);
+    background: transparent;
 
-    .customInputField {
-      width: 100%;
-      height: 5rem;
-      padding: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 0.5rem;
-      color: var(--gray-02);
-      background: transparent;
-
-      &:focus {
-        outline: none;
-        border-color: #1890ff;
-        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-      }
+    &:focus {
+      outline: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
   }
 }

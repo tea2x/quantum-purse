@@ -29,7 +29,7 @@ const FeeRateSelect: React.FC<FeeRateSelectProps> = ({ onFeeRateChange }) => {
     if (onFeeRateChange) {
       onFeeRateChange(value);
     }
-  }
+  };
 
   return (
     <div className={styles.feeRate}>
@@ -44,28 +44,31 @@ const FeeRateSelect: React.FC<FeeRateSelectProps> = ({ onFeeRateChange }) => {
             onClick={() => handleFeeSelect(option.value)}
           >
             <div className={styles.feeContent}>
-              <span className={styles.feeName}>{option.name}</span>
-              {screens.md && (<span className={styles.feeValue}>
-                {option.value > 0 ? `${option.value} shannons/kB` : "User specified"}
-              </span>)}
+              {!(option.name === "Custom" && selectedFee === 0) && (
+                <span className={styles.feeName}>{option.name}</span>
+              )}
+              {option.name === "Custom" && selectedFee === 0 ? (
+                <input
+                  type="number"
+                  placeholder="Enter fee rate"
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    handleCustomFeeChange(value);
+                  }}
+                  className={styles.customInputField}
+                  autoFocus
+                />
+              ) : (
+                screens.md && (
+                  <span className={styles.feeValue}>
+                    {option.value > 0 ? `${option.value} shannons/kB` : "User specified"}
+                  </span>
+                )
+              )}
             </div>
           </div>
         ))}
       </div>
-      
-      {selectedFee === 0 && (
-        <div className={styles.customInput}>
-          <input
-            type="number"
-            placeholder="Enter custom fee rate (shannons/kB)"
-            onChange={(e) => {
-              const value = parseInt(e.target.value) || 0;
-              handleCustomFeeChange(value);
-            }}
-            className={styles.customInputField}
-          />
-        </div>
-      )}
     </div>
   );
 };
