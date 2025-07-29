@@ -1,6 +1,7 @@
 const { merge } = require("webpack-merge");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
+const WorkboxPlugin = require("workbox-webpack-plugin");
 const common = require("./webpack.common");
 
 let publicPath = "/";
@@ -26,5 +27,12 @@ module.exports = merge(common, {
     minimize: true,
     minimizer: [new TerserPlugin()],
   },
-  plugins: [new CompressionWebpackPlugin()],
+  plugins: [
+    new CompressionWebpackPlugin(),
+    new WorkboxPlugin.GenerateSW({
+      clientsClaim: true,
+      skipWaiting: true,
+      navigateFallback: "/index.html",
+    }),
+  ],
 });
