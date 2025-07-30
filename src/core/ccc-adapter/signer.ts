@@ -131,18 +131,18 @@ export class QPSigner extends Signer {
     const tx = Transaction.from(txLike);
     const { script } = await this.getRecommendedAddressObj();
     const witnessSizeMap = {
-      [SpxVariant.Sha2128F]: 17144,
-      [SpxVariant.Shake128F]: 17144,
-      [SpxVariant.Sha2128S]: 7912,
-      [SpxVariant.Shake128S]: 7912,
-      [SpxVariant.Sha2192F]: 35736,
-      [SpxVariant.Shake192F]: 35736,
-      [SpxVariant.Sha2192S]: 16296,
-      [SpxVariant.Shake192S]: 16296,
-      [SpxVariant.Sha2256F]: 49944,
-      [SpxVariant.Shake256F]: 49944,
-      [SpxVariant.Sha2256S]: 29880,
-      [SpxVariant.Shake256S]: 29880,
+      [SpxVariant.Sha2128F]: 17125,
+      [SpxVariant.Shake128F]: 17125,
+      [SpxVariant.Sha2128S]: 7893,
+      [SpxVariant.Shake128S]: 7893,
+      [SpxVariant.Sha2192F]: 35717,
+      [SpxVariant.Shake192F]: 35717,
+      [SpxVariant.Sha2192S]: 16277,
+      [SpxVariant.Shake192S]: 16277,
+      [SpxVariant.Sha2256F]: 49925,
+      [SpxVariant.Shake256F]: 49925,
+      [SpxVariant.Sha2256S]: 29861,
+      [SpxVariant.Shake256S]: 29861,
     };
     const variant = this.keyVault.variant;
     const witnessSize = witnessSizeMap[variant] || 0;
