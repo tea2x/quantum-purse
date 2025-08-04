@@ -1,14 +1,10 @@
 // QuantumPurse.ts
 import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO } from "./config";
-import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
-import { Address, DepType } from "@ckb-lumos/base";
-import { addressToScript } from "@ckb-lumos/helpers";
 import __wbg_init, { KeyVault, Util as KeyVaultUtil, SpxVariant } from "quantum-purse-key-vault";
 import { randomSecretKey, LightClientSetScriptsCommand, ScriptStatus } from "ckb-light-client-js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
-import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, Script, BytesLike, HashTypeLike } from "@ckb-ccc/core";
-import { Config, predefined, initializeConfig } from "@ckb-lumos/config-manager";
+import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, BytesLike, HashTypeLike, Address, DepType } from "@ckb-ccc/core";
 import { getClaimEpoch } from "./epoch";
 import { QPSigner } from "./ccc-adapter/signer";
 
@@ -325,7 +321,7 @@ export default class QuantumPurse extends QPSigner {
    */
   public getAddress(spxLockArgs?: BytesLike): string {
     const lock = this.getLockScript(spxLockArgs);
-    return scriptToAddress(Script.from(lock), IS_MAIN_NET);
+    return ccc.Address.fromScript(lock, this.client).toString();
   }
 
   /**
@@ -569,7 +565,7 @@ export default class QuantumPurse extends QPSigner {
     const tx = ccc.Transaction.from({
         outputs: [
           {
-            lock: (await ccc.Address.fromString(to, this.client)).script
+            lock: to.script
           }
         ]
       }
@@ -611,7 +607,7 @@ export default class QuantumPurse extends QPSigner {
     const tx = ccc.Transaction.from({
         outputs: [
           {
-            lock: (await ccc.Address.fromString(to, this.client)).script
+            lock: to.script
           }
         ]
       }
@@ -650,14 +646,10 @@ export default class QuantumPurse extends QPSigner {
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
-    // initialize configuration
-    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
-    initializeConfig(configuration);
-
     const tx = ccc.Transaction.from({
       outputs: [
         {
-          lock: addressToScript(to),
+          lock: to.script,
           type: {
             codeHash: NERVOS_DAO.codeHash,
             hashType: NERVOS_DAO.hashType as HashType,
@@ -707,14 +699,10 @@ export default class QuantumPurse extends QPSigner {
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
-    // initialize configuration
-    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
-    initializeConfig(configuration);
-
     const tx = ccc.Transaction.from({
       outputs: [
         {
-          lock: addressToScript(to),
+          lock: to.script,
           type: {
             codeHash: NERVOS_DAO.codeHash,
             hashType: NERVOS_DAO.hashType as HashType,
@@ -765,11 +753,7 @@ export default class QuantumPurse extends QPSigner {
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
-    // initialize configuration
-    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
-    initializeConfig(configuration);
-
-    if (depositCell.cellOutput.lock.occupiedSize != Script.from(addressToScript(to)).occupiedSize)
+    if (depositCell.cellOutput.lock.occupiedSize != to.script.occupiedSize)
       throw new Error("Desitnation Lock Script is different in size");
 
     const tx = ccc.Transaction.from({
@@ -777,7 +761,7 @@ export default class QuantumPurse extends QPSigner {
       inputs: [{ previousOutput: depositCell.outPoint }],
       outputs: [{
         capacity: depositCell.cellOutput.capacity,
-        lock: addressToScript(to),
+        lock: to.script,
         type: depositCell.cellOutput.type
       }],
       outputsData: [ccc.numLeToBytes(depositBlockNumber, 8)],
@@ -823,10 +807,6 @@ export default class QuantumPurse extends QPSigner {
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
-    // initialize configuration
-    let configuration: Config = IS_MAIN_NET ? predefined.LINA : predefined.AGGRON4;
-    initializeConfig(configuration);
-
     const [depositBlockHeader, withdrawBlockHeader] = await Promise.all([
       this.client.getHeader(depositBlockHash),
       this.client.getHeader(withdrawingBlockHash),
@@ -846,7 +826,7 @@ export default class QuantumPurse extends QPSigner {
       ],
       outputs: [
         {
-          lock: addressToScript(to),
+          lock: to.script,
         },
       ],
       witnesses: [
