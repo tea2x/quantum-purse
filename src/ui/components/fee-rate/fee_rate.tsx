@@ -12,9 +12,9 @@ const FeeRateSelect: React.FC<FeeRateSelectProps> = ({ onFeeRateChange }) => {
   const screens = useBreakpoint();
   const [selectedFee, setSelectedFee] = useState<number>(1500); // Default to medium
   const feeOptions = [
-    { name: "Slow", value: 1000 },
-    { name: "Medium", value: 1500 },
-    { name: "Fast", value: 2000 },
+    { name: "Slow 🚀", value: 1000 },
+    { name: "Medium 🚀🚀", value: 1500 },
+    { name: "Fast 🚀🚀🚀", value: 2000 },
     { name: "Custom", value: 0 },
   ];
 

@@ -295,14 +295,16 @@ const RequestWithdraw: React.FC = () => {
             </ul>
           </div>
         ) : (
-          <Empty
-            description={
-              <span style={{ color: 'var(--gray-01)', fontFamily: "Quantico, sans-serif" }}>
-                No deposits found to make a request from! 🫠
-              </span>
-            }
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
+          <div className={styles.requestWithdrawListContainer}>
+            <Empty
+              description={
+                <span style={{ color: 'var(--gray-01)', fontFamily: "Quantico, sans-serif" }}>
+                  No deposits found to make a request from! 🫠
+                </span>
+              }
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          </div>
         )}
       </div>
     </section>

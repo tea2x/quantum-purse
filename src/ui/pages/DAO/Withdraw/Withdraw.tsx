@@ -316,14 +316,16 @@ const Withdraw: React.FC = () => {
             </ul>
           </div>
         ) : (
-          <Empty
-            description={
-              <span style={{ color: 'var(--gray-01)', fontFamily: "Quantico, sans-serif" }}>
-                No withdraw requests found! 🫠
-              </span>
-            }
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
+          <div className={styles.withdrawListContainer}>
+            <Empty
+              description={
+                <span style={{ color: 'var(--gray-01)', fontFamily: "Quantico, sans-serif" }}>
+                  No withdraw requests found! 🫠
+                </span>
+              }
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          </div>
         )}
       </div>
     </section>

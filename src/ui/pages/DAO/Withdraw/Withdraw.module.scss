@@ -8,7 +8,7 @@
     .ant-form-item {
       &.select-my-account {
         .ant-select-selector {
-          min-height: 5.8rem;
+          min-height: 4rem;
         }
         .ant-select-single {
           height: fit-content;
@@ -50,6 +50,9 @@
 .withdrawListContainer {
   overflow-y: auto;
   max-height: 30rem; // tuned w/o exact calculation, adjust as needed
+  // border: 1px solid var(--gray-03);
+  // border-radius: 0.5rem;
+  // padding: 1rem;
 }
 
 .withdrawList {
@@ -105,8 +108,8 @@
 
 .inputField {
   width: 100%;
-  height: 5rem;
+  height: 4rem;
   background-color: transparent !important;
   border-radius: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--gray-03);
 }
