@@ -321,7 +321,7 @@ export default class QuantumPurse extends QPSigner {
    */
   public getAddress(spxLockArgs?: BytesLike): string {
     const lock = this.getLockScript(spxLockArgs);
-    return ccc.Address.fromScript(lock, this.client).toString();
+    return Address.fromScript(lock, this.client).toString();
   }
 
   /**

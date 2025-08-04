@@ -18,7 +18,6 @@ import {
 import { QPClient } from "./client";
 import { IS_MAIN_NET } from "../config";
 import __wbg_init, { KeyVault, SpxVariant } from "quantum-purse-key-vault";
-import { scriptToAddress } from "@nervosnetwork/ckb-sdk-utils";
 import { get_ckb_tx_message_all_hash, utf8ToBytes } from "../utils";
 
 export class QPSigner extends Signer {
@@ -92,14 +91,12 @@ export class QPSigner extends Signer {
 
   /** Get internal address */
   async getInternalAddress(): Promise<string> {
-    return scriptToAddress(
-      Script.from({
-        codeHash: this.spxLock.codeHash,
-        hashType: this.spxLock.hashType,
-        args: this.accountPointer as string
-      }),
-      IS_MAIN_NET
-    );
+    const lock = Script.from({
+      codeHash: this.spxLock.codeHash,
+      hashType: this.spxLock.hashType,
+      args: this.accountPointer as string
+    });
+    return Address.fromScript(lock, this.client).toString();
   }
 
   /** Get address objects 
