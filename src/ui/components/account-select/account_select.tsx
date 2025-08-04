@@ -58,14 +58,7 @@ const AccountSelect: React.FC<AccountSelectProps> = ({
     if (!option.label) return null;
     const accountData = JSON.parse(option.label as string) as AccountOption; // Deserialize account data from string
     return (
-      <AccountItem
-        address={accountData?.address!}
-        name={accountData?.name}
-        spxLockArgs={accountData?.spxLockArgs}
-        hasTools={false}
-        copyable={false}
-        showBalance={true}
-      />
+      <div>{accountData?.address!}</div>
     );
   };
 
