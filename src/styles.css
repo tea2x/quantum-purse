@@ -181,33 +181,6 @@ body {
   }
 }
 
-@keyframes typing {
-  0% {
-    width: 0;
-  }
-
-  40%,
-  60% {
-    width: 16ch;
-  }
-
-  100% {
-    width: 0;
-  }
-}
-
-@keyframes blink-caret {
-
-  from,
-  to {
-    border-color: transparent;
-  }
-
-  50% {
-    border-color: currentColor;
-  }
-}
-
 .ant-btn,
 .ant-form-item,
 .ant-form-item-label,

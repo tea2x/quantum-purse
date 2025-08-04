@@ -22,26 +22,6 @@
   }
 }
 
-.blinker {
-  animation: blinking 1s steps(30, start) infinite;
-}
-
-@keyframes blinking {
-  0% {
-    color: var(--black);
-  }
-  50% {
-    color: transparent;
-  }
-  100% {
-    color: var(--black);
-  }
-}
-
-.zoomInOut {
-  animation: zoom 1s ease-in-out infinite;
-}
-
 .withOptionalWarningSign {
   display: flex;
   align-items: center;
@@ -81,14 +61,4 @@
   color: var(--gray-01);
   gap: 0.75rem;
   margin-left: 0.5rem;
-}
-
-@keyframes zoom {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
 }
