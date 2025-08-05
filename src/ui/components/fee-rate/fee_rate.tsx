@@ -2,7 +2,6 @@ import { cx } from "../../utils/methods";
 import styles from "./fee_rate.module.scss";
 import { useState } from "react";
 import { Tooltip } from "antd";
-import { QuestionCircleOutlined } from "@ant-design/icons";
 
 interface FeeRateSelectProps {
   onFeeRateChange: (feeRate: number) => void;
@@ -48,23 +47,22 @@ const FeeRateSelect: React.FC<FeeRateSelectProps> = ({ onFeeRateChange, custom }
       ) : (
         <div className={styles.feeRateContainer}>
           {feeOptions.map((option) => (
-            <div
-              key={option.name}
-              className={cx(
-                styles.feeOption,
-                selectedFee === option.value && styles.selected
-              )}
-              onClick={() => handleFeeSelect(option.value)}
-            >
-              <div className={styles.feeContent}>
-                <span className={styles.feeName}>
-                  {option.name}
-                  <Tooltip title={`${option.value} shannons/kB`}>
-                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </span>
+            <Tooltip title={`${option.value} shannons/kB`}>
+              <div
+                key={option.name}
+                className={cx(
+                  styles.feeOption,
+                  selectedFee === option.value && styles.selected
+                )}
+                onClick={() => handleFeeSelect(option.value)}
+              >
+                <div className={styles.feeContent}>
+                  <span className={styles.feeName}>
+                    {option.name}
+                  </span>
+                </div>
               </div>
-            </div>
+            </Tooltip>
           ))}
         </div>
       )}
