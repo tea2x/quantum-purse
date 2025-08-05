@@ -1,4 +1,4 @@
-import { Button, notification, Form, Switch, Input, Empty, Tooltip } from "antd";
+import { Button, notification, Form, Switch, Input, Empty, Tooltip, Row, Col } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -200,63 +200,82 @@ const Withdraw: React.FC = () => {
       {/* <h1>Withdraw</h1> */}
       <div>
         <Form layout="vertical" form={form}>
-          <Form.Item
-            name="to"
-            label={
-              <div className="label-container">
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="to"
+                label={
+                  <div className="label-container">
 
-                <div className="label-with-icon">
-                  Withdraw To
-                  <Tooltip title="You can withdraw to any address, or select an account from your wallet.">
-                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </div>
+                    <div className="label-with-icon">
+                      Withdraw To
+                      <Tooltip title="You can withdraw to any address, or select an account from your wallet.">
+                        <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                      </Tooltip>
+                    </div>
 
-                <div className="switch-container">
-                  My Account
-                  <Form.Item name="withdrawToMyAccount" style={{ marginBottom: 0 }}>
-                    <Switch size="small"/>
-                  </Form.Item>
-                </div>
-              </div>
-            }
-            rules={[
-              { required: true, message: "Address required!" },
-              {
-                validator: (_, value) => {
-                  if (!value) return Promise.resolve();
-                  try {
-                    addressToScript(value);
-                    return Promise.resolve();
-                  } catch (error) {
-                    return Promise.reject("Invalid address");
-                  }
-                },
-              },
-            ]}
-            className={cx("field-to", values?.withdrawToMyAccount && "select-my-account")}
-          >
-            {!values?.withdrawToMyAccount ? (
-              <Input
-                placeholder="Input the destination address"
-                className={styles.inputField}
-              />
-            ) : (
-              <AccountSelect
-                accounts={wallet.accounts}
-                placeholder="Please select an account from your wallet"
-              />
-            )}
-          </Form.Item>
-
-          <Form.Item
-            className={cx("field-to")}
-            name="feeRate"
-            label={"Fee Rate"}
-          >
-            <FeeRateSelect onFeeRateChange={handleFeeRateChange}/>
-          </Form.Item>
-
+                    <div className="switch-container">
+                      My Account
+                      <Form.Item name="withdrawToMyAccount" noStyle>
+                        <Switch size="small"/>
+                      </Form.Item>
+                    </div>
+                  </div>
+                }
+                rules={[
+                  { required: true, message: "Address required!" },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      try {
+                        addressToScript(value);
+                        return Promise.resolve();
+                      } catch (error) {
+                        return Promise.reject("Invalid address");
+                      }
+                    },
+                  },
+                ]}
+                className={cx("field-to", values?.withdrawToMyAccount && "select-my-account")}
+              >
+                {!values?.withdrawToMyAccount ? (
+                  <Input
+                    placeholder="Input the destination address"
+                    className={styles.inputField}
+                  />
+                ) : (
+                  <AccountSelect
+                    accounts={wallet.accounts}
+                    placeholder="Please select an account from your wallet"
+                  />
+                )}
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="feeRate"
+                className="field-to"
+                label={
+                  <div className="label-container">
+                    <div className="label-with-icon">
+                      Fee Rate
+                      <Tooltip title="By default fee rate is set at 1500 shannons per kB. But you can set a custom fee rate if needed.">
+                        <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                      </Tooltip>
+                    </div>
+                    <div className="switch-container">
+                      Custom
+                      <Form.Item name="isCustomFeeRate" noStyle>
+                        <Switch size="small"/>
+                      </Form.Item>
+                    </div>
+                  </div>
+                }
+              >
+                <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={values?.isCustomFeeRate}/>
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
         <Authentication
           ref={authenticationRef}

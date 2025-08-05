@@ -148,7 +148,7 @@ const Send: React.FC = () => {
                 </div>
                 <div className="switch-container">
                   My Wallet
-                  <Form.Item name="isSendToMyAccount" style={{ marginBottom: 0 }}>
+                  <Form.Item name="isSendToMyAccount" noStyle>
                     <Switch size="small"/>
                   </Form.Item>
                 </div>
@@ -192,7 +192,7 @@ const Send: React.FC = () => {
                 </div>
                 <div className="switch-container">
                   Maximum
-                  <Form.Item name="isMax" style={{ marginBottom: 0 }}>
+                  <Form.Item name="isMax" noStyle>
                     <Switch size="small"/>
                   </Form.Item>
                 </div>
@@ -222,11 +222,26 @@ const Send: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            className={cx("field-to")}
             name="feeRate"
-            label="Fee Rate"
+            className="field-to"
+            label={
+              <div className="label-container">
+                <div className="label-with-icon">
+                  Fee Rate
+                  <Tooltip title="By default fee rate is set at 1500 shannons per kB. But you can set a custom fee rate if needed.">
+                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                  </Tooltip>
+                </div>
+                <div className="switch-container">
+                  Custom
+                  <Form.Item name="isCustomFeeRate" noStyle>
+                    <Switch size="small"/>
+                  </Form.Item>
+                </div>
+              </div>
+            }
           >
-            <FeeRateSelect onFeeRateChange={handleFeeRateChange} />
+            <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={values?.isCustomFeeRate}/>
           </Form.Item>
 
           <Form.Item>
