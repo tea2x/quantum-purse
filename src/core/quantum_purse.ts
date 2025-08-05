@@ -556,7 +556,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async transfer(
-    to: Address,
+    to: string,
     amount: string,
     feeRate: bigint = BigInt(1500)
   ): Promise<Hex> {
@@ -565,7 +565,7 @@ export default class QuantumPurse extends QPSigner {
     const tx = ccc.Transaction.from({
         outputs: [
           {
-            lock: to.script
+            lock: (await Address.fromString(to, this.client)).script
           }
         ]
       }
@@ -599,7 +599,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async transferAll(
-    to: Address,
+    to: string,
     feeRate: bigint = BigInt(1500)
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
@@ -607,7 +607,7 @@ export default class QuantumPurse extends QPSigner {
     const tx = ccc.Transaction.from({
         outputs: [
           {
-            lock: to.script
+            lock: (await Address.fromString(to, this.client)).script
           }
         ]
       }
@@ -640,7 +640,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async daoDeposit(
-    to: Address,
+    to: string,
     amount: string,
     feeRate: bigint = BigInt(1500)
   ): Promise<Hex> {
@@ -649,7 +649,7 @@ export default class QuantumPurse extends QPSigner {
     const tx = ccc.Transaction.from({
       outputs: [
         {
-          lock: to.script,
+          lock: (await Address.fromString(to, this.client)).script,
           type: {
             codeHash: NERVOS_DAO.codeHash,
             hashType: NERVOS_DAO.hashType as HashType,
@@ -694,7 +694,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async daoDepositAll(
-    to: Address,
+    to: string,
     feeRate: bigint = BigInt(1500)
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
@@ -702,7 +702,7 @@ export default class QuantumPurse extends QPSigner {
     const tx = ccc.Transaction.from({
       outputs: [
         {
-          lock: to.script,
+          lock: (await Address.fromString(to, this.client)).script,
           type: {
             codeHash: NERVOS_DAO.codeHash,
             hashType: NERVOS_DAO.hashType as HashType,
@@ -745,7 +745,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async daoRequestWithdraw(
-    to: Address,
+    to: string,
     depositCell: Cell,
     depositBlockNumber: bigint,
     depositCellBlockHash: Hex,
@@ -753,7 +753,9 @@ export default class QuantumPurse extends QPSigner {
   ): Promise<Hex> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
-    if (depositCell.cellOutput.lock.occupiedSize != to.script.occupiedSize)
+    const desLock = (await Address.fromString(to, this.client)).script;
+
+    if (depositCell.cellOutput.lock.occupiedSize != desLock.occupiedSize)
       throw new Error("Desitnation Lock Script is different in size");
 
     const tx = ccc.Transaction.from({
@@ -761,7 +763,7 @@ export default class QuantumPurse extends QPSigner {
       inputs: [{ previousOutput: depositCell.outPoint }],
       outputs: [{
         capacity: depositCell.cellOutput.capacity,
-        lock: to.script,
+        lock: desLock,
         type: depositCell.cellOutput.type
       }],
       outputsData: [ccc.numLeToBytes(depositBlockNumber, 8)],
@@ -799,7 +801,7 @@ export default class QuantumPurse extends QPSigner {
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async daoWithdraw(
-    to: Address,
+    to: string,
     withdrawingCell: Cell,
     depositBlockHash: Hex,
     withdrawingBlockHash: Hex,
@@ -826,7 +828,7 @@ export default class QuantumPurse extends QPSigner {
       ],
       outputs: [
         {
-          lock: to.script,
+          lock: (await Address.fromString(to, this.client)).script,
         },
       ],
       witnesses: [
