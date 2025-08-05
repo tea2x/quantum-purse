@@ -228,7 +228,7 @@ const Send: React.FC = () => {
               <div className="label-container">
                 <div className="label-with-icon">
                   Fee Rate
-                  <Tooltip title="By default fee rate is set at 1500 shannons per kB. But you can set a custom fee rate if needed.">
+                  <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
                     <QuestionCircleOutlined style={{ marginLeft: 4 }} />
                   </Tooltip>
                 </div>

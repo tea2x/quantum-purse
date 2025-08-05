@@ -201,7 +201,7 @@ const Withdraw: React.FC = () => {
       <div>
         <Form layout="vertical" form={form}>
           <Row gutter={16}>
-            <Col xs={24} sm={12}>
+            <Col xs={24} sm={14}>
               <Form.Item
                 name="to"
                 label={
@@ -251,7 +251,7 @@ const Withdraw: React.FC = () => {
                 )}
               </Form.Item>
             </Col>
-            <Col xs={24} sm={12}>
+            <Col xs={24} sm={10}>
               <Form.Item
                 name="feeRate"
                 className="field-to"
@@ -259,7 +259,7 @@ const Withdraw: React.FC = () => {
                   <div className="label-container">
                     <div className="label-with-icon">
                       Fee Rate
-                      <Tooltip title="By default fee rate is set at 1500 shannons per kB. But you can set a custom fee rate if needed.">
+                      <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
                         <QuestionCircleOutlined style={{ marginLeft: 4 }} />
                       </Tooltip>
                     </div>
@@ -343,6 +343,7 @@ const Withdraw: React.FC = () => {
                 </span>
               }
               image={Empty.PRESENTED_IMAGE_SIMPLE}
+              className={styles.emptyList}
             />
           </div>
         )}

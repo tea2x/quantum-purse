@@ -3,14 +3,12 @@
 
   .feeRateContainer {
     display: flex;
-    // gap: 12px;
     justify-content: space-between;
   }
 
   .feeOption {
     flex: 1;
     height: 3rem;
-    // padding: 0.5rem;
     border: 1px solid var(--gray-03);
     border-radius: 0.5rem;
     cursor: pointer;
@@ -21,8 +19,9 @@
 
     &.selected {
       border: none;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      // background-color: var(--teal-2);
+      background-color: rgba(255, 255, 255, 0.75);
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
       .feeName {
         color: #323232;
       }
@@ -32,7 +31,7 @@
     }
 
     &:hover {
-      border: 1px solid var(--teal-2);
+      border: 1px solid rgba(255, 255, 255, 0.75);
     }
   }
 
