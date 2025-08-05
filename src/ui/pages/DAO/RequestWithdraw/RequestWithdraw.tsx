@@ -177,136 +177,139 @@ const RequestWithdraw: React.FC = () => {
   return (
     <section className={cx(styles.withdrawRequestForm, "panel")}>
       <div>
-        <Form layout="vertical" form={form}>
-          <Row gutter={14}>
-            <Col xs={24} sm={14}>
-              <Form.Item
-                name="to"
-                label={
-                  <div className="label-container">
-                    <div className="label-with-icon">
-                      Request To
-                      <Tooltip title="You can make a withdraw request to any address, or select an account from your wallet.">
-                        <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                      </Tooltip>
-                    </div>
-                    <div className="switch-container">
-                      My Account
-                      <Form.Item name="isUnlockToMyAccount" noStyle>
-                        <Switch size="small"/>
-                      </Form.Item>
-                    </div>
-                  </div>
-                }
-                rules={[
-                  { required: true, message: "Address required!" },
-                  {
-                    validator: async (_, value) => {
-                      if (!value) return Promise.resolve();
-                      try {
-                        await ccc.Address.fromString(value, quantumPurse.client);
-                        return Promise.resolve();
-                      } catch (error) {
-                        return Promise.reject("Invalid address");
-                      }
-                    },
-                  },
-                ]}
-                className={cx("field-to", values?.isUnlockToMyAccount && "select-my-account")}
-              >
-                {!values?.isUnlockToMyAccount ? (
-                  <Input
-                    placeholder="Input the destination address"
-                    className={styles.inputField}
-                  />
-                ) : (
-                  <AccountSelect
-                    accounts={wallet.accounts}
-                    placeholder="Please select an account from your wallet"
-                  />
-                )}
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={10}>
-              <Form.Item
-                name="feeRate"
-                className="field-to"
-                label={
-                  <div className="label-container">
-                    <div className="label-with-icon">
-                      Fee Rate
-                      <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
-                        <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                      </Tooltip>
-                    </div>
-                    <div className="switch-container">
-                      Custom
-                      <Form.Item name="isCustomFeeRate" noStyle>
-                        <Switch size="small"/>
-                      </Form.Item>
-                    </div>
-                  </div>
-                }
-              >
-                <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={values?.isCustomFeeRate}/>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-        <Authentication
-          ref={authenticationRef}
-          authenCallback={authenCallback}
-          title="Make a Withdraw Request from the DAO"
-          afterClose={() => {
-            if (passwordResolver) {
-              passwordResolver.reject();
-              setPasswordResolver(null);
-            }
-          }}
-        />
-      </div>
-      <div>
         {(depositCells.length > 0 && Object.keys(depositEstimatedInfo).length !== 0) ? (
-          <div className={styles.requestWithdrawListContainer}>
-            <ul className={styles.requestWithdrawList}>
-              {[...depositCells]
-                .sort((a, b) => {
-                  const keyA = a.outPoint.txHash + a.outPoint.index;
-                  const keyB = b.outPoint.txHash + b.outPoint.index;
-                  const blockNumA = depositEstimatedInfo[keyA]?.blockNum ?? BigInt(0);
-                  const blockNumB = depositEstimatedInfo[keyB]?.blockNum ?? BigInt(0);
-                  return Number(blockNumB - blockNumA);
-                })
-                .map((cell) => {
-                  const key = cell.outPoint.txHash + cell.outPoint.index;
-                  const { tilMaxProfit, currentProfit } = depositEstimatedInfo[key] ?? { tilMaxProfit: Infinity, currentProfit: 0 };
-                  const progress = Math.max(0, Math.min(1, (30 - tilMaxProfit) / 30));
-                  return (
-                    <li key={key} className={styles.depositItem}>
-                      <div
-                        className={styles.progressBackground}
-                        style={{ width: `${progress * 100}%` }}
-                      ></div>
-                      <div className={styles.content}>
-                        <span className={styles.capacity}>
-                          <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
-                          <div>+ {Number((currentProfit / 10**8).toFixed(5))} CKB gained so far</div>
-                          <div>Next locking cycle will start in {Number(tilMaxProfit.toFixed(1))} days</div>
-                        </span>
-                        <Button
-                          type="primary"
-                          onClick={() => handleWithdrawRequest(cell)}
-                          disabled={!isToValid}
-                        >
-                          Request
-                        </Button>
-                      </div>
-                    </li>
-                  );
-                })
-              }
-            </ul>
-          </div>
+          <>
+            <div>
+              <Form layout="vertical" form={form}>
+                <Row gutter={14}>
+                  <Col xs={24} sm={14}>
+                    <Form.Item
+                      name="to"
+                      label={
+                        <div className="label-container">
+                          <div className="label-with-icon">
+                            Request To
+                            <Tooltip title="You can make a withdraw request to any address, or select an account from your wallet.">
+                              <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                            </Tooltip>
+                          </div>
+                          <div className="switch-container">
+                            My Account
+                            <Form.Item name="isUnlockToMyAccount" noStyle>
+                              <Switch size="small"/>
+                            </Form.Item>
+                          </div>
+                        </div>
+                      }
+                      rules={[
+                        { required: true, message: "Address required!" },
+                        {
+                          validator: async (_, value) => {
+                            if (!value) return Promise.resolve();
+                            try {
+                              await ccc.Address.fromString(value, quantumPurse.client);
+                              return Promise.resolve();
+                            } catch (error) {
+                              return Promise.reject("Invalid address");
+                            }
+                          },
+                        },
+                      ]}
+                      className={cx("field-to", values?.isUnlockToMyAccount && "select-my-account")}
+                    >
+                      {!values?.isUnlockToMyAccount ? (
+                        <Input
+                          placeholder="Input the destination address"
+                          className={styles.inputField}
+                        />
+                      ) : (
+                        <AccountSelect
+                          accounts={wallet.accounts}
+                          placeholder="Please select an account from your wallet"
+                        />
+                      )}
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={10}>
+                    <Form.Item
+                      name="feeRate"
+                      className="field-to"
+                      label={
+                        <div className="label-container">
+                          <div className="label-with-icon">
+                            Fee Rate
+                            <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
+                              <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                            </Tooltip>
+                          </div>
+                          <div className="switch-container">
+                            Custom
+                            <Form.Item name="isCustomFeeRate" noStyle>
+                              <Switch size="small"/>
+                            </Form.Item>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={values?.isCustomFeeRate}/>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+              <Authentication
+                ref={authenticationRef}
+                authenCallback={authenCallback}
+                title="Make a Withdraw Request from the DAO"
+                afterClose={() => {
+                  if (passwordResolver) {
+                    passwordResolver.reject();
+                    setPasswordResolver(null);
+                  }
+                }}
+              />
+            </div>
+
+            <div className={styles.requestWithdrawListContainer}>
+              <ul className={styles.requestWithdrawList}>
+                {[...depositCells]
+                  .sort((a, b) => {
+                    const keyA = a.outPoint.txHash + a.outPoint.index;
+                    const keyB = b.outPoint.txHash + b.outPoint.index;
+                    const blockNumA = depositEstimatedInfo[keyA]?.blockNum ?? BigInt(0);
+                    const blockNumB = depositEstimatedInfo[keyB]?.blockNum ?? BigInt(0);
+                    return Number(blockNumB - blockNumA);
+                  })
+                  .map((cell) => {
+                    const key = cell.outPoint.txHash + cell.outPoint.index;
+                    const { tilMaxProfit, currentProfit } = depositEstimatedInfo[key] ?? { tilMaxProfit: Infinity, currentProfit: 0 };
+                    const progress = Math.max(0, Math.min(1, (30 - tilMaxProfit) / 30));
+                    return (
+                      <li key={key} className={styles.depositItem}>
+                        <div
+                          className={styles.progressBackground}
+                          style={{ width: `${progress * 100}%` }}
+                        ></div>
+                        <div className={styles.content}>
+                          <span className={styles.capacity}>
+                            <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
+                            <div>+ {Number((currentProfit / 10**8).toFixed(5))} CKB gained so far</div>
+                            <div>Next locking cycle will start in {Number(tilMaxProfit.toFixed(1))} days</div>
+                          </span>
+                          <Button
+                            type="primary"
+                            onClick={() => handleWithdrawRequest(cell)}
+                            disabled={!isToValid}
+                          >
+                            Request
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })
+                }
+              </ul>
+            </div>
+          </>
         ) : (
           <div className={styles.requestWithdrawListContainer}>
             <Empty
