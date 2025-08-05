@@ -1,6 +1,6 @@
 import { Button, notification, Form, Switch, Input, Empty, Tooltip, Row, Col } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
@@ -9,8 +9,6 @@ import styles from "./Withdraw.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../../core/config";
-import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
-import React from "react";
 import { parseEpoch, getClaimEpoch, getProfit } from "../../../../core/epoch";
 
 const Withdraw: React.FC = () => {
@@ -225,10 +223,10 @@ const Withdraw: React.FC = () => {
                 rules={[
                   { required: true, message: "Address required!" },
                   {
-                    validator: (_, value) => {
+                    validator: async (_, value) => {
                       if (!value) return Promise.resolve();
                       try {
-                        addressToScript(value);
+                        await ccc.Address.fromString(value, quantumPurse.client);
                         return Promise.resolve();
                       } catch (error) {
                         return Promise.reject("Invalid address");

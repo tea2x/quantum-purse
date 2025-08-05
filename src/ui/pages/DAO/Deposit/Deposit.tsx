@@ -1,4 +1,3 @@
-import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
 import {
   Button,
   Flex,
@@ -17,6 +16,7 @@ import { CKB_DECIMALS, CKB_UNIT } from "../../../utils/constants";
 import { cx, formatError } from "../../../utils/methods";
 import styles from "./Deposit.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
+import { Address } from "@ckb-ccc/core";
 
 const Deposit: React.FC = () => {
   const [form] = Form.useForm();
@@ -160,10 +160,10 @@ const Deposit: React.FC = () => {
             rules={[
               { required: true, message: "Address required!" },
               {
-                validator: (_, value) => {
+                validator: async (_, value) => {
                   if (!value) return Promise.resolve();
                   try {
-                    addressToScript(value);
+                    await Address.fromString(value, quantumPurse.client);
                     return Promise.resolve();
                   } catch (error) {
                     return Promise.reject("Invalid address");
