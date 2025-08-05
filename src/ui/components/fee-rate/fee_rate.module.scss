@@ -3,34 +3,38 @@
 
   .feeRateContainer {
     display: flex;
-    justify-content: space-between;
+    border: 1px solid var(--gray-03);
+    border-radius: 0.5rem;
+    overflow: hidden;
   }
 
   .feeOption {
     flex: 1;
     height: 3rem;
-    border: 1px solid var(--gray-03);
-    border-radius: 0.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
 
+    &:not(:last-child) {
+      border-right: 1px solid var(--gray-03);
+    }
+
+    &:hover:not(.selected) {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
     &.selected {
-      border: none;
       background-color: rgba(255, 255, 255, 0.9);
       box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+
       .feeName {
         color: #323232;
       }
       .feeValue {
         color: #d4d4d4;
       }
-    }
-
-    &:hover {
-      border: 1px solid rgba(255, 255, 255, 0.9);
     }
   }
 
@@ -57,7 +61,6 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.5rem;
     color: var(--gray-03);
-    // background: transparent;
     padding: 4px 11px;
 
     &:focus {
