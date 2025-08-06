@@ -1,4 +1,4 @@
-import { Button, Grid } from "antd";
+import { Button, Grid, Tooltip } from "antd";
 import React, { useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import LayoutCtx from "../../context/layout_ctx";
@@ -8,7 +8,7 @@ import styles from "./header.module.scss";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { Copy } from "../../components";
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, Label } from "recharts";
+import { PieChart, Pie, Cell, Label } from "recharts";
 
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -83,19 +83,30 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             >
               <Cell fill="#00B27A" />
               <Cell fill="#444" />
-              <Label
-                value="CKB"
-                position="center"
-                fill="var(--gray-01)"
-                style={labelStyle}
-              />
+              <Tooltip
+                title={
+                  !screens.md ? (
+                    <>
+                      {wallet.current.name}
+                      <br />
+                      Available: {formatBalance(balance as string)}
+                      <br />
+                      Deposited: {formatBalance(locked as string)}
+                    </>
+                  ) : (
+                    ""
+                  )
+                }
+              >
+                <Label
+                  value="CKB"
+                  position="center"
+                  fill="var(--gray-01)"
+                  style={labelStyle}
+                />
+              </Tooltip>
+
             </Pie>
-            {!screens.md && !noBalance && (
-              <RechartsTooltip
-                formatter={(value, name) => `${(Number(value)/10**8).toFixed(0)} CKB`}
-                contentStyle={{ fontSize: `${tooltipFontSize}px` }}
-              />
-            )}
           </PieChart>
           {screens.md && (
             <div className={styles.statusDetails}>
@@ -126,19 +137,29 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             >
               <Cell fill="#2196F3" />
               <Cell fill="#444" />
-              <Label
-                value={`${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
-                position="center"
-                fill="var(--gray-01)"
-                style={labelStyle}
-              />
+              <Tooltip
+                title={
+                  !screens.md ? (
+                    <>
+                      Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
+                      <br />
+                      Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()}
+                      <br />
+                      Start: {syncStatus && syncStatus.startBlock.toLocaleString()}
+                    </>
+                  ) : (
+                    ""
+                  )
+                }
+              >
+                <Label
+                  value={`${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
+                  position="center"
+                  fill="var(--gray-01)"
+                  style={labelStyle}
+                />
+              </Tooltip>
             </Pie>
-            {!screens.md && (
-              <RechartsTooltip
-                formatter={(value, name) => `${value}`}
-                contentStyle={{ fontSize: `${tooltipFontSize}px` }}
-              />
-            )}
           </PieChart>
           {screens.md && (
             <div className={styles.statusDetails}>
@@ -167,19 +188,35 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
             >
               <Cell fill="#f9652f" />
               <Cell fill="#444" />
-              <Label
-                value="P2P"
-                position="center"
-                fill="var(--gray-01)"
-                style={labelStyle}
-              />
+              <Tooltip
+                title={
+                  !screens.md ? (
+                    <>
+                      <div>
+                        Id: {" "}
+                        {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
+                          <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
+                            <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 3, 5)}</span>
+                          </Copy>
+                        ) : (
+                          <span>{syncStatus.nodeId}</span>
+                        )}
+                      </div>
+                      Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}
+                    </>
+                  ) : (
+                    ""
+                  )
+                }
+              >
+                <Label
+                  value="P2P"
+                  position="center"
+                  fill="var(--gray-01)"
+                  style={labelStyle}
+                />
+              </Tooltip>
             </Pie>
-            {!screens.md && (
-              <RechartsTooltip
-                formatter={(value, name) => `${value}`}
-                contentStyle={{ fontSize: `${tooltipFontSize}px` }}
-              />
-            )}
           </PieChart>
           {screens.md && (
             <div className={styles.statusDetails}>
