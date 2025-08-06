@@ -217,7 +217,6 @@ body {
 .ant-select-selector {
   background: rgba(36, 38, 37, 0.2) !important;
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(72px);
   border-radius: 0.5rem !important;
   border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
 }
