@@ -162,7 +162,7 @@ body {
   font-family: "Quantico", sans-serif;
   box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.25);
   flex: 1;
-  padding: 3rem 2.4rem;
+  padding: 2rem 2.4rem;
   @media (max-width: 768px) {
     padding: 2rem 1.8rem;
   }
@@ -181,64 +181,51 @@ body {
   }
 }
 
-@keyframes typing {
-  0% {
-    width: 0;
-  }
-
-  40%,
-  60% {
-    width: 16ch;
-  }
-
-  100% {
-    width: 0;
-  }
-}
-
-@keyframes blink-caret {
-
-  from,
-  to {
-    border-color: transparent;
-  }
-
-  50% {
-    border-color: currentColor;
-  }
-}
-
 .ant-btn,
 .ant-form-item,
-.ant-select,
 .ant-form-item-label,
 .ant-checkbox-wrapper,
+.ant-select,
 .ant-select-item-option,
 .ant-select-item-group,
-.ant-modal {
+.ant-modal,
+.ant-menu,
+.ant-menu-item,
+.ant-menu-submenu-title {
   font-family: "Quantico", sans-serif !important;
 }
 
 .ant-menu,
 .ant-menu-item,
 .ant-menu-submenu-title,
-.ant-input {
+.ant-input,
+.ant-input::placeholder,
+.ant-select-selection-placeholder,
+.ant-select,
+.ant-select-selector {
   color: var(--gray-02) !important;
-  font-family: "Quantico", sans-serif !important;
 }
 
-.ant-input::placeholder, .ant-select-selection-placeholder {
-  color: var(--gray-02) !important;
-  font-family: "Quantico", sans-serif !important;
+.ant-select-item-option-content,
+.ant-select-item-group {
+  color: var(--gray-01) !important;
 }
 
 .ant-select,
 .ant-select-dropdown,
 .ant-select-selector {
-  background: rgba(36, 38, 37, 0.2) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(72px);
+  background: rgba(35, 42, 35, 0.1) !important;
+  backdrop-filter: blur(60px);
   border-radius: 0.5rem !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: var(--gray-02) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.ant-select-item-option-active {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+.ant-select-arrow {
+  color: white !important;
+  font-size: medium !important;
 }

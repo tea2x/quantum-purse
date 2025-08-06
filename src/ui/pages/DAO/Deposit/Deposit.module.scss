@@ -3,15 +3,20 @@
     height: 55rem;
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     .ant-form {
       background: rgba(255, 255, 255, 0) !important;
     }
     
     .ant-form-item {
+      padding: 1.5rem;
+      border: none;
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.025);
+      backdrop-filter: blur(12px);
+      
       &.select-my-account {
         .ant-select-selector {
-          min-height: 5.8rem;
+          min-height: 3rem;
         }
         .ant-select-single {
           height: fit-content;
@@ -22,6 +27,8 @@
         label {
           color: var(--teal-2);
           width: 100%;
+          font-size: small;
+          font-weight: bold;
           .label-container {
             display: flex;
             width: 100%;
@@ -51,15 +58,16 @@
 }
 
 .inputField {
-  width: 100%;
-  height: 5rem;
+  height: 3rem;
   background-color: transparent !important;
   border-radius: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .depositButton {
-  width: 100%;
-  height: 5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  height: 3rem;
+  width: 10rem;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }

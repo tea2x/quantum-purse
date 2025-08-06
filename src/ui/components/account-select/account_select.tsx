@@ -1,7 +1,8 @@
-import { Select, SelectProps } from "antd";
+import { Select, SelectProps, Grid } from "antd";
 import type { DefaultOptionType } from "antd/es/select";
 import { useAccountSearch } from "../../hooks/useAccountSearch";
 import { AccountItem } from "../../components/account-item/account_item";
+import { shortenAddress } from "../../utils/methods";
 
 export interface AccountOption {
   address?: string | null;
@@ -27,6 +28,9 @@ const AccountSelect: React.FC<AccountSelectProps> = ({
   searchFields,
   ...restProps
 }) => {
+  const { useBreakpoint } = Grid;
+  const screens = useBreakpoint();
+
   const { searchTerm, filteredAccounts, handleSearch } = useAccountSearch(
     accounts,
     debounceTime,
@@ -57,15 +61,10 @@ const AccountSelect: React.FC<AccountSelectProps> = ({
   const labelRender = (option: DefaultOptionType) => {
     if (!option.label) return null;
     const accountData = JSON.parse(option.label as string) as AccountOption; // Deserialize account data from string
-    return (
-      <AccountItem
-        address={accountData?.address!}
-        name={accountData?.name}
-        spxLockArgs={accountData?.spxLockArgs}
-        hasTools={false}
-        copyable={false}
-        showBalance={true}
-      />
+    return screens.md ? (
+      <div>{accountData.name} _ {shortenAddress(accountData?.address!, 20, 30)}</div>
+    ) : (
+      <div>{accountData.name} _ {shortenAddress(accountData?.address!, 10, 15)}</div>
     );
   };
 
@@ -86,7 +85,7 @@ const AccountSelect: React.FC<AccountSelectProps> = ({
       optionRender={optionRender}
       labelRender={labelRender}
       onChange={handleChange}
-      allowClear
+      // allowClear
       placeholder="Please select an account from your wallet"
       {...restProps}
     />

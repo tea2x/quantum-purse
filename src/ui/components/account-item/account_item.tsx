@@ -99,7 +99,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
               </span>
             ) : (
               <span>
-                {shortenAddress(address, 10, 30)}
+                {shortenAddress(address, 10, 25)}
               </span>
             )}
             {copyable && (

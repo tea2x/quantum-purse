@@ -2,7 +2,6 @@ import { expect } from "chai";
 import QuantumPurse, { SpxVariant } from "../src/core/quantum_purse";
 import { utf8ToBytes, bytesToUtf8 } from "../src/core/utils";
 import __wbg_init from "quantum-purse-key-vault";
-import { dummyTx } from "./dummy_tx";
 
 describe("Quantum Purse Basics", () => {
   let wallet: QuantumPurse;

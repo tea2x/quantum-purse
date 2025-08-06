@@ -1,6 +1,6 @@
-import { Button, notification, Form, Switch, Input, Empty, Tooltip } from "antd";
+import { Button, notification, Form, Switch, Input, Empty, Tooltip, Row, Col } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
@@ -9,8 +9,6 @@ import styles from "./Withdraw.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../../core/config";
-import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
-import React from "react";
 import { parseEpoch, getClaimEpoch, getProfit } from "../../../../core/epoch";
 
 const Withdraw: React.FC = () => {
@@ -199,131 +197,156 @@ const Withdraw: React.FC = () => {
     <section className={cx(styles.withdrawForm, "panel")}>
       {/* <h1>Withdraw</h1> */}
       <div>
-        <Form layout="vertical" form={form}>
-          <Form.Item
-            name="to"
-            label={
-              <div className="label-container">
-
-                <div className="label-with-icon">
-                  Withdraw To
-                  <Tooltip title="You can withdraw to any address, or select an account from your wallet.">
-                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </div>
-
-                <div className="switch-container">
-                  My Account
-                  <Form.Item name="withdrawToMyAccount" style={{ marginBottom: 0 }}>
-                    <Switch size="small"/>
-                  </Form.Item>
-                </div>
-              </div>
-            }
-            rules={[
-              { required: true, message: "Address required!" },
-              {
-                validator: (_, value) => {
-                  if (!value) return Promise.resolve();
-                  try {
-                    addressToScript(value);
-                    return Promise.resolve();
-                  } catch (error) {
-                    return Promise.reject("Invalid address");
-                  }
-                },
-              },
-            ]}
-            className={cx("field-to", values?.withdrawToMyAccount && "select-my-account")}
-          >
-            {!values?.withdrawToMyAccount ? (
-              <Input
-                placeholder="Input the destination address"
-                className={styles.inputField}
-              />
-            ) : (
-              <AccountSelect
-                accounts={wallet.accounts}
-                placeholder="Please select an account from your wallet"
-              />
-            )}
-          </Form.Item>
-
-          <Form.Item
-            className={cx("field-to")}
-            name="feeRate"
-            label={"Fee Rate"}
-          >
-            <FeeRateSelect onFeeRateChange={handleFeeRateChange}/>
-          </Form.Item>
-
-        </Form>
-        <Authentication
-          ref={authenticationRef}
-          authenCallback={authenCallback}
-          title="Withdraw from the DAO"
-          afterClose={() => {
-            if (passwordResolver) {
-              passwordResolver.reject();
-              setPasswordResolver(null);
-            }
-          }}
-        />
-      </div>
-      <div>
         {(withdrawRequestCells.length > 0 && Object.keys(redeemingInfos).length !== 0) ? (
-          <div className={styles.withdrawListContainer}>
-            <ul className={styles.withdrawList}>
-              {[...withdrawRequestCells]
-                .sort((a,b) => {
-                  const keyA = a.outPoint.txHash + a.outPoint.index;
-                  const keyB = b.outPoint.txHash + b.outPoint.index;
-                  const blockNumA = redeemingInfos[keyA]?.blockNum ?? BigInt(0);
-                  const blockNumB = redeemingInfos[keyB]?.blockNum ?? BigInt(0);
-                  return Number(blockNumB - blockNumA);
-                })
-                .map((cell) => {
-                  const key = cell.outPoint.txHash + cell.outPoint.index;
-                  const {remain, profit} = redeemingInfos[key] ?? {remain: Infinity, profit: 0};
-                  const progress = Math.max(0, Math.min(1, (30 - remain) / 30));
-                  return (
-                    <li key={key} className={styles.withdrawItem}>
-                      <div
-                        className={styles.progressBackground}
-                        style={{ width: `${progress * 100}%` }}
-                      ></div>
-                      <div className={styles.content}>
-                        <span className={styles.capacity}>
-                          <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
-                          <div>+ {(profit/10**8).toFixed(5)} CKB </div>
-                          <div>
-                            {remain > 0 ? `Withdrawable in ${Number(remain.toFixed(1))} days` : <span style={{ color: 'green' }}>Withdrawable now!</span>}
+          <>
+            <div>
+              <Form layout="vertical" form={form}>
+                <Row gutter={16}>
+                  <Col xs={24} sm={14}>
+                    <Form.Item
+                      name="to"
+                      label={
+                        <div className="label-container">
+
+                          <div className="label-with-icon">
+                            Withdraw To
+                            <Tooltip title="You can withdraw to any address, or select an account from your wallet.">
+                              <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                            </Tooltip>
                           </div>
 
-                        </span>
-                        <Button
-                          type="primary"
-                          onClick={() => handleWithdraw(cell)}
-                          disabled={!isToValid || remain > 0}
-                        >
-                          Withdraw
-                        </Button>
-                      </div>
-                    </li>
-                  );
-                })
-              }
-            </ul>
-          </div>
+                          <div className="switch-container">
+                            My Wallet
+                            <Form.Item name="withdrawToMyAccount" noStyle>
+                              <Switch size="small"/>
+                            </Form.Item>
+                          </div>
+                        </div>
+                      }
+                      rules={[
+                        { required: true, message: "" },
+                        {
+                          validator: async (_, value) => {
+                            if (!value) return Promise.resolve();
+                            try {
+                              await ccc.Address.fromString(value, quantumPurse.client);
+                              return Promise.resolve();
+                            } catch (error) {
+                              return Promise.reject("Invalid address");
+                            }
+                          },
+                        },
+                      ]}
+                      className={cx("field-to", values?.withdrawToMyAccount && "select-my-account")}
+                    >
+                      {!values?.withdrawToMyAccount ? (
+                        <Input
+                          placeholder="Input the destination address"
+                          className={styles.inputField}
+                        />
+                      ) : (
+                        <AccountSelect
+                          accounts={wallet.accounts}
+                          placeholder="Please select an account from your wallet"
+                        />
+                      )}
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={10}>
+                    <Form.Item
+                      name="feeRate"
+                      className="field-to"
+                      label={
+                        <div className="label-container">
+                          <div className="label-with-icon">
+                            Fee Rate
+                            <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
+                              <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                            </Tooltip>
+                          </div>
+                          <div className="switch-container">
+                            Custom
+                            <Form.Item name="isCustomFeeRate" noStyle>
+                              <Switch size="small"/>
+                            </Form.Item>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={values?.isCustomFeeRate}/>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+              <Authentication
+                ref={authenticationRef}
+                authenCallback={authenCallback}
+                title="Withdraw from the DAO"
+                afterClose={() => {
+                  if (passwordResolver) {
+                    passwordResolver.reject();
+                    setPasswordResolver(null);
+                  }
+                }}
+              />
+            </div>
+
+            <div className={styles.withdrawListContainer}>
+              <ul className={styles.withdrawList}>
+                {[...withdrawRequestCells]
+                  .sort((a,b) => {
+                    const keyA = a.outPoint.txHash + a.outPoint.index;
+                    const keyB = b.outPoint.txHash + b.outPoint.index;
+                    const blockNumA = redeemingInfos[keyA]?.blockNum ?? BigInt(0);
+                    const blockNumB = redeemingInfos[keyB]?.blockNum ?? BigInt(0);
+                    return Number(blockNumB - blockNumA);
+                  })
+                  .map((cell) => {
+                    const key = cell.outPoint.txHash + cell.outPoint.index;
+                    const {remain, profit} = redeemingInfos[key] ?? {remain: Infinity, profit: 0};
+                    const progress = Math.max(0, Math.min(1, (30 - remain) / 30));
+                    return (
+                      <li key={key} className={styles.withdrawItem}>
+                        <div
+                          className={styles.progressBackground}
+                          style={{ width: `${progress * 100}%` }}
+                        ></div>
+                        <div className={styles.content}>
+                          <span className={styles.capacity}>
+                            <div>{(Number(BigInt(cell.cellOutput.capacity)) / 10**8).toFixed(2)} CKB</div>
+                            <div>+ {(profit/10**8).toFixed(5)} CKB </div>
+                            <div>
+                              {remain > 0 ? `Withdrawable in ${Number(remain.toFixed(1))} days` : <span style={{ color: 'green' }}>Withdrawable now!</span>}
+                            </div>
+
+                          </span>
+                          <Button
+                            type="primary"
+                            onClick={() => handleWithdraw(cell)}
+                            disabled={!isToValid || remain > 0}
+                          >
+                            Withdraw
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })
+                }
+              </ul>
+            </div>
+          </>
         ) : (
-          <Empty
-            description={
-              <span style={{ color: 'var(--gray-01)', fontFamily: "Quantico, sans-serif" }}>
-                No withdraw requests found! 🫠
-              </span>
-            }
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
+          <div className={styles.withdrawListContainer}>
+            <Empty
+              description={
+                <span style={{ color: 'var(--gray-01)', fontFamily: "Quantico, sans-serif" }}>
+                  No withdraw requests found! 🫠
+                </span>
+              }
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              className={styles.emptyList}
+            />
+          </div>
         )}
       </div>
     </section>

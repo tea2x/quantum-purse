@@ -13,7 +13,7 @@ const ParamsetSelector: React.FC = () => {
             title={
               useLocation().pathname === "/import-wallet"
                 ? "What SPHINCS+ parameter set did you back up with the input seed phrase?"
-                : "There are 12 SPHINCS+ parameter sets in total. Sha2_256s is recommended if you have no reference!"
+                : "There are 12 SPHINCS+ parameter sets in total, each will determine your wallet type. Sha2_256s is recommended if you have no reference!"
             }
           >
             <QuestionCircleOutlined style={{ marginLeft: 8 }} />

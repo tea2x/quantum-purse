@@ -1,4 +1,3 @@
-import { addressToScript } from "@nervosnetwork/ckb-sdk-utils";
 import {
   Button,
   Flex,
@@ -6,7 +5,9 @@ import {
   Input,
   notification,
   Switch,
-  Tooltip
+  Tooltip,
+  Row,
+  Col
 } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
@@ -17,6 +18,7 @@ import { CKB_DECIMALS, CKB_UNIT } from "../../../utils/constants";
 import { cx, formatError } from "../../../utils/methods";
 import styles from "./Deposit.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
+import { Address } from "@ckb-ccc/core";
 
 const Deposit: React.FC = () => {
   const [form] = Form.useForm();
@@ -151,19 +153,19 @@ const Deposit: React.FC = () => {
 
                 <div className="switch-container">
                   My Wallet
-                  <Form.Item name="isDepositToMyAccount" style={{ marginBottom: 0 }}>
+                  <Form.Item name="isDepositToMyAccount" noStyle>
                     <Switch size="small"/>
                   </Form.Item>
                 </div>
               </div>
             }
             rules={[
-              { required: true, message: "Address required!" },
+              { required: true, message: "" },
               {
-                validator: (_, value) => {
+                validator: async (_, value) => {
                   if (!value) return Promise.resolve();
                   try {
-                    addressToScript(value);
+                    await Address.fromString(value, quantumPurse.client);
                     return Promise.resolve();
                   } catch (error) {
                     return Promise.reject("Invalid address");
@@ -185,56 +187,75 @@ const Deposit: React.FC = () => {
             )}
           </Form.Item>
 
-          <Form.Item
-            // className="amount"
-            className={cx("field-to")} //using the same class for style consistency
-            name="amount"
-            label={
-              <div className="label-container">
+          <Row gutter={14}>
+            <Col xs={24} sm={14}>
+              <Form.Item
+                className={cx("field-to")} //using the same class for style consistency
+                name="amount"
+                label={
+                  <div className="label-container">
 
-                <div className="label-with-icon">
-                  Amount
-                </div>
+                    <div className="label-with-icon">
+                      Amount
+                    </div>
 
-                <div className="switch-container">
-                  Maximum
-                  <Form.Item name="isMax" style={{ marginBottom: 0 }}>
-                    <Switch size="small"/>
-                  </Form.Item>
-                </div>
-              </div>
-            }
-            rules={[
-              { required: true, message: "Amount required!" },
-              // { type: "number", min: 114, message: "Deposit amount must be at least 114 CKB" },
-              {
-                validator: (_, value) => {
-                  if (
-                    !values?.isMax &&
-                    fromAccountBalance &&
-                    value &&
-                    BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
-                  ) {
-                    return Promise.reject("Insufficient balance");
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
-          >
-            <Input
-              placeholder="Enter deposit amount"
-              className={styles.inputField}
-            />
-          </Form.Item>
-
-          <Form.Item
-            className={cx("field-to")}
-            name="feeRate"
-            label={"Fee Rate"}
-          >
-            <FeeRateSelect onFeeRateChange={handleFeeRateChange} />
-          </Form.Item>
+                    <div className="switch-container">
+                      Maximum
+                      <Form.Item name="isMax" noStyle>
+                        <Switch size="small"/>
+                      </Form.Item>
+                    </div>
+                  </div>
+                }
+                rules={[
+                  { required: true, message: "" },
+                  // { type: "number", min: 114, message: "Deposit amount must be at least 114 CKB" },
+                  {
+                    validator: (_, value) => {
+                      if (
+                        !values?.isMax &&
+                        fromAccountBalance &&
+                        value &&
+                        BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
+                      ) {
+                        return Promise.reject("Insufficient balance");
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="Enter deposit amount"
+                  className={styles.inputField}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={10}>
+              <Form.Item
+                name="feeRate"
+                className="field-to"
+                label={
+                  <div className="label-container">
+                    <div className="label-with-icon">
+                      Fee Rate
+                      <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
+                        <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                      </Tooltip>
+                    </div>
+                    <div className="switch-container">
+                      Custom
+                      <Form.Item name="isCustomFeeRate" noStyle>
+                        <Switch size="small"/>
+                      </Form.Item>
+                    </div>
+                  </div>
+                }
+              >
+                <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={values?.isCustomFeeRate}/>
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item>
             <Flex justify="end">
