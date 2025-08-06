@@ -34,7 +34,7 @@
 
     .ant-menu-item-divider {
       border-color: var(--gray-03);
-      width: 66%;
+      width: 80%;
       margin: 0 auto;
     }
   }
@@ -58,9 +58,8 @@
   }
 
   @media (min-width: 768px) {
-    flex-basis: 19rem;
+    flex-basis: 20rem;
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
   }
 }

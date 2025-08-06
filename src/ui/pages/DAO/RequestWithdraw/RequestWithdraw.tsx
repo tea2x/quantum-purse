@@ -194,15 +194,15 @@ const RequestWithdraw: React.FC = () => {
                             </Tooltip>
                           </div>
                           <div className="switch-container">
-                            My Account
-                            <Form.Item name="isUnlockToMyAccount" noStyle>
+                            My Wallet
+                            <Form.Item name="isRequestToMyAccount" noStyle>
                               <Switch size="small"/>
                             </Form.Item>
                           </div>
                         </div>
                       }
                       rules={[
-                        { required: true, message: "Address required!" },
+                        { required: true, message: "" },
                         {
                           validator: async (_, value) => {
                             if (!value) return Promise.resolve();
@@ -215,9 +215,9 @@ const RequestWithdraw: React.FC = () => {
                           },
                         },
                       ]}
-                      className={cx("field-to", values?.isUnlockToMyAccount && "select-my-account")}
+                      className={cx("field-to", values?.isRequestToMyAccount && "select-my-account")}
                     >
-                      {!values?.isUnlockToMyAccount ? (
+                      {!values?.isRequestToMyAccount ? (
                         <Input
                           placeholder="Input the destination address"
                           className={styles.inputField}

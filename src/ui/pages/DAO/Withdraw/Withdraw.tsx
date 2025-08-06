@@ -216,7 +216,7 @@ const Withdraw: React.FC = () => {
                           </div>
 
                           <div className="switch-container">
-                            My Account
+                            My Wallet
                             <Form.Item name="withdrawToMyAccount" noStyle>
                               <Switch size="small"/>
                             </Form.Item>
@@ -224,7 +224,7 @@ const Withdraw: React.FC = () => {
                         </div>
                       }
                       rules={[
-                        { required: true, message: "Address required!" },
+                        { required: true, message: "" },
                         {
                           validator: async (_, value) => {
                             if (!value) return Promise.resolve();

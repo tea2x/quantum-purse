@@ -155,7 +155,7 @@ const Send: React.FC = () => {
               </div>
             }
             rules={[
-              { required: true, message: "Address required!" },
+              { required: true, message: "" },
               {
                 validator: async (_, value) => {
                   if (!value) return Promise.resolve();
@@ -199,7 +199,7 @@ const Send: React.FC = () => {
               </div>
             }
             rules={[
-              { required: true, message: "Amount required!" },
+              { required: true, message: "" },
               {
                 validator: (_, value) => {
                   if (

@@ -10,7 +10,6 @@
   height: 12.5rem;
   background: rgba(255, 255, 255, 0.02);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 
   border-radius: 0.5rem;
   width: 100%;
@@ -46,11 +45,10 @@
   align-items: center;
   background: rgba(36, 38, 37, 0.2);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-radius: 1rem;
   padding: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  // box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  // border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .statusDetails {
