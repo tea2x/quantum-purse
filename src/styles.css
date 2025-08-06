@@ -191,8 +191,7 @@ body {
 .ant-modal,
 .ant-menu,
 .ant-menu-item,
-.ant-menu-submenu-title,
-.ant-input {
+.ant-menu-submenu-title {
   font-family: "Quantico", sans-serif !important;
 }
 
@@ -224,4 +223,9 @@ body {
 .ant-select-item-option-active {
   background-color: rgba(255, 255, 255, 0.2) !important;
   color: white !important;
+}
+
+.ant-select-arrow {
+  color: white !important;
+  font-size: medium !important;
 }
