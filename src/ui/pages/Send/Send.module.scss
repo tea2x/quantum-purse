@@ -8,7 +8,7 @@
     }
     
     .ant-form-item {
-      padding: 1rem;
+      padding: 1.5rem;
       border: none;
       border-radius: 1rem;
       background: rgba(255, 255, 255, 0.025);
@@ -28,6 +28,7 @@
           color: var(--teal-2);
           width: 100%;
           font-size: small;
+          font-weight: bold;
           .label-container {
             display: flex;
             width: 100%;
