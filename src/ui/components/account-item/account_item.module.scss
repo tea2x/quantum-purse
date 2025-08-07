@@ -27,7 +27,7 @@
   }
 
   &:has(:global(.account-info:hover)) {
-    background-color: var(--white-abs);
+    background-color: var(--gray-light);
     color: var(--gray-03);
   }
 
