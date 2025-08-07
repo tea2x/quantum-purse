@@ -339,7 +339,7 @@ const Withdraw: React.FC = () => {
           <div className={styles.withdrawListContainer}>
             <Empty
               description={
-                <span style={{ color: 'var(--gray-01)', fontFamily: "Quantico, sans-serif" }}>
+                <span style={{ color: 'var(--gray-light)', fontFamily: "Quantico, sans-serif" }}>
                   No withdraw requests found! 🫠
                 </span>
               }

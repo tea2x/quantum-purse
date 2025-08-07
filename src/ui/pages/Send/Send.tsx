@@ -251,10 +251,6 @@ const Send: React.FC = () => {
             </Col>
           </Row>
 
-
-
-
-
           <Form.Item>
             <Flex justify="end">
               <Button

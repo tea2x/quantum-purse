@@ -62,12 +62,11 @@
 
 .emptyList {
   height: 100%;
-  width: 100%;
-  margin: 10rem auto;
+  margin: 15rem;
   align-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 0.5px solid var(--gray-light);
   border-radius: 1rem;
-  padding: 3rem;
+  padding: 5rem;
 }
 
 .withdrawList {
