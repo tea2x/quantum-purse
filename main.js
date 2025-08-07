@@ -11,7 +11,7 @@ function createWindow() {
         },
     });
 
-    mainWindow.setMinimumSize(1010, 700);
+    mainWindow.setMinimumSize(1010, 720);
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         shell.openExternal(url);
