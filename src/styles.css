@@ -214,7 +214,7 @@ body {
 .ant-select,
 .ant-select-dropdown,
 .ant-select-selector {
-  background: rgba(35, 42, 35, 0.1) !important;
+  background: rgba(30, 39, 35, 0.5) !important;
   backdrop-filter: blur(60px);
   border-radius: 0.5rem !important;
   border: 0.5px solid rgba(255, 255, 255, 0.2) !important;

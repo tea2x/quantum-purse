@@ -1,14 +1,14 @@
 .depositForm {
   :global {
     height: 55rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(12px);
     .ant-form {
       background: rgba(255, 255, 255, 0) !important;
     }
     
     .ant-form-item {
-      padding: 1.5rem;
+      padding: 2rem;
       border: none;
       border-radius: 1rem;
       background: rgba(255, 255, 255, 0.025);
