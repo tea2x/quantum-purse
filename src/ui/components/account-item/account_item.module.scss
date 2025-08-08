@@ -4,7 +4,7 @@
       display: flex;
       align-items: center;
       gap: 0.8rem;
-      color: var(--gray-03) !important;
+      color: var(--black) !important;
       &:hover {
         color: var(--teal-2) !important;
       }
@@ -28,8 +28,17 @@
 
   &:has(:global(.account-info:hover)) {
     background-color: var(--gray-light);
-    color: var(--gray-03);
+
+    :global {
+      .name,
+      .address,
+      .address .copyable,
+      .more-btn {
+        color: var(--gray-03) !important;
+      }
+    }
   }
+
 
   :global {
     .account-info {
@@ -42,7 +51,7 @@
         font-size: 1.4rem;
         font-weight: bold;
         line-height: 1.5;
-        color: var(--gray-02);
+        color: var(--gray-01);
         display: flex;
         align-items: center;
         gap: 0.8rem;
@@ -74,7 +83,7 @@
           transition: all 0.3s ease;
           cursor: pointer;
           &:hover {
-            background-color: var(--gray-01);
+            background-color: var(--gray-02);
             color: var(--white-abs);
           }
         }

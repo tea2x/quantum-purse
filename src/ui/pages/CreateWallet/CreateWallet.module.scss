@@ -51,8 +51,14 @@
       color: var(--gray-03) !important;
     }
 
-    .ant-steps-item-finish .ant-steps-item-description {
-      color: var(--gray-01) !important;
+    // .ant-steps-item-finish .ant-steps-item-description {
+    //   color: var(--gray-01) !important;
+    // }
+
+    .ant-input,
+    .ant-input::placeholder,
+    .ant-input-password-icon {
+      color: var(--gray-02) !important;
     }
   }
 }
