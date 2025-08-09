@@ -1,7 +1,7 @@
 import { cx } from "../../utils/methods";
 import styles from "./fee_rate.module.scss";
 import { useState } from "react";
-import { Tooltip } from "antd";
+import { Tooltip, Input } from "antd";
 
 interface FeeRateSelectProps {
   onFeeRateChange: (feeRate: number) => void;
@@ -33,7 +33,7 @@ const FeeRateSelect: React.FC<FeeRateSelectProps> = ({ onFeeRateChange, custom }
     <div className={styles.feeRate}>
       {custom ? (
         <div>
-          <input
+          <Input
             type="number"
             placeholder="Enter fee rate"
             onChange={(e) => {

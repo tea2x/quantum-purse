@@ -191,7 +191,9 @@ body {
 .ant-modal,
 .ant-menu,
 .ant-menu-item,
-.ant-menu-submenu-title {
+.ant-menu-submenu-title,
+.ant-input::placeholder,
+.ant-select-selection-placeholder {
   font-family: "Quantico", sans-serif !important;
 }
 
