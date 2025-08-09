@@ -57,12 +57,16 @@
 .withdrawListContainer {
   overflow-y: auto;
   margin-top: 2rem;
-  max-height: 42rem; // tuned w/o exact calculation, adjust as needed
+  max-height: 40rem; // tuned w/o exact calculation, adjust as needed
+  @media (max-width: 768px) {
+    max-height: 31rem;
+    margin-top: 0;
+  }
 }
 
 .emptyList {
   height: 100%;
-  margin: 15rem;
+  margin: 5rem;
   align-content: center;
   border: 0.5px solid var(--gray-light);
   border-radius: 1rem;
