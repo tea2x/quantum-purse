@@ -21,11 +21,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { Dispatch, RootState } from "../../store";
-import { WalletStepEnum, STORAGE_KEYS } from "../../utils/constants";
+import { WalletStepEnum, STORAGE_KEYS, ROUTES } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./ImportWallet.module.scss";
 import ParamSetSelector from "../../components/sphincs-param-set/param_selector";
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
+import { useNavigate } from "react-router-dom";
 
 interface ImportWalletContext {
   currentStep?: WalletStepEnum;
@@ -205,6 +206,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
   const values = Form.useWatch([], form);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const { next } = useContext(ImportWalletContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     form
@@ -247,7 +249,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
       </Form.Item>
       <Flex align="center" justify="center" gap={16}>
         <Form.Item>
-          <Button onClick={() => window.history.back()}>Back</Button>
+          <Button onClick={() => navigate(ROUTES.WELCOME)}>Back</Button>
         </Form.Item>
         <Form.Item>
           <Button
