@@ -214,9 +214,12 @@ body {
   color: var(--black) !important;
 }
 
-.ant-input,
-.ant-input::placeholder {
+.ant-input {
   color: var(--black) !important;
+}
+
+.ant-input::placeholder {
+  color: var(--gray-02) !important;
 }
 
 /* Hover states */
