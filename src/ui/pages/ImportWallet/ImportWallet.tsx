@@ -109,6 +109,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
       >
         <Input.Password
           size="large"
+          placeholder="Please choose a strong password"
           className={styles.inputField}
         />
       </Form.Item>
@@ -131,6 +132,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
       >
         <Input.Password
           size="large"
+          placeholder="Confirm your password"
           className={styles.inputField}
         />
       </Form.Item>
