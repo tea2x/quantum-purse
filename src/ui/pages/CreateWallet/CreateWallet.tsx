@@ -307,6 +307,7 @@ const StepSecureSRP: React.FC = () => {
         done();
       }}
       loading={loadingExportSRP}
+      escapeInterruptedWalletCreation={!srp}
     />
   );
 };

@@ -32,35 +32,6 @@
   p {
     font-size: 1.2rem;
   }
-
-  :global {
-    .ant-steps {
-      margin-bottom: 24px;
-    }
-
-    .ant-steps-item-title {
-      font-size: 1.4rem;
-      font-weight: 500;
-      color: var(--gray-01) !important;
-    }
-
-    .ant-steps-item-description {
-      font-size: 1.2rem;
-      line-height: 1.2;
-      max-width: unset;
-      color: var(--gray-03) !important;
-    }
-
-    // .ant-steps-item-finish .ant-steps-item-description {
-    //   color: var(--gray-01) !important;
-    // }
-
-    .ant-input,
-    .ant-input::placeholder,
-    .ant-input-password-icon {
-      color: var(--gray-02) !important;
-    }
-  }
 }
 
 .stepCreatePassword {
@@ -96,4 +67,13 @@
   background-color: transparent !important;
   border-radius: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
+
+  :global(.ant-input),
+  :global(.ant-input-password-icon) {
+    color: var(--gray-light) !important;
+  }
+
+  :global(.ant-input::placeholder) {
+    color: var(--gray-03) !important;
+  }
 }

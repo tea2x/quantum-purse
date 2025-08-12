@@ -7,7 +7,8 @@ import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { formatError } from "../../utils/methods";
 import styles from "./srp_text_box.module.scss";
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
-import { STORAGE_KEYS } from "../../utils/constants";
+import { STORAGE_KEYS, ROUTES } from "../../utils/constants";
+import { useNavigate } from "react-router-dom";
 
 interface SrpTextBoxProps {
   value?: string;
@@ -16,6 +17,7 @@ interface SrpTextBoxProps {
   description?: string;
   exportSrpHandler: (password: string) => Promise<any>;
   onConfirm: () => void;
+  escapeInterruptedWalletCreation?: boolean;
 }
 
 const SrpTextBox: React.FC<SrpTextBoxProps> = ({
@@ -25,9 +27,11 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   description = "Your secret recovery phrase is a list of 24 words that you can use to recover your wallet.",
   exportSrpHandler,
   onConfirm,
+  escapeInterruptedWalletCreation = false,
 }) => {
   const location = useLocation();
   const dispatch = useDispatch<Dispatch>();
+  const navigate = useNavigate();
 
   let paramSet;
   try {
@@ -50,6 +54,12 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
         description: formatError(error),
       });
     }
+  };
+
+  const handleReset = async () => {
+    await dispatch.wallet.ejectWallet();
+    navigate(ROUTES.WELCOME);
+    notification.info({ message: "Wallet creation process reset" });
   };
 
   useEffect(() => {
@@ -78,10 +88,27 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
           <Form.Item name="password" rules={passwordRules}>
             <Input.Password size="large" placeholder="Enter your password" />
           </Form.Item>
+
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Reveal SRP
-            </Button>
+            <div style={{ display: "flex", gap: "8px", width: "fit-content", margin: "0 auto" }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+              >
+                Reveal SRP
+              </Button>
+
+              {escapeInterruptedWalletCreation && (
+                <Button
+                  type="default"
+                  onClick={handleReset}
+                  // loading={loading}
+                >
+                  Reset
+                </Button>
+              )}
+            </div>
           </Form.Item>
         </Form>
       )}

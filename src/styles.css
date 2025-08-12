@@ -181,6 +181,7 @@ body {
   }
 }
 
+/* Font family overrides */
 .ant-btn,
 .ant-form-item,
 .ant-form-item-label,
@@ -197,6 +198,7 @@ body {
   font-family: "Quantico", sans-serif !important;
 }
 
+/* Color overrides */
 .ant-menu,
 .ant-menu-item,
 .ant-menu-submenu-title,
@@ -205,14 +207,48 @@ body {
 .ant-select-selector,
 .ant-select-item-option-content,
 .ant-select-item-group {
-  color: var(--gray-01) !important;
+  color: var(--gray-light) !important;
+}
+
+.ant-menu-item-selected {
+  color: var(--black) !important;
 }
 
 .ant-input,
 .ant-input::placeholder {
-  color: var(--black);
+  color: var(--black) !important;
 }
 
+/* Hover states */
+.ant-menu-item:hover,
+.ant-menu-submenu-title:hover {
+  background-color: var(--gray-light) !important;
+  color: var(--black) !important;
+}
+
+/* SVG path fills */
+.ant-menu-item svg path,
+.ant-menu-submenu-title svg path {
+  fill: var(--gray-light);
+}
+
+.ant-menu-item:hover svg path,
+.ant-menu-submenu:hover .ant-menu-submenu-title svg path {
+  fill: var(--black);
+}
+
+.ant-menu-item-selected svg path {
+  fill: var(--black);
+}
+
+/* Menu divider */
+.ant-menu-item-divider {
+  border-color: var(--gray-03) !important;
+  width: 80%;
+  margin: 0 auto;
+}
+
+/* Select component styles */
 .ant-select,
 .ant-select-dropdown,
 .ant-select-selector {

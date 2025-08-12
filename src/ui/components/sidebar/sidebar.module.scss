@@ -11,33 +11,6 @@
   @media (max-width: 768px) {
     background: rgb(29,29,29);
   }
-
-  :global {
-    .ant-menu-item:hover,
-    .ant-menu-submenu-title:hover {
-      background-color: var(--gray-light) !important;
-      color: var(--black) !important;
-    }
-    .ant-menu-item svg path,
-    .ant-menu-submenu-title svg path {
-      fill: var(--white-abs);
-    }
-
-    .ant-menu-item:hover svg path,
-    .ant-menu-submenu:hover .ant-menu-submenu-title svg path {
-      fill: var(--black);
-    }
-
-    .ant-menu-item-selected svg path {
-      fill: var(--black);
-    }
-
-    .ant-menu-item-divider {
-      border-color: var(--gray-03);
-      width: 80%;
-      margin: 0 auto;
-    }
-  }
   
   :global(.ant-menu) {
     background-color: rgb(29, 29, 29);
