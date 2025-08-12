@@ -83,11 +83,21 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
   const { rules: passwordRules } = usePasswordValidator(parameterSet);
 
   useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
+    const validate = async () => {
+      try {
+        await form.validateFields({ validateOnly: true });
+        setSubmittable(true);
+      } catch (e:any) {
+        if (e.errorFields?.length === 0) {
+          setSubmittable(true);
+        } else {
+          setSubmittable(false);
+        }
+      }
+    };
+    validate();
   }, [form, values]);
+
 
   useEffect(() => {
     if (parameterSet) {
