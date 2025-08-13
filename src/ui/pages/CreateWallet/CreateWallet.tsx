@@ -16,12 +16,14 @@ import {
   STORAGE_KEYS,
   WALLET_STEP,
   WalletStepEnum,
+  ROUTES
 } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
 import { CreateWalletContextType } from "./interface";
 import ParamSetSelectorForm from "../../components/sphincs-param-set/param_selector";
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
+import { useNavigate } from "react-router-dom";
 
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: WALLET_STEP.PASSWORD,
@@ -134,6 +136,7 @@ export const StepCreatePassword: React.FC = () => {
     useSelector((state: RootState) => state.loading.effects.wallet);
   const parameterSet = Form.useWatch('parameterSet', form);
   const { rules: passwordRules } = usePasswordValidator(parameterSet);
+  const navigate = useNavigate();
 
   useEffect(() => {
     form
@@ -231,7 +234,7 @@ export const StepCreatePassword: React.FC = () => {
           ]}
         >
           <Checkbox style={{ color: 'var(--gray-01)' }}>
-            I understand I must back up my parameter set with the mnemonic seed next.
+            I understand I must back up my wallet type with the mnemonic seed next.
           </Checkbox>
         </Form.Item>
 
@@ -259,7 +262,7 @@ export const StepCreatePassword: React.FC = () => {
         <Flex align="center" justify="center" gap={16}>
           <Form.Item>
             <Button
-              onClick={() => window.history.back()}
+              onClick={() => navigate(ROUTES.WELCOME)}
               disabled={loadingCreateWallet || loadingExportSRP}
             >
               Back
@@ -300,7 +303,7 @@ const StepSecureSRP: React.FC = () => {
       description={
         srp
           ? "WARNING! Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" + SpxVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + "\" with the mnemonic seed."
-          : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process."
+          : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process or reset and start again."
       }
       exportSrpHandler={exportSrpHandler}
       onConfirm={() => {

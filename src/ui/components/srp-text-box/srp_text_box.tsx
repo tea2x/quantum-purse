@@ -79,9 +79,21 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
               <p className="srp">{value}</p>
             </div>
           </div>
-          <Button type="primary" onClick={onConfirm}>
-            I wrote it down !
-          </Button>
+
+
+          <div style={{ display: "flex", gap: "8px", width: "fit-content", margin: "0 auto" }}>
+            <Button
+              type="default"
+              onClick={handleReset}
+            >
+              Reset
+            </Button>
+
+            <Button type="primary" onClick={onConfirm}>
+              I wrote it down !
+            </Button>
+          </div>
+
         </>
       ) : (
         <Form layout="vertical" onFinish={onSubmit}>
@@ -91,6 +103,15 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
 
           <Form.Item>
             <div style={{ display: "flex", gap: "8px", width: "fit-content", margin: "0 auto" }}>
+              {escapeInterruptedWalletCreation && (
+                <Button
+                  type="default"
+                  onClick={handleReset}
+                >
+                  Reset
+                </Button>
+              )}
+
               <Button
                 type="primary"
                 htmlType="submit"
@@ -99,15 +120,6 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
                 Reveal SRP
               </Button>
 
-              {escapeInterruptedWalletCreation && (
-                <Button
-                  type="default"
-                  onClick={handleReset}
-                  // loading={loading}
-                >
-                  Reset
-                </Button>
-              )}
             </div>
           </Form.Item>
         </Form>
