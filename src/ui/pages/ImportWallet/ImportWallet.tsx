@@ -162,8 +162,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         ]}
       >
         <Checkbox style={{ color: "var(--gray-01)" }}>
-          I understand that the parameter set must match with the one I backed
-          up with the mnemonic seed previously.
+          I understand that the wallet type must be the one I backed up with the mnemonic seed I input earlier.
         </Checkbox>
       </Form.Item>
 
