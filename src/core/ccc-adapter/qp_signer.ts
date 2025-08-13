@@ -15,7 +15,7 @@ import {
   WitnessArgs,
   HashTypeLike
 } from "@ckb-ccc/core";
-import { QPClient } from "./client";
+import { QPClient } from "./qp_client";
 import { IS_MAIN_NET } from "../config";
 import __wbg_init, { KeyVault, SpxVariant } from "quantum-purse-key-vault";
 import { get_ckb_tx_message_all_hash, utf8ToBytes } from "../utils";

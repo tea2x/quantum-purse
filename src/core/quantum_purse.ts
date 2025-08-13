@@ -6,7 +6,7 @@ import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
 import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, BytesLike, HashTypeLike, Address, DepType } from "@ckb-ccc/core";
 import { getClaimEpoch } from "./epoch";
-import { QPSigner } from "./ccc-adapter/signer";
+import { QPSigner } from "./ccc-adapter/qp_signer";
 
 export { SpxVariant } from "quantum-purse-key-vault";
 
