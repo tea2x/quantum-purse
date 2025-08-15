@@ -90,7 +90,7 @@
     "antd": "^5.24.7",
     "ckb-light-client-js": "^1.0.3",
     "qrcode.react": "^4.2.0",
-    "quantum-purse-key-vault": "^0.2.1",
+    "quantum-purse-key-vault": "^0.2.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^9.1.0",
