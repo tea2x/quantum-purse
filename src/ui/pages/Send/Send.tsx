@@ -222,6 +222,7 @@ const Send: React.FC = () => {
                 <Input
                   placeholder="Enter transfer amount"
                   className={styles.inputField}
+                  disabled={values?.isMax}
                 />
               </Form.Item>
             </Col>

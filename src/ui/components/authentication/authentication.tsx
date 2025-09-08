@@ -14,6 +14,7 @@ import styles from "./authentication.module.scss";
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { STORAGE_KEYS } from "../../utils/constants";
 import ConfirmDeleteWalletModal from "../../components/delete-wallet-confirm/delete_wallet_confirm";
+import { DB } from "../../../core/db";
 
 export interface AuthenticationRef {
   open: () => void;
@@ -44,17 +45,26 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     const [submittable, setSubmittable] = useState(false);
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [isDeleteWalletConfirmModalOpen, setIsDeleteWalletConfirmModalOpen] = useState(false);
+    const [paramSet, setParamSet] = useState<number | null>(null);
     const dispatch = useDispatch<Dispatch>();
     const navigate = useNavigate();
 
-    let paramSet;
-    try {
-      paramSet = QuantumPurse.getInstance().getSphincsPlusParamSet();
-    } catch (e) {
-      const paramId = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
-      paramSet = SpxVariant[Number(paramId)];
-    }
-    const { rules: passwordRules } = usePasswordValidator(Number(paramSet));
+    useEffect(() => {
+      let value: number | null = null;
+      try {
+        value = QuantumPurse.getInstance().getSphincsPlusParamSet();
+        setParamSet(value);
+      } catch (e) {
+        (async () => {
+          const paramId = await DB.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
+          if (paramId !== null) {
+            setParamSet(Number(paramId));
+          }
+        })();
+      }
+    }, []);
+
+    const { rules: passwordRules } = usePasswordValidator(paramSet ?? 0);
 
     useEffect(() => {
       if (values?.password) {

@@ -24,6 +24,7 @@ import { CreateWalletContextType } from "./interface";
 import ParamSetSelectorForm from "../../components/sphincs-param-set/param_selector";
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { useNavigate } from "react-router-dom";
+import { DB } from "../../../core/db";
 
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: WALLET_STEP.PASSWORD,
@@ -63,7 +64,7 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const done = async () => {
     try {
-      localStorage.removeItem(STORAGE_KEYS.WALLET_STEP);
+      await DB.removeItem(STORAGE_KEYS.WALLET_STEP);
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
       dispatch.wallet.resetSRP();
@@ -152,19 +153,16 @@ export const StepCreatePassword: React.FC = () => {
       QuantumPurse.getInstance().initKeyVault(parameterSet);
     }
     // store chosen param set to storage, so wallet type retains when refreshed
-    localStorage.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+    await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
     try {
       await dispatch.wallet
         .createWallet({ password })
         .then(async () => {
           await dispatch.wallet.exportSRP({ password });
         })
-        .then(() => {
+        .then(async () => {
           next();
-          localStorage.setItem(
-            STORAGE_KEYS.WALLET_STEP,
-            WALLET_STEP.SRP.toString()
-          );
+          await DB.setItem(STORAGE_KEYS.WALLET_STEP, WALLET_STEP.SRP.toString());
         });
     } catch (error) {
       notification.info({
@@ -234,7 +232,7 @@ export const StepCreatePassword: React.FC = () => {
           ]}
         >
           <Checkbox style={{ color: 'var(--gray-01)' }}>
-            I understand I must back up my wallet type with the mnemonic seed next.
+            I understand I must back up my wallet type with the mnemonic phrase next step.
           </Checkbox>
         </Form.Item>
 
@@ -302,7 +300,7 @@ const StepSecureSRP: React.FC = () => {
       title={"Secure Secret Recovery Phrase"}
       description={
         srp
-          ? "WARNING! Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant \"" + SpxVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + "\" with the mnemonic seed."
+          ? "WARNING! Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant [ " + SpxVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + " ] with the mnemonic phrase."
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process or reset and start again."
       }
       exportSrpHandler={exportSrpHandler}
@@ -310,7 +308,7 @@ const StepSecureSRP: React.FC = () => {
         done();
       }}
       loading={loadingExportSRP}
-      escapeInterruptedWalletCreation={!srp}
+      isCreateWalletPage={true}
     />
   );
 };

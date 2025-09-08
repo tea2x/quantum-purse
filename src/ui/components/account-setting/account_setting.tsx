@@ -8,7 +8,7 @@ import { Button, Flex, Input, notification } from "antd";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import QuantumPurse from "../../../core/quantum_purse";
-import { LightClientSetScriptsCommand } from "ckb-light-client-js";
+import { LightClientSetScriptsCommand } from "@nervosnetwork/ckb-light-client-js";
 import { Hex } from "@ckb-ccc/core";
 import { formatError } from "../../utils/methods";
 

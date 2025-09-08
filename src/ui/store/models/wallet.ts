@@ -5,6 +5,7 @@ import { bytesToUtf8, utf8ToBytes } from "../../../core/utils";
 import { FIND_ACCOUNT_THRESHOLD, STORAGE_KEYS } from "../../utils/constants";
 import { RootModel } from "./index";
 import { Hex } from "@ckb-ccc/core";
+import { DB } from "../../../core/db";
 
 interface IAccount {
   name: string;
@@ -34,9 +35,10 @@ type StateType = IWallet;
 let isInitializing = false;
 export let quantum: QuantumPurse;
 let syncStatusListener: ((status: any) => void) | null = null;
+const walletStep = await DB.getItem(STORAGE_KEYS.WALLET_STEP);
 
 const initState: StateType = {
-  active: !localStorage.getItem(STORAGE_KEYS.WALLET_STEP),
+  active: !walletStep,
   current: {
     name: "",
     address: "",
@@ -114,7 +116,7 @@ export const wallet = createModel<RootModel>()({
         quantum = QuantumPurse.getInstance();
         await quantum.initBackgroundServices();
         // when refreshed, keyvault needs sphincs+ param set chosen by user
-        const paramSet = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
+        const paramSet = await DB.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
         paramSet && quantum.initKeyVault(Number(paramSet));
 
         // Setup listener for the light client status worker
@@ -124,7 +126,7 @@ export const wallet = createModel<RootModel>()({
         quantum.addSyncStatusListener(syncStatusListener);
 
         // Get the pending step from local storage
-        const step = localStorage.getItem(STORAGE_KEYS.WALLET_STEP);
+        const step = await DB.getItem(STORAGE_KEYS.WALLET_STEP);
         if (step) {
           isInitializing = false;
           throw new Error(
@@ -138,17 +140,12 @@ export const wallet = createModel<RootModel>()({
 
         const accountsData: any = await this.loadAccounts();
         if (accountsData && accountsData.length !== 0) {
-          const preservedAccountLockArgs = localStorage.getItem(
-            STORAGE_KEYS.CURRENT_ACCOUNT_POINTER
-          );
+          const preservedAccountLockArgs = await DB.getItem(STORAGE_KEYS.CURRENT_ACCOUNT_POINTER);
   
           if (preservedAccountLockArgs) {
             await quantum.setAccountPointer(preservedAccountLockArgs);
           } else {
-            localStorage.setItem(
-              STORAGE_KEYS.CURRENT_ACCOUNT_POINTER,
-              accountsData[0].spxLockArgs
-            );
+            await DB.setItem(STORAGE_KEYS.CURRENT_ACCOUNT_POINTER, accountsData[0].spxLockArgs);
             await quantum.setAccountPointer(accountsData[0].spxLockArgs);
           }
           this.setActive(true);
@@ -232,10 +229,7 @@ export const wallet = createModel<RootModel>()({
       try {
         await quantum.setAccountPointer(spxLockArgs);
         this.loadCurrentAccount({});
-        localStorage.setItem(
-          STORAGE_KEYS.CURRENT_ACCOUNT_POINTER,
-          spxLockArgs
-        );
+        await DB.setItem(STORAGE_KEYS.CURRENT_ACCOUNT_POINTER, spxLockArgs);
       } catch (error) {
         throw error;
       }
@@ -296,8 +290,8 @@ export const wallet = createModel<RootModel>()({
           syncStatusListener = null;
         }
         await quantum.deleteWallet();
-        localStorage.removeItem(STORAGE_KEYS.CURRENT_ACCOUNT_POINTER);
-        localStorage.removeItem(STORAGE_KEYS.WALLET_STEP);
+        await DB.removeItem(STORAGE_KEYS.CURRENT_ACCOUNT_POINTER);
+        await DB.removeItem(STORAGE_KEYS.WALLET_STEP);
         notification.info({
           message: "Wallet ejected successfully"
         });

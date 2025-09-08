@@ -270,3 +270,8 @@ body {
   color: white !important;
   font-size: medium !important;
 }
+
+.ant-alert {
+  background-color: rgba(245, 159, 11, 0.5);
+  font-family: "Quantico", sans-serif;
+}

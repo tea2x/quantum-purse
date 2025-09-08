@@ -4,7 +4,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const common = require("./webpack.common");
 
 let publicPath = "/";
-if (process.env.DEPLOY_TARGET === "electron") {
+if (process.env.NATIVE_APP === "true") {
   publicPath = "./";
 }
 

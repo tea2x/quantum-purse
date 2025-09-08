@@ -36,7 +36,7 @@ import {
   TxWithCells,
   GetCellsResponse,
   LocalNode
-} from "ckb-light-client-js";
+} from "@nervosnetwork/ckb-light-client-js";
 import { IS_MAIN_NET } from "../config";
 import { TESTNET_SCRIPTS, MAINNET_SCRIPTS } from "@ckb-ccc/core/advancedBarrel";
 export class QPClient extends Client {
@@ -149,7 +149,7 @@ export class QPClient extends Client {
 
   /** Find cells with pagination */
   async findCellsPagedNoCache(key: ClientIndexerSearchKeyLike, order?: "asc" | "desc", limit?: NumLike, after?: string): Promise<ClientFindCellsResponse> {
-    const cellsResponse = await this.lightClient.getCells(key, order ?? "asc", 100, after as Hex); // todo test limit parameter
+    const cellsResponse = await this.lightClient.getCells(key, order ?? "asc", limit, after as Hex);
     return {
       cells: cellsResponse.cells.map(cell => (Cell.from({
         cellOutput: cell.cellOutput,

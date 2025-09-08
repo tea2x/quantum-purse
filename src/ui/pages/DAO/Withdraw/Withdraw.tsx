@@ -210,7 +210,7 @@ const Withdraw: React.FC = () => {
 
                           <div className="label-with-icon">
                             Withdraw To
-                            <Tooltip title="You can withdraw to any address, or select an account from your wallet.">
+                            <Tooltip title="Be careful! Withdrawing to an address transfers the deposit & reward to that address too.">
                               <QuestionCircleOutlined style={{ marginLeft: 4 }} />
                             </Tooltip>
                           </div>

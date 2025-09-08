@@ -17,7 +17,7 @@ const EjectWallet: React.FC = () => {
     <section className={cx(styles.ejectWallet, "panel")}>
       {/* <h1>Eject Wallet</h1> */}
       <div className={styles.content}>
-        <p>WARNING! This action removes all keys and the mnemonic seed.<br />Be sure to have a backup of your mnemonic seed phrase!</p>
+        <p>WARNING! This action removes all encrypted keys & mnemonic.<br />Be sure to have a backup of your mnemonic phrase!</p>
         <Button 
           type="primary" 
           onClick={() => { setIsDeleteWalletConfirmModalOpen(true); }}

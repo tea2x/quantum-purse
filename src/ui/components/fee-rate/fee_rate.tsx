@@ -47,9 +47,8 @@ const FeeRateSelect: React.FC<FeeRateSelectProps> = ({ onFeeRateChange, custom }
       ) : (
         <div className={styles.feeRateContainer}>
           {feeOptions.map((option) => (
-            <Tooltip title={`${option.value} shannons/kB`}>
+            <Tooltip key={option.name} title={`${option.value} shannons/kB`}>
               <div
-                key={option.name}
                 className={cx(
                   styles.feeOption,
                   selectedFee === option.value && styles.selected

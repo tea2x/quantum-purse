@@ -48,8 +48,8 @@ For CKB:
 
 If you have no reference, `Sha2-256s` is a good starting point for maximum security. Alternatively, `Sha2-128s` or `Sha2-192s` offer weaker protection but may be suitable for less critical use cases.
 
-## Custom BIP39
-Quantum Purse uses a custom BIP39 as the mnemonic seed backup format. See https://github.com/tea2x/quantum-purse-key-vault for more details.
+## Key Derivation & Mnemonic Backup Format
+Quantum Purse uses a simple custom deterministic key derivation scheme based on [Scrypt](https://en.wikipedia.org/wiki/Scrypt) and uses BIP39 as the mnemonic phrase backup format. See https://github.com/tea2x/quantum-purse-key-vault for more details.
 
 ## 73 CKB
 Due to the larger size of the [quantum resistant lock script](https://github.com/cryptape/quantum-resistant-lock-script):
@@ -68,6 +68,10 @@ Quantum Purse is a true light wallet. It runs its own [CKB light client node](ht
 - For a smooth experience, ensure your PEERS value is greater than 0 and sync status to be ~100% before making any transaction.
 - In case you notice that sync percentage grows very slowly for some reason e.g after creating Quantum Purse wallet without internet, please set `starting block` to skip blocks that have none transaction. Go to Settings -> Accounts -> 3 dots menu to set starting blocks.
 - One new account starts syncing at block 0 will make other accounts sync to wait until this account catches up. Provide starting blocks properly for a smooth experience.
+
+## CCC
+
+Quantum Purse integrates [CCC](https://github.com/ckb-devrel/ccc) as its main CKB off-chain engine for e.g. transaction building. But in order to ensure light-client-js compatibility with CCC temporarily, Quantum Purse has to use a [fork from CCC](https://www.npmjs.com/package/ckb-ccc-core-light-client-js-patch). This fork is fairly simple and will be suspended in the future.
 
 ## Wallet recovery
 
@@ -127,7 +131,7 @@ https://quantum-purse.vercel.app/
 ## Notes
 
 1. As of 2025, quantum resistance is still experimental. Use this software at your own risk.
-2. Back up your mnemonic seed. Losing your seed means losing access to your wallet.
+2. Back up your mnemonic phrase. Losing your mnemonic means losing access to your wallet.
 3. Quantum Purse does NOT store your passwords. Passwords are used only temporarily to encrypt and decrypt your secret data.
 4. Quantum Purse stores only public data and encrypted secret data. Your SPHINCS+ private keys remain protected as long as your password is strong enough.
 5. What is a strong password? Quantum Purse does guide you in wallet creation to create strong passwords but it will be best for you to come up with your own that passes Quantum Purse's validation. For what is a strong password, you might want to refer to this [link](https://www.antivirus.promo/password-strength-checker).

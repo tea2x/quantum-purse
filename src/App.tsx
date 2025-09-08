@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Navigate,
   Route,
@@ -21,9 +21,63 @@ import {
   Accounts,
   Welcome,
 } from "./ui/pages";
-import { ROUTES } from "./ui/utils/constants";
+import { ROUTES, STORAGE_KEYS } from "./ui/utils/constants";
+import packageJson from '../package.json';
+import { DB } from "./core/db";
+
+const currentVersion:string|null = packageJson.version;
 
 const App: React.FC = () => {
+  useEffect(() => {
+    const prepareMainnetLaunch = async () => {
+      let previousVersion:string|null = null;
+      try {
+        previousVersion = localStorage.getItem('appVersion');
+      } catch (error) {
+        console.error("Error accessing localStorage:", error);
+      }
+
+      function compareVersions(v1: string | null, v2: string): number {
+        if (!v1) return -1;
+        const parts1 = v1.split(".").map(Number);
+        const parts2 = v2.split(".").map(Number);
+
+        const len = Math.max(parts1.length, parts2.length);
+        for (let i = 0; i < len; i++) {
+          const p1 = parts1[i] || 0;
+          const p2 = parts2[i] || 0;
+          if (p1 > p2) return 1;
+          if (p1 < p2) return -1;
+        }
+        return 0;
+      }
+
+      const fromTestnet = (compareVersions(previousVersion, '0.3.0') === -1);
+      const toMainnet = (
+        compareVersions(currentVersion, '0.3.0') === 1
+        || compareVersions('0.3.0', currentVersion) === 0
+      );
+
+      if (fromTestnet && toMainnet) {
+        /* Native app (electron) needs a fresh light client db when goes mainnet.
+           Demo site doesn't need this because it's always testnet.
+           The NATIVE_APP flag is passed into webpack */
+        if (process.env.NATIVE_APP === "true") {
+          indexedDB.deleteDatabase("data/store");
+          indexedDB.deleteDatabase("data/network/peer_store");
+        }
+        const spxId = localStorage.getItem('sphincs-plus-param-set-id');
+        spxId && await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, spxId);
+        // localStorage.clear();
+      }
+
+      // set current version after check
+      (currentVersion !== previousVersion) && localStorage.setItem('appVersion', currentVersion);
+    };
+
+    prepareMainnetLaunch();
+  }, []);
+
   return (
     <Router basename={"/"}>
       <Routes>

@@ -146,7 +146,7 @@ const Deposit: React.FC = () => {
 
                 <div className="label-with-icon">
                   Deposit To
-                  <Tooltip title="Notice: Depositing to an address transfers the deposit's ownership too.">
+                  <Tooltip title="Be careful! Depositing to an address transfers the deposit's ownership too.">
                     <QuestionCircleOutlined style={{ marginLeft: 4 }} />
                   </Tooltip>
                 </div>
@@ -228,6 +228,7 @@ const Deposit: React.FC = () => {
                 <Input
                   placeholder="Enter deposit amount"
                   className={styles.inputField}
+                  disabled={values?.isMax}
                 />
               </Form.Item>
             </Col>

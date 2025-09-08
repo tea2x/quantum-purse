@@ -1,5 +1,5 @@
 import { Button, Form, Input, notification } from "antd";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { Dispatch } from "../../store";
@@ -9,6 +9,7 @@ import styles from "./srp_text_box.module.scss";
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { STORAGE_KEYS, ROUTES } from "../../utils/constants";
 import { useNavigate } from "react-router-dom";
+import { DB } from "../../../core/db";
 
 interface SrpTextBoxProps {
   value?: string;
@@ -17,7 +18,7 @@ interface SrpTextBoxProps {
   description?: string;
   exportSrpHandler: (password: string) => Promise<any>;
   onConfirm: () => void;
-  escapeInterruptedWalletCreation?: boolean;
+  isCreateWalletPage?: boolean;
 }
 
 const SrpTextBox: React.FC<SrpTextBoxProps> = ({
@@ -27,21 +28,29 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   description = "Your secret recovery phrase is a list of 24 words that you can use to recover your wallet.",
   exportSrpHandler,
   onConfirm,
-  escapeInterruptedWalletCreation = false,
+  isCreateWalletPage = false,
 }) => {
   const location = useLocation();
   const dispatch = useDispatch<Dispatch>();
   const navigate = useNavigate();
+  const [paramSet, setParamSet] = useState<number | null>(null);
 
-  let paramSet;
-  try {
-    paramSet = QuantumPurse.getInstance().getSphincsPlusParamSet();
-  } catch (e) {
-    const paramId = localStorage.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
-    paramSet = SpxVariant[Number(paramId)];
-  }
+  useEffect(() => {
+    let value: number | null = null;
+    try {
+      value = QuantumPurse.getInstance().getSphincsPlusParamSet();
+      setParamSet(value);
+    } catch (e) {
+      (async () => {
+        const paramId = await DB.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
+        if (paramId !== null) {
+          setParamSet(Number(paramId));
+        }
+      })();
+    }
+  }, []);
 
-  const { rules: passwordRules } = usePasswordValidator(Number(paramSet));
+  const { rules: passwordRules } = usePasswordValidator(paramSet ?? 0);
   const onSubmit = async (values: { password: string }) => {
     try {
       await exportSrpHandler(values.password);
@@ -79,15 +88,15 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
               <p className="srp">{value}</p>
             </div>
           </div>
-
-
           <div style={{ display: "flex", gap: "8px", width: "fit-content", margin: "0 auto" }}>
-            <Button
-              type="default"
-              onClick={handleReset}
-            >
-              Reset
-            </Button>
+            {isCreateWalletPage && (
+              <Button
+                type="default"
+                onClick={handleReset}
+              >
+                Reset
+              </Button>
+            )}
 
             <Button type="primary" onClick={onConfirm}>
               I wrote it down !
@@ -103,7 +112,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
 
           <Form.Item>
             <div style={{ display: "flex", gap: "8px", width: "fit-content", margin: "0 auto" }}>
-              {escapeInterruptedWalletCreation && (
+              {isCreateWalletPage && (
                 <Button
                   type="default"
                   onClick={handleReset}

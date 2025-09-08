@@ -7,7 +7,7 @@ import {
   FormInstance,
   Input,
   notification,
-  Steps,
+  // Steps,
   Tabs,
 } from "antd";
 import React, {
@@ -27,6 +27,7 @@ import styles from "./ImportWallet.module.scss";
 import ParamSetSelector from "../../components/sphincs-param-set/param_selector";
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { useNavigate } from "react-router-dom";
+import { DB } from "../../../core/db";
 
 interface ImportWalletContext {
   currentStep?: WalletStepEnum;
@@ -162,7 +163,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         ]}
       >
         <Checkbox style={{ color: "var(--gray-01)" }}>
-          I understand that the wallet type must be the one I backed up with the mnemonic seed I input earlier.
+          I understand that the wallet type must be the one I backed up with the mnemonic phrase I input earlier.
         </Checkbox>
       </Form.Item>
 
@@ -201,7 +202,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
             disabled={!submittable || loadingImportWallet || loadingExportSRP}
             loading={loadingImportWallet || loadingExportSRP}
           >
-            Create
+            Import
           </Button>
         </Form.Item>
       </Flex>
@@ -254,7 +255,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
       >
         <Input.TextArea
           size="large"
-          placeholder="Enter mnemonic seed phrase"
+          placeholder="Enter the mnemonic phrase"
           rows={9}
         />
       </Form.Item>
@@ -286,10 +287,7 @@ const ImportWalletContent: React.FC = () => {
   const onFinish = async ({ parameterSet }: { parameterSet: SpxVariant }) => {
     QuantumPurse.getInstance().initKeyVault(parameterSet);
     // store chosen param set to storage, so wallet type retains when refreshed
-    localStorage.setItem(
-      STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET,
-      parameterSet.toString()
-    );
+    await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
 
     const { srp, password } = values;
 

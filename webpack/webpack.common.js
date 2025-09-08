@@ -1,4 +1,5 @@
 const path = require("path");
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
@@ -82,6 +83,10 @@ module.exports = {
         { from: "public/404.html", to: "404.html" },
         { from: "public/status.worker.js", to: "status.worker.js" },
       ],
+    }),
+    new webpack.DefinePlugin({
+      "process.env.MAIN_NET": JSON.stringify(process.env.MAIN_NET || "false"),
+      "process.env.NATIVE_APP": JSON.stringify(process.env.NATIVE_APP || "false"),
     }),
   ],
   optimization: {

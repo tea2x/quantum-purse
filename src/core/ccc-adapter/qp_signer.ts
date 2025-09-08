@@ -173,10 +173,6 @@ export class QPSigner extends Signer {
       return tx;
     } catch (error: any) {
       throw new Error("Failed to sign transaction: " + error);
-    } finally {
-      if (passwordBytes) {
-        passwordBytes.fill(0);
-      }
     }
   }
 }

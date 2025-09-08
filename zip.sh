@@ -1,3 +1,5 @@
+# Build and provide build artifacts for all platforms
+
 VERSION=$(node -p "require('./package.json').version")
 
 rm -rf zips

@@ -1,12 +1,13 @@
 // QuantumPurse.ts
 import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO } from "./config";
 import __wbg_init, { KeyVault, Util as KeyVaultUtil, SpxVariant } from "quantum-purse-key-vault";
-import { randomSecretKey, LightClientSetScriptsCommand, ScriptStatus } from "ckb-light-client-js";
+import { randomSecretKey, LightClientSetScriptsCommand, ScriptStatus } from "@nervosnetwork/ckb-light-client-js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
 import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, BytesLike, HashTypeLike, Address, DepType } from "@ckb-ccc/core";
 import { getClaimEpoch } from "./epoch";
 import { QPSigner } from "./ccc-adapter/qp_signer";
+import { DB } from "./db";
 
 export { SpxVariant } from "quantum-purse-key-vault";
 
@@ -32,8 +33,8 @@ export default class QuantumPurse extends QPSigner {
     }
   > = new Map();
   private syncStatusListeners: Set<(status: any) => void> = new Set();
-  private static readonly CLIENT_SECRET = "ckb-light-client-wasm-secret-key";
-  private static readonly START_BLOCK = "ckb-light-client-wasm-start-block";
+  private static readonly CLIENT_SECRET_PREFIX = "client-secret-key";
+  private static readonly START_BLOCK_PREFIX = "start-block";
 
   //**************************************************************************************//
   //*************************************** METHODS **************************************//
@@ -97,8 +98,8 @@ export default class QuantumPurse extends QPSigner {
 
   /* Helper to infer start block set in the light client
   When querying status, if no data in DB is detected, start is inferred as 0 to not mis relevant data */
-  private inferStartBlock(storeKey: string): bigint {
-    let startStr = localStorage.getItem(storeKey);
+  private async inferStartBlock(storeKey: string): Promise<bigint> {
+    let startStr = await DB.getItem(storeKey);
     if (startStr === null) {
       return BigInt(0);
     } else {
@@ -120,10 +121,10 @@ export default class QuantumPurse extends QPSigner {
     }
 
     const lock = this.getLockScript(spxLockArgs);
-    const storageKey = QuantumPurse.START_BLOCK + "-" + spxLockArgs;
+    const storageKey = QuantumPurse.START_BLOCK_PREFIX + "_" + spxLockArgs.slice(0, 16);
     let startingBlock: bigint = (await this.client!.getTipHeader()).number;
 
-    localStorage.setItem(storageKey, startingBlock.toString());
+    await DB.setItem(storageKey, startingBlock.toString());
 
     await this.client.setScripts(
       [{ blockNumber: startingBlock, script: lock, scriptType: "lock" }],
@@ -164,8 +165,8 @@ export default class QuantumPurse extends QPSigner {
     };
 
     const lock = this.getLockScript();
-    const storeKey = QuantumPurse.START_BLOCK + "-" + this.accountPointer;
-    const startBlock = Number(this.inferStartBlock(storeKey));
+    const storeKey = QuantumPurse.START_BLOCK_PREFIX + "_" + this.accountPointer.toString().slice(0, 16);
+    const startBlock = Number(await this.inferStartBlock(storeKey));
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
     const syncedStatus = tipBlock > startBlock
@@ -186,11 +187,11 @@ export default class QuantumPurse extends QPSigner {
   private async startLightClient() {
     if (this.hasClientStarted) return;
 
-    let secretKey = localStorage.getItem(QuantumPurse.CLIENT_SECRET);
+    let secretKey = await DB.getItem(QuantumPurse.CLIENT_SECRET_PREFIX);
     if (!secretKey) {
       secretKey = randomSecretKey();
       if (secretKey) {
-        localStorage.setItem(QuantumPurse.CLIENT_SECRET, secretKey);
+        await DB.setItem(QuantumPurse.CLIENT_SECRET_PREFIX, secretKey);
       } else {
         throw new Error("Failed to generate a secret key.");
       }
@@ -204,7 +205,7 @@ export default class QuantumPurse extends QPSigner {
         { type: IS_MAIN_NET ? "MainNet" : "TestNet", config },
         secretKey as Hex,
         "info",
-        "wss"
+        "ws"
       );
       this.hasClientStarted = true;
     } catch (error) {
@@ -278,8 +279,8 @@ export default class QuantumPurse extends QPSigner {
     }
 
     for (let i = 0; i < spxLockArgsArray.length; i++) {
-      const storageKey = QuantumPurse.START_BLOCK + "-" + spxLockArgsArray[i];
-      localStorage.setItem(storageKey, startingBlocks[i].toString());
+      const storageKey = QuantumPurse.START_BLOCK_PREFIX + "_" + spxLockArgsArray[i].slice(0, 16);
+      await DB.setItem(storageKey, startingBlocks[i].toString());
     }
 
     const filters: ScriptStatus[] = spxLockArgsArray.map((spxLockArgs, index) => ({
@@ -384,8 +385,8 @@ export default class QuantumPurse extends QPSigner {
   /* Clears all local data of the wallet. */
   public async deleteWallet(): Promise<void> {
     const spxLockArgsList = await this.getAllLockScriptArgs();
-    spxLockArgsList.forEach((lockArgs) => {
-      localStorage.removeItem(QuantumPurse.START_BLOCK + "-" + lockArgs);
+    spxLockArgsList.forEach(async (lockArgs) => {
+      await DB.removeItem(QuantumPurse.START_BLOCK_PREFIX + "_" + lockArgs.slice(0, 16));
     });
     this.accountPointer = undefined;
     await KeyVault.clear_database();
@@ -400,17 +401,13 @@ export default class QuantumPurse extends QPSigner {
    * @remark The password is overwritten with zeros after use.
    */
   public async genAccount(password: Uint8Array): Promise<string> {
-    try {
-      if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      const [lockArgsList, lockArgs] = await Promise.all([
-        this.getAllLockScriptArgs(),
-        this.keyVault.gen_new_account(password)
-      ]);
-      await this.setSellectiveSyncFilterInternal(lockArgs as Hex, (lockArgsList.length === 0));
-      return lockArgs;
-    } finally {
-      password.fill(0);
-    }
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+    const [lockArgsList, lockArgs] = await Promise.all([
+      this.getAllLockScriptArgs(),
+      this.keyVault.gen_new_account(password)
+    ]);
+    await this.setSellectiveSyncFilterInternal(lockArgs as Hex, (lockArgsList.length === 0));
+    return lockArgs;
   }
 
   /**
@@ -420,11 +417,7 @@ export default class QuantumPurse extends QPSigner {
    * @remark The input password is overwritten with zeros after calculation.
    */
   public static checkPassword(password: Uint8Array): number {
-    try {
-      return KeyVaultUtil.password_checker(password);
-    } finally {
-      password.fill(0);
-    }
+    return KeyVaultUtil.password_checker(password);
   }
 
   /**
@@ -438,13 +431,8 @@ export default class QuantumPurse extends QPSigner {
     seedPhrase: Uint8Array,
     password: Uint8Array
   ): Promise<void> {
-    try {
-      if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      await this.keyVault.import_seed_phrase(seedPhrase, password);
-    } finally {
-      password.fill(0);
-      seedPhrase.fill(0);
-    }
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+    await this.keyVault.import_seed_phrase(seedPhrase, password);
   }
 
   /**
@@ -455,13 +443,9 @@ export default class QuantumPurse extends QPSigner {
    * @remark The password is overwritten with zeros after use. Handle the returned seed carefully to avoid leakage.
    */
   public async exportSeedPhrase(password: Uint8Array): Promise<Uint8Array> {
-    try {
-      if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      const mnemonic = await this.keyVault.export_seed_phrase(password);
-      return mnemonic;
-    } finally {
-      password.fill(0);
-    }
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+    const mnemonic = await this.keyVault.export_seed_phrase(password);
+    return mnemonic;
   }
 
   /**
@@ -470,12 +454,8 @@ export default class QuantumPurse extends QPSigner {
    * @remark The password is overwritten with zeros after use.
    */
   public async generateMasterSeed(password: Uint8Array): Promise<void> {
-    try {
-      if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      await this.keyVault.generate_master_seed(password);
-    } finally {
-      password.fill(0);
-    }
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+    await this.keyVault.generate_master_seed(password);
   }
 
   /**
@@ -491,13 +471,9 @@ export default class QuantumPurse extends QPSigner {
     startIndex: number,
     count: number
   ): Promise<string[]> {
-    try {
-      if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      const list = await this.keyVault.try_gen_account_batch(password, startIndex, count);
-      return list;
-    } finally {
-      password.fill(0);
-    }
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+    const list = await this.keyVault.try_gen_account_batch(password, startIndex, count);
+    return list;
   }
 
   /**
@@ -508,42 +484,33 @@ export default class QuantumPurse extends QPSigner {
    * TODO test set sellective sync
    */
   public async recoverAccounts(password: Uint8Array, count: number): Promise<void> {
-    try {
-      if (!this.keyVault) throw new Error("KeyVault not initialized!");
-      const spxLockArgsList = await this.keyVault.recover_accounts(password, count) as Hex[];
+    if (!this.keyVault) throw new Error("KeyVault not initialized!");
+    const spxLockArgsList = await this.keyVault.recover_accounts(password, count) as Hex[];
 
-      if (!this.hasClientStarted) {
-        console.error("Light client has not initialized");
-        return;
-      }
-
-      const startBlocksPromises = spxLockArgsList.map(async (lockArgs) => {
-        const lock = this.getLockScript(lockArgs);
-        const searchKey: ClientIndexerSearchKeyLike = {
-          scriptType: "lock",
-          script: lock,
-          scriptSearchMode: "prefix",
-        };
-
-        const response = await this.client.getTransactions(searchKey, "asc", 1);
-        let startBlock = BigInt(0);
-        if (response) {
-          if (response.transactions && response.transactions.length > 0) {
-            // found the first transation, set to the block prior
-            startBlock = response.transactions[0].blockNumber - BigInt(1);
-          } else {
-            // no transaction found, meaning account empty -> set to tip block
-            startBlock = await this.client.getTip();
-          }
-        }
-        return startBlock;
-      });
-
-      const startBlocks = await Promise.all(startBlocksPromises);
-      await this.setSellectiveSyncFilter(spxLockArgsList, startBlocks, LightClientSetScriptsCommand.All);
-    } finally {
-      password.fill(0);
+    if (!this.hasClientStarted) {
+      console.error("Light client has not initialized");
+      return;
     }
+
+    const startBlocksPromises = spxLockArgsList.map(async (lockArgs) => {
+      const lock = this.getLockScript(lockArgs);
+      const searchKey: ClientIndexerSearchKeyLike = {
+        scriptType: "lock",
+        script: lock,
+        scriptSearchMode: "prefix",
+      };
+
+      let startBlock = BigInt(0);
+      const response = await this.client.getTransactions(searchKey, "asc", 1);
+      if (response.transactions && response.transactions.length > 0) {
+        // found the first transation, set to the block prior
+        startBlock = response.transactions[0].blockNumber - BigInt(1);
+      }
+      return startBlock;
+    });
+
+    const startBlocks = await Promise.all(startBlocksPromises);
+    await this.setSellectiveSyncFilter(spxLockArgsList, startBlocks, LightClientSetScriptsCommand.All);
   }
 
   /**

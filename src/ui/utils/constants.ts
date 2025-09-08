@@ -38,7 +38,7 @@ export const CKB_EXPLORER_URL = IS_MAIN_NET
 export const STORAGE_KEYS = {
   WALLET_STEP: "wallet-step",
   CURRENT_ACCOUNT_POINTER: "account-pointer",
-  SPHINCS_PLUS_PARAM_SET: "sphincs-plus-param-set-id",
+  SPHINCS_PLUS_PARAM_SET: "spx-variant-id",
 };
 
 export const WALLET_STEP = {
@@ -50,4 +50,4 @@ export const FIND_ACCOUNT_THRESHOLD = 5;
 export type WalletStepEnum = (typeof WALLET_STEP)[keyof typeof WALLET_STEP];
 
 export const REPOSITORY_URL =
-  "https://github.com/tea2x/quantum-purse-web-static";
+  "https://github.com/tea2x/quantum-purse";
