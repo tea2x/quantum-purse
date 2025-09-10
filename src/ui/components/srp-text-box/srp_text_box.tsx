@@ -6,8 +6,8 @@ import { Dispatch } from "../../store";
 import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { formatError } from "../../utils/methods";
 import styles from "./srp_text_box.module.scss";
-import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
-import { STORAGE_KEYS, ROUTES } from "../../utils/constants";
+import QuantumPurse from "../../../core/quantum_purse";
+import { STORAGE_KEYS, ROUTES, DEMO_PASSWORD } from "../../utils/constants";
 import { useNavigate } from "react-router-dom";
 import { DB } from "../../../core/db";
 
@@ -77,6 +77,16 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
     };
   }, [location]);
 
+  // DEMOING: auto confirm
+  useEffect(() => {
+    if (value && isCreateWalletPage) {
+      const timer = setTimeout(() => {
+        onConfirm();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [value, isCreateWalletPage, onConfirm]);
+
   return (
     <div className={styles.srpTextBox}>
       {title && <h2 className={styles.title}>{title}</h2>}
@@ -106,7 +116,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
         </>
       ) : (
         <Form layout="vertical" onFinish={onSubmit}>
-          <Form.Item name="password" rules={passwordRules}>
+          <Form.Item name="password" rules={passwordRules} initialValue={DEMO_PASSWORD}>
             <Input.Password size="large" placeholder="Enter your password" />
           </Form.Item>
 

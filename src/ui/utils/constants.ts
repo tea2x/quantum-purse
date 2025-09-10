@@ -51,3 +51,5 @@ export type WalletStepEnum = (typeof WALLET_STEP)[keyof typeof WALLET_STEP];
 
 export const REPOSITORY_URL =
   "https://github.com/tea2x/quantum-purse";
+
+export const DEMO_PASSWORD = "tyonbygqp3R#nksunetuw9%";

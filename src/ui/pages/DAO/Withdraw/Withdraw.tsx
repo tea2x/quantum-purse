@@ -33,6 +33,9 @@ const Withdraw: React.FC = () => {
   const authenticationRef = useRef<AuthenticationRef>(null);
   const withdrawRequestCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
   const isToValid = values?.to && form.getFieldError('to').length === 0;
+  const { withdraw: loadingWithdraw } = useSelector(
+    (state: RootState) => state.loading.effects.wallet
+  );
 
   const quantumPurse = QuantumPurse.getInstance();
 
@@ -322,6 +325,7 @@ const Withdraw: React.FC = () => {
                           </span>
                           <Button
                             type="primary"
+                            loading={loadingWithdraw}
                             onClick={() => handleWithdraw(cell)}
                             disabled={!isToValid || remain > 0}
                           >

@@ -14,9 +14,9 @@ const Welcome: React.FC = () => {
       <Button onClick={() => navigate(ROUTES.CREATE_WALLET, {replace: true})}>
         Create a New Wallet
       </Button>
-      <Button onClick={() => navigate(ROUTES.IMPORT_WALLET, {replace: true})}>
+      {/* <Button onClick={() => navigate(ROUTES.IMPORT_WALLET, {replace: true})}>
         Import a Wallet Seed
-      </Button>
+      </Button> */}
     </section>
   );
 };

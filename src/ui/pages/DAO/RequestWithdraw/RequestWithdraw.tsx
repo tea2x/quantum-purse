@@ -12,6 +12,9 @@ import { NERVOS_DAO } from "../../../../core/config";
 import { parseEpoch, getProfit } from "../../../../core/epoch";
 
 const RequestWithdraw: React.FC = () => {
+  const { requestWithdraw: loadingRequest } = useSelector(
+    (state: RootState) => state.loading.effects.wallet
+  );
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
@@ -297,6 +300,7 @@ const RequestWithdraw: React.FC = () => {
                           </span>
                           <Button
                             type="primary"
+                            loading={loadingRequest}
                             onClick={() => handleWithdrawRequest(cell)}
                             disabled={!isToValid}
                           >

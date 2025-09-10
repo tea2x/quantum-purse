@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   const [isUpdatingBalance, setIsUpdatingBalance] = useState(false);
   const [isUpdatingBlocks, setIsUpdatingBlockInfo] = useState(false);
   const [isUpdatingPeers, setIsUpdatingNodeInfo] = useState(false);
-  const [showWarning, setShowWarning] = useState(true);
+  // const [showWarning, setShowWarning] = useState(true);
 
   const screens = useBreakpoint();
   const location = useLocation();
@@ -284,7 +284,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         />
       )}
     </header>
-    {showWarning && (
+    {/* {showWarning && (
       <Alert
         closable
         type="warning"
@@ -292,7 +292,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         onClose={() => setShowWarning(false)}
         banner={true}
       />
-    )}
+    )} */}
     </div>
 
   );

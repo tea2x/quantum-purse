@@ -11,8 +11,8 @@ import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { Dispatch } from "../../store";
 import { ROUTES } from "../../utils/constants";
 import styles from "./authentication.module.scss";
-import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
-import { STORAGE_KEYS } from "../../utils/constants";
+import QuantumPurse from "../../../core/quantum_purse";
+import { STORAGE_KEYS, DEMO_PASSWORD } from "../../utils/constants";
 import ConfirmDeleteWalletModal from "../../components/delete-wallet-confirm/delete_wallet_confirm";
 import { DB } from "../../../core/db";
 
@@ -48,6 +48,17 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     const [paramSet, setParamSet] = useState<number | null>(null);
     const dispatch = useDispatch<Dispatch>();
     const navigate = useNavigate();
+
+    // DEMOING
+    useEffect(() => {
+      if (open) {
+        (async () => {
+          await authenCallback(DEMO_PASSWORD);
+          closeHandler();
+        })();
+      }
+    }, [open]);
+
 
     useEffect(() => {
       let value: number | null = null;
@@ -107,60 +118,9 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
       };
     }, [isForgotPassword, submittable]);
 
+    // FOR DEMOING
     return (
       <>
-        <Modal
-          open={open}
-          {...rest}
-          okText={modalOptions.okText}
-          onOk={modalOptions.onOk}
-          cancelText={modalOptions.cancelText}
-          onCancel={modalOptions.onCancel}
-          centered
-          className={styles.authentication}
-          confirmLoading={loading}
-          cancelButtonProps={{
-            disabled: loading,
-          }}
-          closable={!loading}
-          okButtonProps={{
-            disabled: modalOptions.okDisabled,
-          }}
-        >
-          {isForgotPassword ? (
-            <>
-              <h2 className="title">Forgot Password?</h2>
-              <p className="description">
-                Restore your wallet by deleting current instance and reimport your secret recovery phrase.
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 className="title">{title}</h2>
-              <p className="description">{description}</p>
-              <Form
-                form={form}
-                onFinish={onFinish}
-                layout="vertical"
-                className="form-authentication"
-                disabled={loading}
-              >
-                <Form.Item name="password" rules={passwordRules}>
-                  <Input.Password
-                    size="large"
-                    placeholder="Enter your password"
-                  />
-                </Form.Item>
-              </Form>
-              <p
-                className="forgot-password"
-                onClick={() => setIsForgotPassword(true)}
-              >
-                Forgot password?
-              </p>
-            </>
-          )}
-        </Modal>
         <ConfirmDeleteWalletModal
           isOpen={isDeleteWalletConfirmModalOpen}
           onOk={async () => {

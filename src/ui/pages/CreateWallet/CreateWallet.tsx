@@ -16,7 +16,8 @@ import {
   STORAGE_KEYS,
   WALLET_STEP,
   WalletStepEnum,
-  ROUTES
+  ROUTES,
+  DEMO_PASSWORD
 } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./CreateWallet.module.scss";
@@ -115,17 +116,63 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
+const DemoMask: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <div style={{ position: "relative" }}>
+      {children}
+
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0, 0, 0, 1)",
+          zIndex: 9999,
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <LoadingOutlined
+            spin
+            style={{
+              fontSize: 48,
+              color: "#fff",
+              display: "block",
+            }}
+          />
+          <p style={{ color: "#fff", marginTop: 12 }}>
+            Preparing your demo wallet…
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CreateWalletContent: React.FC = () => {
   const { steps, currentStep } = useContext(CreateWalletContext);
 
   return (
     <section className={cx(styles.createWallet, "panel")}>
       <h1>Create A New Wallet</h1>
-      {/* <Steps current={currentStep} items={steps} /> */}
-      <div>{steps.find((step) => step.key === currentStep)?.content}</div>
+      <DemoMask>
+        <div>{steps.find((step) => step.key === currentStep)?.content}</div>
+      </DemoMask>
     </section>
   );
 };
+
 
 export const StepCreatePassword: React.FC = () => {
   const [form] = Form.useForm();
@@ -145,6 +192,13 @@ export const StepCreatePassword: React.FC = () => {
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
   }, [form, values]);
+
+  // DEMOING: triggers onFinish automatically
+  useEffect(() => {
+    if (submittable) {
+      form.submit();
+    }
+  }, [submittable]);
 
   const onFinish = async (
     { password, parameterSet }: { password: string; parameterSet: SpxVariant }
@@ -188,6 +242,7 @@ export const StepCreatePassword: React.FC = () => {
           name="password"
           label={<span style={{ color: 'var(--gray-01)' }}>Password</span>}
           rules={passwordRules}
+          initialValue={DEMO_PASSWORD}
         >
           <Input.Password
             size="large"
@@ -211,6 +266,7 @@ export const StepCreatePassword: React.FC = () => {
               },
             }),
           ]}
+          initialValue={DEMO_PASSWORD}
         >
           <Input.Password
             size="large"
@@ -230,6 +286,7 @@ export const StepCreatePassword: React.FC = () => {
                   : Promise.reject(new Error("You must agree to the terms!")),
             },
           ]}
+          initialValue={true}
         >
           <Checkbox style={{ color: 'var(--gray-01)' }}>
             I understand I must back up my wallet type with the mnemonic phrase next step.
@@ -251,6 +308,7 @@ export const StepCreatePassword: React.FC = () => {
               },
             },
           ]}
+          initialValue={true}
         >
           <Checkbox style={{ color: 'var(--gray-01)' }}>
             I understand that Quantum Purse cannot recover this password if lost.

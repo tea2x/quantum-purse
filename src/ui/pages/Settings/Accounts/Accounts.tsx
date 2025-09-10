@@ -19,6 +19,7 @@ import { Dispatch, RootState } from "../../../store";
 import { cx, formatError, shortenAddress } from "../../../utils/methods";
 import styles from "./Accounts.module.scss";
 import { AccountItem } from "../../../components/account-item/account_item";
+import { DEMO_PASSWORD } from "../../../utils/constants";
 
 const Accounts: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
@@ -110,7 +111,7 @@ const Accounts: React.FC = () => {
         />
         <Button
           type="primary"
-          onClick={() => authenticationRef.current?.open()}
+          onClick={() => createAccountHandler(DEMO_PASSWORD)}
           loading={loadingCreateAccount}
           disabled={loadingCreateAccount || loadingLoadAccounts}
         >
