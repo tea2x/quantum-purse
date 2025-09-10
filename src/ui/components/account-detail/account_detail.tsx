@@ -41,21 +41,11 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
     <div className={styles.detailContainer}>
       {/* <h2>{account.name}</h2> */}
 
-      <div className={styles.qrCodeContainer}>
-        {account.address && (
-          <QRCodeSVG
-            value={account.address}
-            size={235}
-            level="H" // Highest error correction level
-          />
-        )}
-      </div>
-
       <div className={styles.iconContainer}>
         <Explore.Account address={account.address!}>
           <Flex align="center" gap={8} className={styles.extraInfo}>
             <GlobalOutlined />
-            Explorer
+            Go To CKB Explorer
           </Flex>
         </Explore.Account>
 
@@ -66,9 +56,19 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
         >
           <Flex align="center" gap={8} className={styles.extraInfo}>
             <DropboxOutlined />
-            Request testnet CKB
+            Claim CKB
           </Flex>
         </div>
+      </div>
+
+      <div className={styles.qrCodeContainer}>
+        {account.address && (
+          <QRCodeSVG
+            value={account.address}
+            size={235}
+            level="H" // Highest error correction level
+          />
+        )}
       </div>
 
       {/* <Copy value={account.address!}>

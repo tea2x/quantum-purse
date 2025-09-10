@@ -69,9 +69,9 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
       dispatch.wallet.resetSRP();
-      notification.success({
-        message: "Create wallet successfully!",
-      });
+      // notification.success({
+      //   message: "Create wallet successfully!",
+      // });
     } catch (error) {
       notification.error({
         message: "Wallet creation failed!",

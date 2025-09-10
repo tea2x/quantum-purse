@@ -54,9 +54,9 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   const onSubmit = async (values: { password: string }) => {
     try {
       await exportSrpHandler(values.password);
-      notification.success({
-        message: "SRP revealed successfully",
-      });
+      // notification.success({
+      //   message: "SRP revealed successfully",
+      // });
     } catch (error) {
       notification.error({
         message: "Failed to reveal SRP",

@@ -38,16 +38,16 @@ const Accounts: React.FC = () => {
   const createAccountHandler = async (password: string) => {
     try {
       const newAccount = await dispatch.wallet.createAccount({ password });
-      notification.success({
-        message: `Create ${newAccount.name} successfully`,
-        description: (
-          <div>
-            <Explore.Account address={newAccount.address}>
-              {shortenAddress(newAccount.address!, 10, 20)}
-            </Explore.Account>
-          </div>
-        ),
-      });
+      // notification.success({
+      //   message: `Create ${newAccount.name} successfully`,
+      //   description: (
+      //     <div>
+      //       <Explore.Account address={newAccount.address}>
+      //         {shortenAddress(newAccount.address!, 10, 20)}
+      //       </Explore.Account>
+      //     </div>
+      //   ),
+      // });
       authenticationRef.current?.close();
     } catch (error) {
       notification.error({
