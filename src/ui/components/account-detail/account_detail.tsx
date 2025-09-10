@@ -1,10 +1,9 @@
-import { CopyOutlined, GlobalOutlined, DropboxOutlined } from "@ant-design/icons";
+import { GlobalOutlined, DropboxOutlined } from "@ant-design/icons";
 import { Flex } from "antd";
 import { QRCodeSVG } from "qrcode.react";
 import { IAccount } from "../../store/models/interface";
-import { shortenAddress } from "../../utils/methods";
 import styles from "./account_detail.module.scss";
-import { Copy, Explore } from "../../components";
+import { Explore } from "../../components";
 import { message } from "antd";
 
 interface AccountDetailProps {
@@ -12,30 +11,42 @@ interface AccountDetailProps {
 }
 
 const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
-  const requestFaucet = async () => {
+
+  const ENDPOINT = 'https://faucet-api.nervos.org/claim_events'
+
+  const claimCKB = async () => {
     if (!account?.address) {
       message.error("No active account address found");
       return;
     }
 
     try {
-      const resp = await fetch("https://b45ebf685c04.ngrok-free.app/faucet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: account.address, amount: 10_000 }),
+      const res = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+        body: JSON.stringify({
+          claim_event: {
+            address_hash: account.address, // recipient
+            amount: '10000'  // 100,00 CKB
+          }
+        })
       });
 
-      const data = await resp.json();
-
-      if (resp.ok) {
-        message.success(`Faucet request sent! Tx hash: ${data.txHash}`);
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
       } else {
-        message.error(`Faucet error: ${data.error}`);
+        message.success(`Faucet request successful`);
       }
+
+      const data = await res.json();
+      return data;
     } catch (err: any) {
       message.error(`Request failed: ${err.message}`);
     }
-  };
+  }
 
   return (
     <div className={styles.detailContainer}>
@@ -51,7 +62,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
 
         <div
           onClick={async () => {
-            await requestFaucet();
+            await claimCKB();
           }}
         >
           <Flex align="center" gap={8} className={styles.extraInfo}>
