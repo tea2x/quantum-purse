@@ -35,14 +35,14 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
         })
       });
 
-      if (!res.ok) {
-        throw new Error(`Server returned ${res.status}`);
-      } else {
-        message.success(`Faucet request successful`);
-      }
+      // if (!res.ok) {
+      //   throw new Error(`Server returned ${res.status}`);
+      // } else {
+      //   message.success(`Faucet request successful`);
+      // }
 
-      const data = await res.json();
-      return data;
+      // const data = await res.json();
+      // return data;
     } catch (err: any) {
       message.error(`Request failed: ${err.message}`);
     }
