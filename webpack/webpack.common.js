@@ -82,6 +82,7 @@ module.exports = {
       patterns: [
         { from: "public/404.html", to: "404.html" },
         { from: "public/status.worker.js", to: "status.worker.js" },
+        { from: "public/favicon.ico", to: "favicon.ico"}
       ],
     }),
     new webpack.DefinePlugin({
