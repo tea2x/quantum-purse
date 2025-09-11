@@ -8,35 +8,37 @@ const Welcome: React.FC = () => {
 
   return (
     <section className={styles.welcome}>
-      <h1>Welcome to Quantum Purse</h1>
-      <p>Lightweight Client Wallet, Post-Quantum Hardened, Powered by CKB.</p>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Input
-          style={{marginBottom: "1.5rem", height: "3.5rem", width: "30rem"}}
-          placeholder="Enter Your Email For future updates!"
-        >
-        </Input>
+      {/* Top Section */}
+      <div className={styles.header}>
+        <h1>WELCOME</h1>
+      </div>
 
-        <p
-          style={{
-            marginBottom: "0",
-            color: "var(--gray-light)",
-            fontSize: "14px"
-          }}
-        >
-          Or
+      {/* Middle Section */}
+      <div className={styles.middle}>
+        <p className={styles.infoText}>
+          Quantum Purse is a lightweight client wallet, post-quantum hardened and powered by CKB. Learn more about how to get started with your product, receive new
+          feature updates and more.
         </p>
 
+        <Input
+          className={styles.emailInput}
+          placeholder="e-mail address"
+          bordered={false}
+        />
+
+        <p className={styles.disclaimer}>
+          Your email address is safe with us. We’ll only use it to share
+          important product updates — no spam, ever.
+        </p>
+      </div>
+
+      {/* Bottom Section */}
+      <div className={styles.footer}>
         <Button
-          onClick={() => navigate(ROUTES.CREATE_WALLET, {replace: true})}
-          style={{margin: "1.5rem auto", height: "3.5rem", width: "30rem"}}
+          onClick={() => navigate(ROUTES.CREATE_WALLET, { replace: true })}
+          className={styles.ctaButton}
         >
-          Create a New Wallet
+          NEXT
         </Button>
       </div>
     </section>

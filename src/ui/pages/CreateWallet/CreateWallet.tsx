@@ -151,7 +151,7 @@ const DemoMask: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               display: "block",
             }}
           />
-          <p style={{ color: "#fff", marginTop: 12 }}>
+          <p style={{ color: "#fff", marginTop: 12, fontSize: "14px" }}>
             Preparing your demo wallet…
           </p>
         </div>
