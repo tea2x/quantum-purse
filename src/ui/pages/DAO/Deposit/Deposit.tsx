@@ -7,9 +7,11 @@ import {
   Switch,
   Tooltip,
   Row,
-  Col
+  Col,
+  Modal,
+  Space
 } from "antd";
-import { QuestionCircleOutlined } from "@ant-design/icons";
+import { QuestionCircleOutlined, ScanOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
@@ -19,6 +21,7 @@ import { cx, formatError } from "../../../utils/methods";
 import styles from "./Deposit.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
 import { Address } from "@ckb-ccc/core";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 const Deposit: React.FC = () => {
   const [form] = Form.useForm();
@@ -35,6 +38,7 @@ const Deposit: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
+  const [scannerUp, setScannerUp] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -95,6 +99,31 @@ const Deposit: React.FC = () => {
     }
   }, [values?.isMax, fromAccountBalance]);
 
+  useEffect(() => {
+    if (!scannerUp) return;
+
+    const scanner = new Html5QrcodeScanner(
+      "reader",
+      { fps: 10, qrbox: 250 },
+      false
+    );
+
+    scanner.render(
+      (decodedAddress) => {
+        form.setFieldsValue({ to: decodedAddress });
+        setScannerUp(false);
+        scanner.clear();
+      },
+      (errorMessage) => {
+        console.log(errorMessage);
+      }
+    );
+
+    return () => {
+      scanner.clear().catch(() => {});
+    };
+  }, [scannerUp]);
+
   // Catch fee rate changes from FeeRateSelect component
   const handleFeeRateChange = (feeRate: number) => {
     setFeeRate(feeRate);
@@ -139,7 +168,6 @@ const Deposit: React.FC = () => {
       <div>
         <Form layout="vertical" form={form}>
           <Form.Item
-            name="to"
             className={cx("field-to", values?.isDepositToMyAccount && "select-my-account")}
             label={
               <div className="label-container">
@@ -159,26 +187,37 @@ const Deposit: React.FC = () => {
                 </div>
               </div>
             }
-            rules={[
-              { required: true, message: "" },
-              {
-                validator: async (_, value) => {
-                  if (!value) return Promise.resolve();
-                  try {
-                    await Address.fromString(value, quantumPurse.client);
-                    return Promise.resolve();
-                  } catch (error) {
-                    return Promise.reject("Invalid address");
-                  }
-                },
-              },
-            ]}
           >
             {!values?.isDepositToMyAccount ? (
-              <Input
-                placeholder="Input the destination address"
-                className={styles.inputField}
-              />
+              <Space.Compact style={{ display: "Flex" }}>
+                <Form.Item
+                  name="to"
+                  noStyle
+                  rules={[
+                    { required: true, message: "" },
+                    {
+                      validator: async (_, value) => {
+                        if (!value) return Promise.resolve();
+                        try {
+                          await Address.fromString(value, quantumPurse.client);
+                          return Promise.resolve();
+                        } catch (error) {
+                          return Promise.reject("Invalid address");
+                        }
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="Input or scan the destination address"
+                    style={{ flex: 1, backgroundColor: "var(--gray-light)" }}
+                  />
+                </Form.Item>
+                <Button
+                  onClick={() => setScannerUp(true)}
+                  icon={<ScanOutlined />}
+                />
+              </Space.Compact>
             ) : (
               <AccountSelect
                 accounts={wallet.accounts}
@@ -283,6 +322,14 @@ const Deposit: React.FC = () => {
             }
           }}
         />
+        <Modal
+          open={scannerUp}
+          onCancel={() => setScannerUp(false)}
+          footer={null}
+          title="Scan QR Code"
+        >
+          <div id="reader" style={{ width: "100%" }} />
+        </Modal>
       </div>
     </section>
   );

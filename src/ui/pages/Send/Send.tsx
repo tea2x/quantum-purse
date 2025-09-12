@@ -38,7 +38,7 @@ const Send: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
-  const [scannerVisible, setScannerVisible] = useState(false);
+  const [scannerUp, setScannerUp] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -105,7 +105,7 @@ const Send: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!scannerVisible) return;
+    if (!scannerUp) return;
 
     const scanner = new Html5QrcodeScanner(
       "reader",
@@ -114,9 +114,9 @@ const Send: React.FC = () => {
     );
 
     scanner.render(
-      (decodedText) => {
-        form.setFieldsValue({ to: decodedText });
-        setScannerVisible(false);
+      (decodedAddress) => {
+        form.setFieldsValue({ to: decodedAddress });
+        setScannerUp(false);
         scanner.clear();
       },
       (errorMessage) => {
@@ -127,7 +127,7 @@ const Send: React.FC = () => {
     return () => {
       scanner.clear().catch(() => {});
     };
-  }, [scannerVisible]);
+  }, [scannerUp]);
 
   const handleSend = async () => {
     try {
@@ -211,7 +211,7 @@ const Send: React.FC = () => {
                   />
                 </Form.Item>
                 <Button
-                  onClick={() => setScannerVisible(true)}
+                  onClick={() => setScannerUp(true)}
                   icon={<ScanOutlined />}
                 />
               </Space.Compact>
@@ -318,8 +318,8 @@ const Send: React.FC = () => {
         />
 
         <Modal
-          open={scannerVisible}
-          onCancel={() => setScannerVisible(false)}
+          open={scannerUp}
+          onCancel={() => setScannerUp(false)}
           footer={null}
           title="Scan QR Code"
         >
