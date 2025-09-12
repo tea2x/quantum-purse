@@ -136,7 +136,8 @@ html {
 body {
   margin: 0;
   /* background-color: rgb(24, 24, 24); */
-  background-image: url('./ui/components/assets/background.jpg');
+  background-image: url('./ui/components/assets/background.png');
+  background-position: center calc(50% - 15rem);
   background-size: cover;
 }
 

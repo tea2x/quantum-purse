@@ -50,8 +50,6 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
 
   return (
     <div className={styles.detailContainer}>
-      {/* <h2>{account.name}</h2> */}
-
       <div className={styles.qrCodeContainer}>
         <div className={styles.iconContainer}>
           <Explore.Account address={account.address!}>

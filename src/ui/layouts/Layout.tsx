@@ -72,6 +72,16 @@ const Layout: React.FC<AuthLayoutProps> = ({
 
   return (
     <div className={cx(styles.layout, className)} {...rest}>
+      <p
+        style={{
+          fontFamily: "Test Sohne Breit",
+          fontSize: "2.5rem",
+          marginBottom: "1rem",
+          color: "var(--gray-02)"
+        }}
+      >
+        Quantum Purse
+      </p>
       {!["/welcome", "/create-wallet", "/import-wallet"].includes(useLocation().pathname) && <Header />}
       <div className="container">{children}</div>
       {/* <Footer /> */}
