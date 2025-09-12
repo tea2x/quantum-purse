@@ -77,6 +77,7 @@ const Layout: React.FC<AuthLayoutProps> = ({
           fontFamily: "Test Sohne Breit",
           fontSize: "2.5rem",
           marginBottom: "1rem",
+          marginLeft: "0.5rem",
           color: "var(--gray-02)"
         }}
       >
