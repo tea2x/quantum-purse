@@ -148,49 +148,49 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         </div>
 
         <div className={cx(styles.statusSection, isUpdatingBlocks && styles.updating)}>
-            <Tooltip
-              title={
-                !screens.md ? (
-                  <>
-                    Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
-                    <br />
-                    Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()}
-                    <br />
-                    Start: {syncStatus && syncStatus.startBlock.toLocaleString()}
-                  </>
-                ) : (
-                  ""
-                )
-              }
-            >
-              <div>
-                <PieChart width={pieChartSize} height={pieChartSize}>
-                  <Pie
-                    data={syncData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={innerRadius}
-                    outerRadius={outerRadius}
-                    startAngle={90}
-                    endAngle={-270}
-                    dataKey="value"
-                    animationDuration={2000}
-                    animationEasing="ease-in-out"
-                    animationBegin={20}
-                    stroke="none"
-                  >
-                    <Cell fill="#2196F3" />
-                    <Cell fill="#444" />
-                    <Label
-                      value={`${syncStatus && syncStatus.syncedStatus.toFixed(0)}%`}
-                      position="center"
-                      fill="var(--gray-01)"
-                      style={labelStyle}
-                    />
-                  </Pie>
-                </PieChart>
-              </div>
-            </Tooltip>
+          <Tooltip
+            title={
+              !screens.md ? (
+                <>
+                  Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
+                  <br />
+                  Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()}
+                  <br />
+                  Start: {syncStatus && syncStatus.startBlock.toLocaleString()}
+                </>
+              ) : (
+                ""
+              )
+            }
+          >
+            <div>
+              <PieChart width={pieChartSize} height={pieChartSize}>
+                <Pie
+                  data={syncData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={innerRadius}
+                  outerRadius={outerRadius}
+                  startAngle={90}
+                  endAngle={-270}
+                  dataKey="value"
+                  animationDuration={2000}
+                  animationEasing="ease-in-out"
+                  animationBegin={20}
+                  stroke="none"
+                >
+                  <Cell fill="#2196F3" />
+                  <Cell fill="#444" />
+                  <Label
+                    value={`${Math.floor(syncStatus.syncedStatus * 100) / 100}%`}
+                    position="center"
+                    fill="var(--gray-01)"
+                    style={labelStyle}
+                  />
+                </Pie>
+              </PieChart>
+            </div>
+          </Tooltip>
           {screens.md && (
             <div className={styles.statusDetails}>
               <span>Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}</span>
