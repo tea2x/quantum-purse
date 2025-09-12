@@ -18,13 +18,15 @@
   h1 {
     font-size: 2.5rem;
     padding-bottom: 1.2rem;
-    // border-bottom: solid 1px var(--gray-light);
     margin-bottom: 1.3rem;
     color: var(--gray-light);
     font-weight: bold;
 
     @media (max-width: 768px) {
       font-size: 2.2rem;
+    }
+    @media (max-width: 640px) {
+      font-size: 2rem;
     }
   }
 
@@ -36,40 +38,54 @@
   }
 }
 
-.middle {
-  max-width: 40rem;
+.infoText {
+  font-size: 14px;
+  color: var(--gray-01);
+  margin-bottom: 20vh;
+
+  @media (min-width: 640px) {
+    width: 80%;
+  }
+  @media (min-width: 768px) {
+    width: 60%;
+  }
+}
+
+.emailInput {
   width: 100%;
-  height: 100%;
-  margin: 2rem auto;
+  font-size: 14px;
+  border-bottom: 1px solid var(--gray-light);
+  border-radius: 0;
+  padding: 0.5rem 0;
+  margin-bottom: 35vh;
+  transition: border-color 0.3s ease;
+  text-align: center;
+  color: var(--gray-light) !important;
 
-  .infoText {
-    font-size: 14px;
-    color: var(--gray-01);
-    margin-bottom: 20rem;
+  @media (min-width: 640px) {
+    width: 80%;
+  }
+  @media (min-width: 768px) {
+    width: 60%;
   }
 
-  .emailInput {
-    width: 100%;
-    font-size: 14px;
-    border-bottom: 2px solid var(--gray-light);
-    border-radius: 0;
-    padding: 0.5rem 0;
-    margin-bottom: 35rem;
-    transition: border-color 0.3s ease;
-    text-align: center;
-    color: var(--gray-light) !important;
-
-    &:focus {
-      border-bottom: 2px solid var(--teal-2);
-      outline: none;
-      box-shadow: none;
-    }
+  &:focus {
+    border-bottom: 1px solid var(--teal-2);
+    outline: none;
+    box-shadow: none;
   }
+}
 
-  .disclaimer {
-    font-size: 11px;
-    color: var(--gray-light);
-    margin-top: 0.8rem;
+.disclaimer {
+  font-size: 11px;
+  color: var(--gray-light);
+  margin-top: 0.8rem;
+
+  @media (min-width: 640px) {
+    width: 80%;
+  }
+  @media (min-width: 768px) {
+    width: 60%;
   }
 }
 
@@ -79,12 +95,19 @@
   justify-content: center;
 
   .ctaButton {
-    width: 50%;
+    width: 100%;
     height: 4rem;
     font-size: 1.4rem;
     font-weight: bolder;
     border-radius: 0.1rem;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+
+    @media (min-width: 640px) {
+      width: 80%;
+    }
+    @media (min-width: 768px) {
+      width: 60%;
+    }
 
     &:hover {
       background-color: var(--teal-2) !important;
