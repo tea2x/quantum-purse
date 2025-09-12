@@ -11,7 +11,7 @@
 }
 
 .qrCodeContainer {
-  padding: 1.6rem;
+  padding: 0 1.6rem 1.6rem 1.6rem;
   background-color: var(--white);
   border-radius: 0.8rem;
   box-shadow: 0 0.2rem 0.8rem rgba(0, 0, 0, 0.08);
@@ -23,12 +23,11 @@
 
 .extraInfo {
   font-size: 1.4rem;
-  font-weight: bold;
-  color: var(--gray-02);
+  color: var(--gray-03);
   transition: color 0.3s ease-out;
-  padding: 5px;
+  padding: 2px;
   border-radius: 5px;
-  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  border: 0.5px solid rgba(0, 0, 0, 0.5);
   cursor: pointer;
 
   &:hover {
@@ -43,6 +42,7 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  margin: 0.5rem 0 0.5rem 0;
 }
 
 .address {

@@ -52,27 +52,26 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
     <div className={styles.detailContainer}>
       {/* <h2>{account.name}</h2> */}
 
-      <div className={styles.iconContainer}>
-        <Explore.Account address={account.address!}>
-          <Flex align="center" gap={8} className={styles.extraInfo}>
-            <GlobalOutlined />
-            Go To CKB Explorer
-          </Flex>
-        </Explore.Account>
-
-        <div
-          onClick={async () => {
-            await claimCKB();
-          }}
-        >
-          <Flex align="center" gap={8} className={styles.extraInfo}>
-            <DropboxOutlined />
-            Claim CKB
-          </Flex>
-        </div>
-      </div>
-
       <div className={styles.qrCodeContainer}>
+        <div className={styles.iconContainer}>
+          <Explore.Account address={account.address!}>
+            <Flex align="center" gap={8} className={styles.extraInfo}>
+              <GlobalOutlined />
+              CKB Explorer
+            </Flex>
+          </Explore.Account>
+
+          <div
+            onClick={async () => {
+              await claimCKB();
+            }}
+          >
+            <Flex align="center" gap={8} className={styles.extraInfo}>
+              <DropboxOutlined />
+              Claim CKB
+            </Flex>
+          </div>
+        </div>
         {account.address && (
           <QRCodeSVG
             value={account.address}
@@ -81,16 +80,6 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
           />
         )}
       </div>
-
-      {/* <Copy value={account.address!}>
-        <Flex align="center" gap={8} className={styles.extraInfo}>
-          <CopyOutlined />
-          <span className={styles.address}>
-            {shortenAddress(account.address!, 10, 15)}
-          </span>
-        </Flex>
-      </Copy> */}
-
     </div>
   );
 };
