@@ -170,7 +170,7 @@ export default class QuantumPurse extends QPSigner {
     const script = scripts.find((script) => script.script.args === lock.args);
     const syncedBlock = Number(script?.blockNumber ?? 0);
     const syncedStatus = tipBlock > startBlock
-      ? ((syncedBlock) / (tipBlock)) * 100
+      ? (syncedBlock / tipBlock) * 100
       : 0;
 
     return {

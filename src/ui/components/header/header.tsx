@@ -182,7 +182,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
                   <Cell fill="#2196F3" />
                   <Cell fill="#444" />
                   <Label
-                    value={`${Math.floor(syncStatus.syncedStatus * 100) / 100}%`}
+                    value={`${Math.floor(syncStatus.syncedStatus * 10) / 10}%`}
                     position="center"
                     fill="var(--gray-01)"
                     style={labelStyle}
