@@ -11,42 +11,35 @@ interface AccountDetailProps {
 }
 
 const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
-
-  const ENDPOINT = 'https://faucet-api.nervos.org/claim_events'
-
   const claimCKB = async () => {
     if (!account?.address) {
-      message.error("No active account address found");
+      message.error("No active account address found!");
       return;
     }
 
     try {
-      const res = await fetch(ENDPOINT, {
-        method: 'POST',
+      const res = await fetch("https://ckb-faucet-proxy.vercel.app/api/claim", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          accept: 'application/json',
+          "Content-Type": "application/json",
+          accept: "application/json",
         },
         body: JSON.stringify({
           claim_event: {
-            address_hash: account.address, // recipient
-            amount: '10000'  // 100,00 CKB
-          }
-        })
+            address_hash: account.address,
+            amount: "10000",
+          },
+        }),
       });
 
-      // if (!res.ok) {
-      //   throw new Error(`Server returned ${res.status}`);
-      // } else {
-      //   message.success(`Faucet request successful`);
-      // }
-
-      // const data = await res.json();
-      // return data;
+      if (!res.ok) {
+        throw new Error(`Proxy error ${res.status}`);
+      }
+      message.success("Faucet request successful! Balance will update shortly!");
     } catch (err: any) {
       message.error(`Request failed: ${err.message}`);
     }
-  }
+  };
 
   return (
     <div className={styles.detailContainer}>
