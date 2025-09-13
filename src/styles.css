@@ -135,13 +135,9 @@ html {
 
 body {
   margin: 0;
-  background-image: url('./ui/components/assets/background.jpg');
+  background-image: url('./ui/components/assets/background.png');
+  background-position: center;
   background-size: cover;
-
-  @media (max-width: 640px) {
-    background-image: url('./ui/components/assets/background.png');
-    background-position: center calc(50% - 15rem);
-  }
 }
 
 :root {
