@@ -1,9 +1,10 @@
-import { GlobalOutlined, DropboxOutlined } from "@ant-design/icons";
+import { GlobalOutlined, CopyOutlined } from "@ant-design/icons";
+import Icon from "../icon/icon";
 import { Flex } from "antd";
 import { QRCodeSVG } from "qrcode.react";
 import { IAccount } from "../../store/models/interface";
 import styles from "./account_detail.module.scss";
-import { Explore } from "../../components";
+import { Explore, Copy } from "../../components";
 import { message } from "antd";
 
 interface AccountDetailProps {
@@ -35,7 +36,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
       if (!res.ok) {
         throw new Error(`Proxy error ${res.status}`);
       }
-      message.success("Faucet request successful! Balance will update shortly!");
+      message.success("Success! Balance will update shortly.");
     } catch (err: any) {
       message.error(`Request failed: ${err.message}`);
     }
@@ -48,9 +49,14 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
           <Explore.Account address={account.address!}>
             <Flex align="center" gap={8} className={styles.extraInfo}>
               <GlobalOutlined />
-              Explorer
             </Flex>
           </Explore.Account>
+
+          <Copy value={account.address!}>
+            <Flex align="center" gap={8} className={styles.extraInfo}>
+              <CopyOutlined />
+            </Flex>
+          </Copy>
 
           <div
             onClick={async () => {
@@ -58,15 +64,14 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
             }}
           >
             <Flex align="center" gap={8} className={styles.extraInfo}>
-              <DropboxOutlined />
-              Faucet
+              <Icon.Faucet />
             </Flex>
           </div>
         </div>
         {account.address && (
           <QRCodeSVG
             value={account.address}
-            size={235}
+            size={200}
             level="H" // Highest error correction level
           />
         )}

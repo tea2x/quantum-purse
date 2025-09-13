@@ -75,11 +75,11 @@ const Layout: React.FC<AuthLayoutProps> = ({
       {(useLocation().pathname != "/welcome") && (
         <p
           style={{
-            fontFamily: "Test Sohne Breit",
-            fontSize: "2.5rem",
-            marginBottom: "1rem",
-            marginLeft: "0.5rem",
-            color: "var(--gray-02)"
+            fontFamily: "Quantico",
+            fontWeight: "bolder",
+            fontSize: "3rem",
+            marginBottom: "3.5rem",
+            color: "var(--gray-01)"
           }}
         >
           Quantum Purse

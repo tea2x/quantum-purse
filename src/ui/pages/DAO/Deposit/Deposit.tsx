@@ -168,6 +168,7 @@ const Deposit: React.FC = () => {
       <div>
         <Form layout="vertical" form={form}>
           <Form.Item
+            name="to"
             className={cx("field-to", values?.isDepositToMyAccount && "select-my-account")}
             label={
               <div className="label-container">
@@ -187,32 +188,27 @@ const Deposit: React.FC = () => {
                 </div>
               </div>
             }
+            rules={[
+              { required: true, message: "" },
+              {
+                validator: async (_, value) => {
+                  if (!value) return Promise.resolve();
+                  try {
+                    await Address.fromString(value, quantumPurse.client);
+                    return Promise.resolve();
+                  } catch {
+                    return Promise.reject("Invalid address");
+                  }
+                },
+              },
+            ]}
           >
             {!values?.isDepositToMyAccount ? (
               <Space.Compact style={{ display: "Flex" }}>
-                <Form.Item
-                  name="to"
-                  noStyle
-                  rules={[
-                    { required: true, message: "" },
-                    {
-                      validator: async (_, value) => {
-                        if (!value) return Promise.resolve();
-                        try {
-                          await Address.fromString(value, quantumPurse.client);
-                          return Promise.resolve();
-                        } catch (error) {
-                          return Promise.reject("Invalid address");
-                        }
-                      },
-                    },
-                  ]}
-                >
-                  <Input
-                    placeholder="Input or scan the destination address"
-                    style={{ flex: 1, backgroundColor: "var(--gray-light)" }}
-                  />
-                </Form.Item>
+                <Input
+                  placeholder="Input or scan the destination address"
+                  style={{ flex: 1, backgroundColor: "var(--gray-light)" }}
+                />
                 <Button
                   onClick={() => setScannerUp(true)}
                   icon={<ScanOutlined />}
