@@ -24,16 +24,23 @@
 .extraInfo {
   font-size: 1.4rem;
   color: var(--gray-01);
-  transition: color 0.3s ease-out;
-  padding: 2px;
-  border-radius: 5px;
+  transition: all 0.3s ease-out;
+  padding: 5px;
+  border-radius: 15px;
   border: 0.5px solid rgba(0, 0, 0, 0.5);
   background-color: var(--black);
   cursor: pointer;
+  display: inline-block;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 
   &:hover {
-    color: var(--teal-2);
-    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
   }
 }
 

@@ -48,7 +48,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
           <Explore.Account address={account.address!}>
             <Flex align="center" gap={8} className={styles.extraInfo}>
               <GlobalOutlined />
-              CKB Explorer
+              Explorer
             </Flex>
           </Explore.Account>
 
@@ -59,7 +59,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
           >
             <Flex align="center" gap={8} className={styles.extraInfo}>
               <DropboxOutlined />
-              Claim CKB
+              Faucet
             </Flex>
           </div>
         </div>
