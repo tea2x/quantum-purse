@@ -280,10 +280,6 @@ body {
   outline: none !important;
 }
 
-.recharts-wrapper text:focus {
-  outline: none !important;
-}
-
 .recharts-wrapper text {
   pointer-events: none;
 }
