@@ -279,3 +279,7 @@ body {
 .recharts-surface:focus {
   outline: none !important;
 }
+
+.recharts-label:focus {
+  outline: none !important;
+}
