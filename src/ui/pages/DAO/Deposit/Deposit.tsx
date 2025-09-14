@@ -183,7 +183,10 @@ const Deposit: React.FC = () => {
                 <div className="switch-container">
                   My Wallet
                   <Form.Item name="isDepositToMyAccount" noStyle>
-                    <Switch size="small"/>
+                    <Switch
+                      size="small"
+                      onChange={() => { form.setFieldsValue({ to: undefined }) }}
+                    />
                   </Form.Item>
                 </div>
               </div>
