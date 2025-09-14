@@ -280,6 +280,6 @@ body {
   outline: none !important;
 }
 
-.recharts-label:focus {
+.recharts-wrapper text:focus {
   outline: none !important;
 }
