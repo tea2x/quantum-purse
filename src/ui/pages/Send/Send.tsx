@@ -203,6 +203,7 @@ const Send: React.FC = () => {
             {!values?.isSendToMyAccount ? (
               <Space.Compact style={{ display: "flex" }}>
                 <Input
+                  value={values?.to}
                   placeholder="Input or scan the destination address"
                   style={{ flex: 1, backgroundColor: "var(--gray-light)" }}
                 />

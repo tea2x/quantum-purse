@@ -206,6 +206,7 @@ const Deposit: React.FC = () => {
             {!values?.isDepositToMyAccount ? (
               <Space.Compact style={{ display: "Flex" }}>
                 <Input
+                  value={values?.to}
                   placeholder="Input or scan the destination address"
                   style={{ flex: 1, backgroundColor: "var(--gray-light)" }}
                 />
