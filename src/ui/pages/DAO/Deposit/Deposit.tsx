@@ -39,7 +39,7 @@ const Deposit: React.FC = () => {
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
   const [scannerUp, setScannerUp] = useState(false);
   const [isDepositToMyAccount, setIsDepositToMyAccount] = useState(false);
-  const [isSendMax, setIsSendMax] = useState(false);
+  const [isDepositMax, setIsDepositMax] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
@@ -93,13 +93,13 @@ const Deposit: React.FC = () => {
 
   // fill amount when deposit max
   useEffect(() => {
-    if (isSendMax && fromAccountBalance) {
+    if (isDepositMax && fromAccountBalance) {
       const maxAmount = Number(fromAccountBalance) / CKB_DECIMALS;
       form.setFieldsValue({ amount: maxAmount });
-    } else if (isSendMax === false) {
+    } else if (isDepositMax === false) {
       form.setFieldsValue({ amount: undefined });
     }
-  }, [isSendMax, fromAccountBalance]);
+  }, [isDepositMax, fromAccountBalance]);
 
   useEffect(() => {
     if (!scannerUp) return;
@@ -133,7 +133,7 @@ const Deposit: React.FC = () => {
 
   const handleDeposit = async () => {
     try {
-      const txId = isSendMax
+      const txId = isDepositMax
         ? await dispatch.wallet.depositAll({to: values.to, feeRate})
         : await dispatch.wallet.deposit({to: values.to, amount: values.amount, feeRate});
       form.resetFields();
@@ -247,7 +247,7 @@ const Deposit: React.FC = () => {
                   {
                     validator: (_, value) => {
                       if (
-                        !isSendMax &&
+                        !isDepositMax &&
                         fromAccountBalance &&
                         value &&
                         BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
@@ -263,11 +263,11 @@ const Deposit: React.FC = () => {
                   <Input
                     value={values?.amount}
                     placeholder="Enter deposit amount"
-                    disabled={isSendMax}
+                    disabled={isDepositMax}
                     style={{backgroundColor: "var(--gray-light)"}}
                   />
                   <Button
-                    onClick={() => setIsSendMax(!isSendMax)}
+                    onClick={() => setIsDepositMax(!isDepositMax)}
                   >
                     Max
                   </Button>

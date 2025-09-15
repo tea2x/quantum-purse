@@ -11,12 +11,12 @@ import {
   Modal,
   Space
 } from "antd";
-import { QuestionCircleOutlined, ScanOutlined } from "@ant-design/icons";
+import { QuestionCircleOutlined, ScanOutlined, UserSwitchOutlined, SettingFilled } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../components";
 import { Dispatch, RootState } from "../../store";
-import { CKB_DECIMALS, CKB_UNIT } from "../../utils/constants";
+import { CKB_DECIMALS } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./Send.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
@@ -39,6 +39,9 @@ const Send: React.FC = () => {
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
   const [scannerUp, setScannerUp] = useState(false);
+  const [isDepositToMyAccount, setIsDepositToMyAccount] = useState(false);
+  const [isDepositMax, setIsDepositMax] = useState(false);
+  const [isCustomFee, setIsCustomFee] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -91,13 +94,13 @@ const Send: React.FC = () => {
 
   // Fill amount when send max
   useEffect(() => {
-    if (values?.isMax && fromAccountBalance) {
+    if (isDepositMax && fromAccountBalance) {
       const maxAmount = Number(fromAccountBalance) / CKB_DECIMALS;
       form.setFieldsValue({ amount: maxAmount });
-    } else if (values?.isMax === false) {
+    } else if (isDepositMax === false) {
       form.setFieldsValue({ amount: undefined });
     }
-  }, [values?.isMax, fromAccountBalance]);
+  }, [isDepositMax, fromAccountBalance]);
 
   // Catch fee rate changes from FeeRateSelect component
   const handleFeeRateChange = (feeRate: number) => {
@@ -131,7 +134,7 @@ const Send: React.FC = () => {
 
   const handleSend = async () => {
     try {
-      const txId = values?.isMax
+      const txId = isDepositMax
         ? await dispatch.wallet.sendAll({ to: values.to, feeRate })
         : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
       form.resetFields();
@@ -170,22 +173,11 @@ const Send: React.FC = () => {
             name="to"
             className={cx("field-to", values?.isSendToMyAccount && "select-my-account")}
             label={
-              <div className="label-container">
-                <div className="label-with-icon">
-                  Send To
-                  <Tooltip title="You can send to any address, or send to yourself by selecting an account from your wallet.">
-                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </div>
-                <div className="switch-container">
-                  My Wallet
-                  <Form.Item name="isSendToMyAccount" noStyle>
-                    <Switch
-                      size="small"
-                      onChange={() => { form.setFieldsValue({ to: undefined }) }}
-                    />
-                  </Form.Item>
-                </div>
+              <div className="label-with-icon">
+                Send To
+                <Tooltip title="You can send to any address, or send to yourself by selecting an account from your wallet.">
+                  <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                </Tooltip>
               </div>
             }
             rules={[
@@ -203,7 +195,7 @@ const Send: React.FC = () => {
               },
             ]}
           >
-            {!values?.isSendToMyAccount ? (
+            {!isDepositToMyAccount ? (
               <Space.Compact style={{ display: "flex" }}>
                 <Input
                   value={values?.to}
@@ -214,12 +206,29 @@ const Send: React.FC = () => {
                   onClick={() => setScannerUp(true)}
                   icon={<ScanOutlined />}
                 />
+                <Button
+                  onClick={() => {
+                    setIsDepositToMyAccount(!isDepositToMyAccount);
+                    form.setFieldsValue({ to: undefined }); 
+                  }}
+                  icon={<UserSwitchOutlined />}
+                />
               </Space.Compact>
             ) : (
-              <AccountSelect
-                accounts={wallet.accounts}
-                placeholder="Please select an account from your wallet"
-              />
+              <Space.Compact style={{ display: "Flex" }}>
+                <AccountSelect
+                  accounts={wallet.accounts}
+                  placeholder="Please select an account from your wallet"
+                />
+                <Button
+                  onClick={() => {
+                    setIsDepositToMyAccount(!isDepositToMyAccount);
+                    form.setFieldsValue({ to: undefined }); 
+                  }}
+                  icon={<UserSwitchOutlined />}
+                />
+              </Space.Compact>
+
             )}
           </Form.Item>
 
@@ -229,16 +238,8 @@ const Send: React.FC = () => {
                 className={cx("field-to")}
                 name="amount"
                 label={
-                  <div className="label-container">
-                    <div className="label-with-icon">
-                      Amount
-                    </div>
-                    <div className="switch-container">
-                      Maximum
-                      <Form.Item name="isMax" noStyle>
-                        <Switch size="small"/>
-                      </Form.Item>
-                    </div>
+                  <div className="label-with-icon">
+                    Amount
                   </div>
                 }
                 rules={[
@@ -246,7 +247,7 @@ const Send: React.FC = () => {
                   {
                     validator: (_, value) => {
                       if (
-                        !values?.isMax &&
+                        !isDepositMax &&
                         fromAccountBalance &&
                         value &&
                         BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
@@ -258,11 +259,19 @@ const Send: React.FC = () => {
                   },
                 ]}
               >
-                <Input
-                  placeholder="Enter transfer amount"
-                  className={styles.inputField}
-                  disabled={values?.isMax}
-                />
+                <Space.Compact style={{ display: "Flex" }}>
+                  <Input
+                    value={values?.amount}
+                    placeholder="Enter transfer amount"
+                    className={styles.inputField}
+                    disabled={isDepositMax}
+                  />
+                  <Button
+                    onClick={() => setIsDepositMax(!isDepositMax)}
+                  >
+                    Max
+                  </Button>
+                </Space.Compact>
               </Form.Item>
             </Col>
             <Col xs={24} sm={10}>
@@ -270,23 +279,23 @@ const Send: React.FC = () => {
                 name="feeRate"
                 className="field-to"
                 label={
-                  <div className="label-container">
-                    <div className="label-with-icon">
-                      Fee Rate
-                      <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
-                        <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                      </Tooltip>
-                    </div>
-                    <div className="switch-container">
-                      Custom
-                      <Form.Item name="isCustomFeeRate" noStyle>
-                        <Switch size="small"/>
-                      </Form.Item>
-                    </div>
+                  <div className="label-with-icon">
+                    Fee Rate
+                    <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
+                      <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                    </Tooltip>
                   </div>
                 }
               >
-                <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={values?.isCustomFeeRate}/>
+                <Space.Compact style={{ display: "Flex" }}>
+                  <div style={{ flex: 1 }}>
+                    <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={isCustomFee} />
+                  </div>
+                  <Button 
+                    onClick={() => setIsCustomFee(!isCustomFee)}
+                    icon={<SettingFilled />}
+                  />
+                </Space.Compact>
               </Form.Item>
             </Col>
           </Row>
