@@ -4,7 +4,6 @@ import {
   Form,
   Input,
   notification,
-  Switch,
   Tooltip,
   Row,
   Col,
@@ -39,8 +38,8 @@ const Send: React.FC = () => {
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
   const [scannerUp, setScannerUp] = useState(false);
-  const [isDepositToMyAccount, setIsDepositToMyAccount] = useState(false);
-  const [isDepositMax, setIsDepositMax] = useState(false);
+  const [isSendToMyAccount, setIsSendToMyAccount] = useState(false);
+  const [isSendMax, setIsSendMax] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
@@ -94,13 +93,13 @@ const Send: React.FC = () => {
 
   // Fill amount when send max
   useEffect(() => {
-    if (isDepositMax && fromAccountBalance) {
+    if (isSendMax && fromAccountBalance) {
       const maxAmount = Number(fromAccountBalance) / CKB_DECIMALS;
       form.setFieldsValue({ amount: maxAmount });
-    } else if (isDepositMax === false) {
+    } else if (isSendMax === false) {
       form.setFieldsValue({ amount: undefined });
     }
-  }, [isDepositMax, fromAccountBalance]);
+  }, [isSendMax, fromAccountBalance]);
 
   // Catch fee rate changes from FeeRateSelect component
   const handleFeeRateChange = (feeRate: number) => {
@@ -134,7 +133,7 @@ const Send: React.FC = () => {
 
   const handleSend = async () => {
     try {
-      const txId = isDepositMax
+      const txId = isSendMax
         ? await dispatch.wallet.sendAll({ to: values.to, feeRate })
         : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
       form.resetFields();
@@ -195,7 +194,7 @@ const Send: React.FC = () => {
               },
             ]}
           >
-            {!isDepositToMyAccount ? (
+            {!isSendToMyAccount ? (
               <Space.Compact style={{ display: "flex" }}>
                 <Input
                   value={values?.to}
@@ -208,7 +207,7 @@ const Send: React.FC = () => {
                 />
                 <Button
                   onClick={() => {
-                    setIsDepositToMyAccount(!isDepositToMyAccount);
+                    setIsSendToMyAccount(!isSendToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
                   icon={<UserSwitchOutlined />}
@@ -222,7 +221,7 @@ const Send: React.FC = () => {
                 />
                 <Button
                   onClick={() => {
-                    setIsDepositToMyAccount(!isDepositToMyAccount);
+                    setIsSendToMyAccount(!isSendToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
                   icon={<UserSwitchOutlined />}
@@ -247,7 +246,7 @@ const Send: React.FC = () => {
                   {
                     validator: (_, value) => {
                       if (
-                        !isDepositMax &&
+                        !isSendMax &&
                         fromAccountBalance &&
                         value &&
                         BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
@@ -264,10 +263,11 @@ const Send: React.FC = () => {
                     value={values?.amount}
                     placeholder="Enter transfer amount"
                     className={styles.inputField}
-                    disabled={isDepositMax}
+                    disabled={isSendMax}
+                    style={{backgroundColor: "var(--gray-light)"}}
                   />
                   <Button
-                    onClick={() => setIsDepositMax(!isDepositMax)}
+                    onClick={() => setIsSendMax(!isSendMax)}
                   >
                     Max
                   </Button>
