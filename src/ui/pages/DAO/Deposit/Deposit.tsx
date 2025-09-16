@@ -219,6 +219,7 @@ const Deposit: React.FC = () => {
                 <AccountSelect
                   accounts={wallet.accounts}
                   placeholder="Please select an account from your wallet"
+                  onAccountChange={(val) => form.setFieldsValue({ to: val })}
                 />
                 <Button
                   onClick={() => {

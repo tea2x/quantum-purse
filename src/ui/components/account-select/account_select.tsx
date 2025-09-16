@@ -13,7 +13,7 @@ export interface AccountOption {
 
 interface CustomSelectProps {
   accounts: AccountOption[];
-  onAccountChange?: (value: string, option: AccountOption) => void;
+  onAccountChange?: (value: string, option?: AccountOption) => void;
   debounceTime?: number;
   searchFields?: string[];
 }
