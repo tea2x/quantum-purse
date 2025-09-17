@@ -1,3 +1,19 @@
+@font-face {
+  font-family: 'Sora';
+  src: url('./assets/fonts/Sora/static/Sora-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sora';
+  src: url('./assets/fonts/Sora/static/Sora-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 html,
 body,
 div,
@@ -129,7 +145,7 @@ table {
 
 html {
   font-size: 62.5%;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Sora', sans-serif;
   color: var(--black);
 }
 
@@ -159,7 +175,7 @@ body {
 .panel {
   border-radius: 1.5rem;
   overflow: hidden;
-  font-family: "Quantico", sans-serif;
+  font-family: 'Sora', sans-serif;
   flex: 1;
   padding: 2rem 2.4rem;
   @media (max-width: 768px) {
@@ -194,7 +210,7 @@ body {
 .ant-menu-submenu-title,
 .ant-input::placeholder,
 .ant-select-selection-placeholder {
-  font-family: "Quantico", sans-serif !important;
+  font-family: 'Sora', sans-serif !important;
 }
 
 /* Color overrides */
@@ -272,7 +288,7 @@ body {
 
 .ant-alert {
   background-color: rgba(245, 159, 11, 0.5);
-  font-family: "Quantico", sans-serif;
+  font-family: 'Sora', sans-serif;
 }
 
 .recharts-surface:focus {
