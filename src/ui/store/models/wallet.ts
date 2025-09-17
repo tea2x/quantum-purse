@@ -85,7 +85,7 @@ export const wallet = createModel<RootModel>()({
     setSRP(state: StateType, srp: string) {
       return { ...state, srp };
     },
-    resetSRP(state: StateType) {
+    resetSRP(state: StateType) { //todo improve
       return { ...state, srp: undefined };
     },
     reset() {
@@ -292,9 +292,6 @@ export const wallet = createModel<RootModel>()({
         await quantum.deleteWallet();
         await DB.removeItem(STORAGE_KEYS.CURRENT_ACCOUNT_POINTER);
         await DB.removeItem(STORAGE_KEYS.WALLET_STEP);
-        notification.info({
-          message: "Wallet ejected successfully"
-        });
         this.reset();
       } catch (error) {
         throw error;

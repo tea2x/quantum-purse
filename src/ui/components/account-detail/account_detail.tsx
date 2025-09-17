@@ -15,16 +15,6 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
     <div className={styles.detailContainer}>
       {/* <h2>{account.name}</h2> */}
 
-      <div className={styles.qrCodeContainer}>
-        {account.address && (
-          <QRCodeSVG
-            value={account.address}
-            size={225}
-            level="H" // Highest error correction level
-          />
-        )}
-      </div>
-
       <div className={styles.iconContainer}>
         <Explore.Account address={account.address!}>
           <Flex align="center" gap={8} className={styles.extraInfo}>
@@ -36,10 +26,19 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
         <Copy value={account.address!}>
           <Flex align="center" gap={8} className={styles.extraInfo}>
             <CopyOutlined />
-            {shortenAddress(account.address!, 4, 6)}
+            {shortenAddress(account.address!, 4, 4)}
           </Flex>
         </Copy>
-
+      </div>
+      
+      <div className={styles.qrCodeContainer}>
+        {account.address && (
+          <QRCodeSVG
+            value={account.address}
+            size={225}
+            level="H" // Highest error correction level
+          />
+        )}
       </div>
     </div>
   );

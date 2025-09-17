@@ -29,20 +29,6 @@
           width: 100%;
           font-size: small;
           font-weight: bold;
-          .label-container {
-            display: flex;
-            width: 100%;
-            align-items: center;
-            justify-content: space-between;
-            .label-with-icon {
-              align-items: left;
-            }
-            .switch-container {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            }
-          }
         }
       }
 
@@ -55,13 +41,6 @@
       }
     }
   }
-}
-
-.inputField {
-  height: 3rem;
-  background-color: var(--gray-light) !important;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .depositButton {

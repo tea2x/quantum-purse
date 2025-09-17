@@ -61,11 +61,14 @@
 }
 
 .updating {
-  animation: pulse 1.5s ease-out;
-  border-color: rgba(255, 255, 255, 0.5);
+  animation: pulse 1s infinite alternate;
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 10px rgb(255, 255, 255); }
-  100% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+  0% {
+    border: 0.5px solid rgba(255, 255, 255, 1);
+  }
+  100% {
+    border: 0.5px solid rgba(0, 0, 0, 0.1);
+  }
 }

@@ -275,3 +275,11 @@ body {
   background-color: rgba(245, 159, 11, 0.5);
   font-family: "Quantico", sans-serif;
 }
+
+.recharts-surface:focus {
+  outline: none !important;
+}
+
+.recharts-wrapper text {
+  pointer-events: none;
+}

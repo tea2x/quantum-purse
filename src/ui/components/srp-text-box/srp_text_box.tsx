@@ -54,9 +54,6 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   const onSubmit = async (values: { password: string }) => {
     try {
       await exportSrpHandler(values.password);
-      notification.success({
-        message: "SRP revealed successfully",
-      });
     } catch (error) {
       notification.error({
         message: "Failed to reveal SRP",
@@ -68,7 +65,6 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   const handleReset = async () => {
     await dispatch.wallet.ejectWallet();
     navigate(ROUTES.WELCOME);
-    notification.info({ message: "Wallet creation process reset" });
   };
 
   useEffect(() => {

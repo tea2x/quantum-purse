@@ -68,12 +68,9 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
       dispatch.wallet.resetSRP();
-      notification.success({
-        message: "Create wallet successfully!",
-      });
     } catch (error) {
       notification.error({
-        message: "Wallet creation failed!",
+        message: "Wallet initialization failed!",
         description: formatError(error),
       });
     }
@@ -165,8 +162,8 @@ export const StepCreatePassword: React.FC = () => {
           await DB.setItem(STORAGE_KEYS.WALLET_STEP, WALLET_STEP.SRP.toString());
         });
     } catch (error) {
-      notification.info({
-        message: "Wallet creation failed",
+      notification.error({
+        message: "Wallet creation failed!",
         description: formatError(error),
       });
     }

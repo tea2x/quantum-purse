@@ -31,6 +31,10 @@ const RequestWithdraw: React.FC = () => {
     };
   }>({});
   const authenticationRef = useRef<AuthenticationRef>(null);
+  const { requestWithdraw: loadingRequest } = useSelector(
+    (state: RootState) => state.loading.effects.wallet
+  );
+
   const depositCells = daoCells.filter(cell => cell.outputData === "0x0000000000000000");
   const toError = form.getFieldError('to');
   const isToValid = values?.to && toError.length === 0;
@@ -297,6 +301,7 @@ const RequestWithdraw: React.FC = () => {
                           </span>
                           <Button
                             type="primary"
+                            loading={loadingRequest}
                             onClick={() => handleWithdrawRequest(cell)}
                             disabled={!isToValid}
                           >

@@ -4,21 +4,23 @@ import {
   Form,
   Input,
   notification,
-  Switch,
   Tooltip,
   Row,
-  Col
+  Col,
+  Modal,
+  Space
 } from "antd";
-import { QuestionCircleOutlined } from "@ant-design/icons";
+import { QuestionCircleOutlined, ScanOutlined, UserSwitchOutlined, SettingFilled } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../components";
 import { Dispatch, RootState } from "../../store";
-import { CKB_DECIMALS, CKB_UNIT } from "../../utils/constants";
+import { CKB_DECIMALS } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./Send.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
 import { Address } from "@ckb-ccc/core";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 const Send: React.FC = () => {
   const [form] = Form.useForm();
@@ -35,6 +37,10 @@ const Send: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
+  const [scannerUp, setScannerUp] = useState(false);
+  const [isSendToMyAccount, setIsSendToMyAccount] = useState(false);
+  const [isSendMax, setIsSendMax] = useState(false);
+  const [isCustomFee, setIsCustomFee] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -87,22 +93,48 @@ const Send: React.FC = () => {
 
   // Fill amount when send max
   useEffect(() => {
-    if (values?.isMax && fromAccountBalance) {
+    if (isSendMax && fromAccountBalance) {
       const maxAmount = Number(fromAccountBalance) / CKB_DECIMALS;
       form.setFieldsValue({ amount: maxAmount });
-    } else if (values?.isMax === false) {
+    } else if (isSendMax === false) {
       form.setFieldsValue({ amount: undefined });
     }
-  }, [values?.isMax, fromAccountBalance]);
+  }, [isSendMax, fromAccountBalance]);
 
   // Catch fee rate changes from FeeRateSelect component
   const handleFeeRateChange = (feeRate: number) => {
     setFeeRate(feeRate);
   };
 
+  useEffect(() => {
+    if (!scannerUp) return;
+
+    const scanner = new Html5QrcodeScanner(
+      "reader",
+      { fps: 10, qrbox: 250 },
+      false
+    );
+
+    scanner.render(
+      (decodedAddress) => {
+        form.setFieldsValue({ to: decodedAddress });
+        form.validateFields(["to"]);
+        setScannerUp(false);
+        scanner.clear();
+      },
+      (errorMessage) => {
+        console.log(errorMessage);
+      }
+    );
+
+    return () => {
+      scanner.clear().catch(() => {});
+    };
+  }, [scannerUp]);
+
   const handleSend = async () => {
     try {
-      const txId = values?.isMax
+      const txId = isSendMax
         ? await dispatch.wallet.sendAll({ to: values.to, feeRate })
         : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
       form.resetFields();
@@ -141,19 +173,11 @@ const Send: React.FC = () => {
             name="to"
             className={cx("field-to", values?.isSendToMyAccount && "select-my-account")}
             label={
-              <div className="label-container">
-                <div className="label-with-icon">
-                  Send To
-                  <Tooltip title="You can send to any address, or send to yourself by selecting an account from your wallet.">
-                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </div>
-                <div className="switch-container">
-                  My Wallet
-                  <Form.Item name="isSendToMyAccount" noStyle>
-                    <Switch size="small"/>
-                  </Form.Item>
-                </div>
+              <div className="label-with-icon">
+                Send To
+                <Tooltip title="You can send to any address, or send to yourself by selecting an account from your wallet.">
+                  <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                </Tooltip>
               </div>
             }
             rules={[
@@ -164,23 +188,48 @@ const Send: React.FC = () => {
                   try {
                     await Address.fromString(value, quantumPurse.client);
                     return Promise.resolve();
-                  } catch (error) {
+                  } catch {
                     return Promise.reject("Invalid address");
                   }
                 },
               },
             ]}
           >
-            {!values?.isSendToMyAccount ? (
-              <Input
-                placeholder="Input the destination address"
-                className={styles.inputField}
-              />
+            {!isSendToMyAccount ? (
+              <Space.Compact style={{ display: "flex" }}>
+                <Input
+                  value={values?.to}
+                  placeholder="Input or scan the destination address"
+                  style={{ flex: 1, backgroundColor: "var(--gray-light)" }}
+                />
+                <Button
+                  onClick={() => setScannerUp(true)}
+                  icon={<ScanOutlined />}
+                />
+                <Button
+                  onClick={() => {
+                    setIsSendToMyAccount(!isSendToMyAccount);
+                    form.setFieldsValue({ to: undefined }); 
+                  }}
+                  icon={<UserSwitchOutlined />}
+                />
+              </Space.Compact>
             ) : (
-              <AccountSelect
-                accounts={wallet.accounts}
-                placeholder="Please select an account from your wallet"
-              />
+              <Space.Compact style={{ display: "Flex" }}>
+                <AccountSelect
+                  accounts={wallet.accounts}
+                  placeholder="Please select an account from your wallet"
+                  onAccountChange={(val) => form.setFieldsValue({ to: val })}
+                />
+                <Button
+                  onClick={() => {
+                    setIsSendToMyAccount(!isSendToMyAccount);
+                    form.setFieldsValue({ to: undefined }); 
+                  }}
+                  icon={<UserSwitchOutlined />}
+                />
+              </Space.Compact>
+
             )}
           </Form.Item>
 
@@ -190,16 +239,8 @@ const Send: React.FC = () => {
                 className={cx("field-to")}
                 name="amount"
                 label={
-                  <div className="label-container">
-                    <div className="label-with-icon">
-                      Amount
-                    </div>
-                    <div className="switch-container">
-                      Maximum
-                      <Form.Item name="isMax" noStyle>
-                        <Switch size="small"/>
-                      </Form.Item>
-                    </div>
+                  <div className="label-with-icon">
+                    Amount
                   </div>
                 }
                 rules={[
@@ -207,7 +248,7 @@ const Send: React.FC = () => {
                   {
                     validator: (_, value) => {
                       if (
-                        !values?.isMax &&
+                        !isSendMax &&
                         fromAccountBalance &&
                         value &&
                         BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
@@ -219,11 +260,20 @@ const Send: React.FC = () => {
                   },
                 ]}
               >
-                <Input
-                  placeholder="Enter transfer amount"
-                  className={styles.inputField}
-                  disabled={values?.isMax}
-                />
+                <Space.Compact style={{ display: "Flex" }}>
+                  <Input
+                    value={values?.amount}
+                    placeholder="Enter transfer amount"
+                    className={styles.inputField}
+                    disabled={isSendMax}
+                    style={{backgroundColor: "var(--gray-light)"}}
+                  />
+                  <Button
+                    onClick={() => setIsSendMax(!isSendMax)}
+                  >
+                    Max
+                  </Button>
+                </Space.Compact>
               </Form.Item>
             </Col>
             <Col xs={24} sm={10}>
@@ -231,23 +281,23 @@ const Send: React.FC = () => {
                 name="feeRate"
                 className="field-to"
                 label={
-                  <div className="label-container">
-                    <div className="label-with-icon">
-                      Fee Rate
-                      <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
-                        <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                      </Tooltip>
-                    </div>
-                    <div className="switch-container">
-                      Custom
-                      <Form.Item name="isCustomFeeRate" noStyle>
-                        <Switch size="small"/>
-                      </Form.Item>
-                    </div>
+                  <div className="label-with-icon">
+                    Fee Rate
+                    <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
+                      <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                    </Tooltip>
                   </div>
                 }
               >
-                <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={values?.isCustomFeeRate}/>
+                <Space.Compact style={{ display: "Flex" }}>
+                  <div style={{ flex: 1 }}>
+                    <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={isCustomFee} />
+                  </div>
+                  <Button 
+                    onClick={() => setIsCustomFee(!isCustomFee)}
+                    icon={<SettingFilled />}
+                  />
+                </Space.Compact>
               </Form.Item>
             </Col>
           </Row>
@@ -277,6 +327,16 @@ const Send: React.FC = () => {
             }
           }}
         />
+
+        <Modal
+          open={scannerUp}
+          onCancel={() => setScannerUp(false)}
+          footer={null}
+          title="Scan QR Code"
+        >
+          <div id="reader" style={{ width: "100%" }} />
+        </Modal>
+
       </div>
     </section>
   );
