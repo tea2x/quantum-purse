@@ -28,15 +28,15 @@
     ],
     "mac": {
       "target": "dmg",
-      "icon": "src/ui/components/assets/logo.icns"
+      "icon": "src/assets/logo.icns"
     },
     "win": {
       "target": "nsis",
-      "icon": "src/ui/components/assets/logo.ico"
+      "icon": "src/assets/logo.ico"
     },
     "linux": {
       "target": "AppImage",
-      "icon": "src/ui/components/assets/logo.png"
+      "icon": "src/assets/logo.png"
     }
   },
   "author": "Tea2x",

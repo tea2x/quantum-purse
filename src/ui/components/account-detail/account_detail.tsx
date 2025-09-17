@@ -19,7 +19,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
     }
 
     try {
-      message.info("Requesting for 10_000 test CKBs ...");
+      message.info("Requesting for 10000 test CKB ...");
       const res = await fetch("https://ckb-faucet-proxy.vercel.app/api/claim", {
         method: "POST",
         headers: {
