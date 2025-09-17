@@ -11,6 +11,7 @@
   width: 100%;
   max-width: 128rem;
   margin: 0 auto 1rem auto;
+  padding-left: 0.5rem;
 }
 
 .withOptionalWarningSign {
@@ -40,6 +41,9 @@
   border-radius: 1.5rem;
   padding: 1rem 2rem;
   border: 0.5px solid rgba(255, 255, 255, 0.1);
+  @media (max-width: 640px) {
+    padding: 0.5rem 1rem;
+  }
 }
 
 .statusDetails {
@@ -56,7 +60,15 @@
   border-color: rgba(255, 255, 255, 0.5);
 }
 
+.pulse {
+  animation: pulse 1s infinite alternate;
+}
+
 @keyframes pulse {
-  0% { box-shadow: 0 0 10px rgb(255, 255, 255); }
-  100% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+  0% {
+    border: 0.5px solid rgba(255, 255, 255, 1);
+  }
+  100% {
+    border: 0.5px solid rgba(0, 0, 0, 0.1);
+  }
 }
