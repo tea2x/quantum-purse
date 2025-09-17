@@ -215,7 +215,12 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
                         <span>{syncStatus.nodeId}</span>
                       )}
                     </div>
-                    Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}
+                    
+                    {(syncStatus.connections != 0) ? (
+                      <span>Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}</span>
+                    ) : (
+                      <span>Connecting .....</span>
+                    )}
                   </>
                 ) : (
                   ""

@@ -118,6 +118,7 @@ const Send: React.FC = () => {
     scanner.render(
       (decodedAddress) => {
         form.setFieldsValue({ to: decodedAddress });
+        form.validateFields(["to"]);
         setScannerUp(false);
         scanner.clear();
       },
