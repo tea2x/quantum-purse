@@ -56,11 +56,6 @@
 }
 
 .updating {
-  animation: pulse 1s ease-out;
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.pulse {
   animation: pulse 1s infinite alternate;
 }
 
