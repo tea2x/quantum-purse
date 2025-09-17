@@ -6,19 +6,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.2rem;
-  height: 12.5rem;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(12px);
+  background: transparent;
 
-  border-radius: 0.5rem;
   width: 100%;
   max-width: 128rem;
-  margin: 0 auto 0.7rem auto;
-  box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.25);
-  @media (max-width: 768px) {
-    margin: 2px auto;
-  }
+  margin: 0 auto 1rem auto;
 }
 
 .withOptionalWarningSign {
@@ -34,21 +26,20 @@
   border-radius: 0.4rem;
   transition: all 0.3s ease;
   cursor: pointer;
-  // background-color: rgba(123, 134, 152, 0.1);
   &:hover {
     color: rgb(136, 98, 2);
   }
 }
 
 .statusSection {
+  height: 100%;
   display: flex;
   align-items: center;
   background: rgba(36, 38, 37, 0.2);
   backdrop-filter: blur(12px);
-  border-radius: 1rem;
-  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
+  padding: 1rem 2rem;
   border: 0.5px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .statusDetails {
@@ -61,7 +52,7 @@
 }
 
 .updating {
-  animation: pulse 1.5s ease-out;
+  animation: pulse 1s ease-out;
   border-color: rgba(255, 255, 255, 0.5);
 }
 

@@ -58,7 +58,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   useEffect(() => {
     if (balance !== undefined && locked !== undefined) {
       setIsUpdatingBalance(true);
-      const timer = setTimeout(() => setIsUpdatingBalance(false), 1500);
+      const timer = setTimeout(() => setIsUpdatingBalance(false), 1000);
       return () => clearTimeout(timer);
     }
   }, [balance, locked]);
@@ -66,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   useEffect(() => {
     if (syncStatus) {
       setIsUpdatingBlockInfo(true);
-      const timer = setTimeout(() => setIsUpdatingBlockInfo(false), 1500);
+      const timer = setTimeout(() => setIsUpdatingBlockInfo(false), 1000);
       return () => clearTimeout(timer);
     }
   }, [syncStatus.syncedStatus]);
@@ -74,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   useEffect(() => {
     if (syncStatus) {
       setIsUpdatingNodeInfo(true);
-      const timer = setTimeout(() => setIsUpdatingNodeInfo(false), 1500);
+      const timer = setTimeout(() => setIsUpdatingNodeInfo(false), 1000);
       return () => clearTimeout(timer);
     }
   }, [syncStatus.connections]);
@@ -92,207 +92,207 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
 
   return (
     <div>
-    <header className={cx(styles.header, className)} {...rest}>
-      <>
-        <div className={cx(styles.statusSection, isUpdatingBalance && styles.updating)}>
-          <Tooltip
-            title={
-              !screens.md ? (
-                <>
-                  {wallet.current.name}
-                  <br />
-                  Available: {formatBalance(balance as string)}
-                  <br />
-                  Deposited: {formatBalance(locked as string)}
-                </>
-              ) : (
-                ""
-              )
-            }
-          >
-            <div>
-              <PieChart width={pieChartSize} height={pieChartSize}>
-                <Pie
-                  data={balanceData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={innerRadius}
-                  outerRadius={outerRadius}
-                  startAngle={90}
-                  endAngle={-270}
-                  dataKey="value"
-                  animationDuration={500}
-                  animationEasing="ease-in-out"
-                  animationBegin={10}
-                  stroke="none"
-                >
-                  <Cell fill="#00B27A" />
-                  <Cell fill="#444" />
-                  <Label
-                    value="CKB"
-                    position="center"
-                    fill="var(--gray-01)"
-                    style={labelStyle}
-                  />
-                </Pie>
-              </PieChart>
-            </div>
-          </Tooltip>
-          {screens.md && (
-            <div className={styles.statusDetails}>
-              <span>{wallet.current.name}</span>
-              <span>Available: {formatBalance(balance as string)}</span>
-              <span>Deposited: {formatBalance(locked as string)}</span>
-            </div>
-          )}
-        </div>
-
-        <div className={cx(styles.statusSection, isUpdatingBlocks && styles.updating)}>
-          <Tooltip
-            title={
-              !screens.md ? (
-                <>
-                  Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
-                  <br />
-                  Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()}
-                  <br />
-                  Start: {syncStatus && syncStatus.startBlock.toLocaleString()}
-                </>
-              ) : (
-                ""
-              )
-            }
-          >
-            <div>
-              <PieChart width={pieChartSize} height={pieChartSize}>
-                <Pie
-                  data={syncData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={innerRadius}
-                  outerRadius={outerRadius}
-                  startAngle={90}
-                  endAngle={-270}
-                  dataKey="value"
-                  animationDuration={2000}
-                  animationEasing="ease-in-out"
-                  animationBegin={20}
-                  stroke="none"
-                >
-                  <Cell fill="#2196F3" />
-                  <Cell fill="#444" />
-                  <Label
-                    value={`${Math.floor(syncStatus.syncedStatus * 10) / 10}%`}
-                    position="center"
-                    fill="var(--gray-01)"
-                    style={labelStyle}
-                  />
-                </Pie>
-              </PieChart>
-            </div>
-          </Tooltip>
-          {screens.md && (
-            <div className={styles.statusDetails}>
-              <span>Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}</span>
-              <span>Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()}</span>
-              <span>Start: {syncStatus && syncStatus.startBlock.toLocaleString()}</span>
-            </div>
-          )}
-        </div>
-
-        <div className={cx(styles.statusSection, isUpdatingPeers && styles.updating)}>
-          <Tooltip
-            title={
-              !screens.md ? (
-                <>
-                  <div>
-                    Id: {" "}
-                    {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
-                      <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
-                        <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 3, 5)}</span>
-                      </Copy>
-                    ) : (
-                      <span>{syncStatus.nodeId}</span>
-                    )}
-                  </div>
-                  Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}
-                </>
-              ) : (
-                ""
-              )
-            }
-          >
-            <div>
-              <PieChart width={pieChartSize} height={pieChartSize}>
-                <Pie
-                  data={peersData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={innerRadius}
-                  outerRadius={outerRadius}
-                  startAngle={90}
-                  endAngle={-270}
-                  dataKey="value"
-                  animationDuration={500}
-                  animationEasing="ease-in-out"
-                  animationBegin={20}
-                  stroke="none"
-                >
-                  <Cell fill="#f9652f" />
-                  <Cell fill="#444" />
-                  <Label
-                    value="P2P"
-                    position="center"
-                    fill="var(--gray-01)"
-                    style={labelStyle}
-                  />
-                </Pie>
-              </PieChart>
-            </div>
-          </Tooltip>
-          {screens.md && (
-            <div className={styles.statusDetails}>
-              {QuantumPurse.getInstance().client.addressPrefix === "ckb" ? "Meepo Mainnet" : "Meepo Testnet"}
-
-              <div>
-                Id: {" "}
-                {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
-                  <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
-                    <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 3, 5)}</span>
-                  </Copy>
+      <header className={cx(styles.header, className)} {...rest}>
+        <>
+          <div className={cx(styles.statusSection, isUpdatingBalance && styles.updating)}>
+            <Tooltip
+              title={
+                !screens.md ? (
+                  <>
+                    {wallet.current.name}
+                    <br />
+                    Available: {formatBalance(balance as string)}
+                    <br />
+                    Deposited: {formatBalance(locked as string)}
+                  </>
                 ) : (
-                  <span>{syncStatus.nodeId}</span>
-                )}
+                  ""
+                )
+              }
+            >
+              <div>
+                <PieChart width={pieChartSize} height={pieChartSize}>
+                  <Pie
+                    data={balanceData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={innerRadius}
+                    outerRadius={outerRadius}
+                    startAngle={90}
+                    endAngle={-270}
+                    dataKey="value"
+                    animationDuration={500}
+                    animationEasing="ease-in-out"
+                    animationBegin={10}
+                    stroke="none"
+                  >
+                    <Cell fill="rgba(115, 232, 243, 1)" />
+                    <Cell fill="rgba(19, 53, 56, 1)" />
+                    <Label
+                      value="CKB"
+                      position="center"
+                      fill="var(--gray-01)"
+                      style={labelStyle}
+                    />
+                  </Pie>
+                </PieChart>
               </div>
+            </Tooltip>
+            {screens.md && (
+              <div className={styles.statusDetails}>
+                <span>{wallet.current.name}</span>
+                <span>Available: {formatBalance(balance as string)}</span>
+                <span>Deposited: {formatBalance(locked as string)}</span>
+              </div>
+            )}
+          </div>
 
-              {(syncStatus.connections != 0) ? (
-                <span>Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}</span>
-              ) : (
-                <span>Connecting .....</span>
-              )}
-              
-            </div>
-          )}
-        </div>
-      </>
+          <div className={cx(styles.statusSection, isUpdatingBlocks && styles.updating)}>
+            <Tooltip
+              title={
+                !screens.md ? (
+                  <>
+                    Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}
+                    <br />
+                    Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()}
+                    <br />
+                    Start: {syncStatus && syncStatus.startBlock.toLocaleString()}
+                  </>
+                ) : (
+                  ""
+                )
+              }
+            >
+              <div>
+                <PieChart width={pieChartSize} height={pieChartSize}>
+                  <Pie
+                    data={syncData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={innerRadius}
+                    outerRadius={outerRadius}
+                    startAngle={90}
+                    endAngle={-270}
+                    dataKey="value"
+                    animationDuration={2000}
+                    animationEasing="ease-in-out"
+                    animationBegin={20}
+                    stroke="none"
+                  >
+                    <Cell fill="rgba(129, 29, 245, 1)" />
+                    <Cell fill="rgba(63, 39, 89, 1)" />
+                    <Label
+                      value={`${Math.floor(syncStatus.syncedStatus * 10) / 10}%`}
+                      position="center"
+                      fill="var(--gray-01)"
+                      style={labelStyle}
+                    />
+                  </Pie>
+                </PieChart>
+              </div>
+            </Tooltip>
+            {screens.md && (
+              <div className={styles.statusDetails}>
+                <span>Tip: {syncStatus && syncStatus.tipBlock.toLocaleString()}</span>
+                <span>Synced: {syncStatus && syncStatus.syncedBlock.toLocaleString()}</span>
+                <span>Start: {syncStatus && syncStatus.startBlock.toLocaleString()}</span>
+              </div>
+            )}
+          </div>
 
-      {!screens.md && isWalletActive && (
-        <Button
-          type="text"
-          onClick={() => setShowSidebar(!showSidebar)}
-          icon={<Icon.Hamburger color="var(--white) !important" />}
+          <div className={cx(styles.statusSection, isUpdatingPeers && styles.updating)}>
+            <Tooltip
+              title={
+                !screens.md ? (
+                  <>
+                    <div>
+                      Id: {" "}
+                      {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
+                        <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
+                          <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 3, 5)}</span>
+                        </Copy>
+                      ) : (
+                        <span>{syncStatus.nodeId}</span>
+                      )}
+                    </div>
+                    Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}
+                  </>
+                ) : (
+                  ""
+                )
+              }
+            >
+              <div>
+                <PieChart width={pieChartSize} height={pieChartSize}>
+                  <Pie
+                    data={peersData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={innerRadius}
+                    outerRadius={outerRadius}
+                    startAngle={90}
+                    endAngle={-270}
+                    dataKey="value"
+                    animationDuration={500}
+                    animationEasing="ease-in-out"
+                    animationBegin={20}
+                    stroke="none"
+                  >
+                    <Cell fill="rgba(237, 108, 45, 1)" />
+                    <Cell fill="rgba(66, 30, 6, 1)" />
+                    <Label
+                      value="P2P"
+                      position="center"
+                      fill="var(--gray-01)"
+                      style={labelStyle}
+                    />
+                  </Pie>
+                </PieChart>
+              </div>
+            </Tooltip>
+            {screens.md && (
+              <div className={styles.statusDetails}>
+                {QuantumPurse.getInstance().client.addressPrefix === "ckb" ? "Meepo Mainnet" : "Meepo Testnet"}
+
+                <div>
+                  Id: {" "}
+                  {syncStatus.nodeId && syncStatus.nodeId !== "NULL" ? (
+                    <Copy value={syncStatus.nodeId} style={{ display: 'inline-block' }}>
+                      <span className={styles.copyable}>{shortenAddress(syncStatus.nodeId, 3, 5)}</span>
+                    </Copy>
+                  ) : (
+                    <span>{syncStatus.nodeId}</span>
+                  )}
+                </div>
+
+                {(syncStatus.connections != 0) ? (
+                  <span>Connected: {parseInt(syncStatus.connections.toString())} / {MAX_OUT_BOUNDS}</span>
+                ) : (
+                  <span>Connecting .....</span>
+                )}
+                
+              </div>
+            )}
+          </div>
+        </>
+
+        {!screens.md && isWalletActive && (
+          <Button
+            type="text"
+            onClick={() => setShowSidebar(!showSidebar)}
+            icon={<Icon.Hamburger color="var(--white) !important" />}
+          />
+        )}
+      </header>
+      {/* {showWarning && (
+        <Alert
+          closable
+          type="warning"
+          message="Only send CKB to this wallet and be sure to have your client sync finalized before making any transactions!"
+          onClose={() => setShowWarning(false)}
+          banner={true}
         />
-      )}
-    </header>
-    {/* {showWarning && (
-      <Alert
-        closable
-        type="warning"
-        message="Only send CKB to this wallet and be sure to have your client sync finalized before making any transactions!"
-        onClose={() => setShowWarning(false)}
-        banner={true}
-      />
-    )} */}
+      )} */}
     </div>
 
   );

@@ -1,6 +1,6 @@
 .layout {
   height: 100vh;
-  max-width: 100rem;
+  max-width: 90rem;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -17,7 +17,7 @@
       @media (min-width: 768px) {
         .container {
           display: flex;
-          gap: 0.7rem;
+          gap: 1rem;
         }
       }
     }

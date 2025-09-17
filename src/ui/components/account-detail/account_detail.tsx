@@ -44,34 +44,34 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
 
   return (
     <div className={styles.detailContainer}>
-      <div className={styles.qrCodeContainer}>
-        <div className={styles.iconContainer}>
-          <Explore.Account address={account.address!}>
-            <Flex align="center" gap={8} className={styles.extraInfo}>
-              <GlobalOutlined />
-            </Flex>
-          </Explore.Account>
+      <div className={styles.iconContainer}>
+        <Explore.Account address={account.address!}>
+          <Flex align="center" gap={8} className={styles.extraInfo}>
+            <GlobalOutlined />
+          </Flex>
+        </Explore.Account>
 
-          <Copy value={account.address!}>
-            <Flex align="center" gap={8} className={styles.extraInfo}>
-              <CopyOutlined />
-            </Flex>
-          </Copy>
+        <Copy value={account.address!}>
+          <Flex align="center" gap={8} className={styles.extraInfo}>
+            <CopyOutlined />
+          </Flex>
+        </Copy>
 
-          <div
-            onClick={async () => {
-              await claimCKB();
-            }}
-          >
-            <Flex align="center" gap={8} className={styles.extraInfo}>
-              <Icon.Faucet />
-            </Flex>
-          </div>
+        <div
+          onClick={async () => {
+            await claimCKB();
+          }}
+        >
+          <Flex align="center" gap={8} className={styles.extraInfo}>
+            <Icon.Faucet />
+          </Flex>
         </div>
+      </div>
+      <div className={styles.qrCodeContainer}>
         {account.address && (
           <QRCodeSVG
             value={account.address}
-            size={200}
+            size={235}
             level="H" // Highest error correction level
           />
         )}

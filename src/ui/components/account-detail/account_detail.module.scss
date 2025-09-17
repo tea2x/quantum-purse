@@ -11,10 +11,9 @@
 }
 
 .qrCodeContainer {
-  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  padding: 1rem 1.5rem 1rem 1.5rem;
   background-color: var(--white);
   border-radius: 0.5rem;
-  box-shadow: 0 0.2rem 0.8rem rgba(0, 0, 0, 0.08);
   svg {
     display: block;
   }
@@ -45,18 +44,15 @@
   color: var(--black);
   background-color: var(--gray-light);
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 
   &:hover {
     transform: scale(1.02);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
     color: var(--gray-01);
     background-color: var(--black);
   }
 
   &:active {
     transform: scale(0.99);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
   }
 }
 

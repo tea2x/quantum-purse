@@ -72,20 +72,6 @@ const Layout: React.FC<AuthLayoutProps> = ({
 
   return (
     <div className={cx(styles.layout, className)} {...rest}>
-      {(useLocation().pathname != "/welcome") && (
-        <p
-          style={{
-            fontFamily: "Quantico",
-            fontWeight: "bolder",
-            fontSize: "3rem",
-            marginBottom: "3.5rem",
-            color: "var(--gray-01)"
-          }}
-        >
-          Quantum Purse
-        </p>
-      )}
-      
       {!["/welcome", "/create-wallet", "/import-wallet"].includes(useLocation().pathname) && <Header />}
       <div className="container">{children}</div>
       {/* <Footer /> */}

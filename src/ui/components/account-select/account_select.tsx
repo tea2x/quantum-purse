@@ -3,6 +3,7 @@ import type { DefaultOptionType } from "antd/es/select";
 import { useAccountSearch } from "../../hooks/useAccountSearch";
 import { AccountItem } from "../../components/account-item/account_item";
 import { shortenAddress } from "../../utils/methods";
+import styles from "./account_select.module.scss";
 
 export interface AccountOption {
   address?: string | null;
@@ -86,6 +87,7 @@ const AccountSelect: React.FC<AccountSelectProps> = ({
       labelRender={labelRender}
       onChange={handleChange}
       // allowClear
+      className={styles.accountSelect}
       placeholder="Please select an account from your wallet"
       {...restProps}
     />
