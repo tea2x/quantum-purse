@@ -1,7 +1,7 @@
 .detailContainer {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0rem;
   align-items: center;
   padding: 2.4rem;
   background-color: transparent;
@@ -11,39 +11,49 @@
 }
 
 .qrCodeContainer {
-  padding: 1.6rem;
+  padding: 1rem 1.5rem 1rem 1.5rem;
   background-color: var(--white);
-  border-radius: 0.8rem;
-  box-shadow: 0 0.2rem 0.8rem rgba(0, 0, 0, 0.08);
-
+  border-radius: 0.5rem;
   svg {
     display: block;
-  }
-}
-
-.extraInfo {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: var(--gray-02);
-  transition: color 0.3s ease-out;
-  border: 0.5px solid rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 5px;
-
-  &:hover {
-    color: var(--teal-2);
-    background-color: rgba(255, 255, 255, 0.1);
   }
 }
 
 .iconContainer {
   display: flex;
   flex-direction: row;
-  // gap: 6px;
-  justify-content: space-between;
-  align-items: center;
+  gap: 0.2rem;
   width: 100%;
+  margin: 0.5rem 0 0.5rem 0;
+  > * {
+    flex: 1;
+    display: flex;
+  }
+}
+
+.extraInfo {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.45rem;
+  transition: all 0.3s ease-out;
+  padding: 5px;
+  border-radius: 0.5rem;
+  border: 0.5px solid rgba(0, 0, 0, 0.5);
+  color: var(--black);
+  background-color: var(--gray-light);
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.02);
+    color: var(--gray-01);
+    background-color: var(--black);
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
 }
 
 a {

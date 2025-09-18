@@ -1,3 +1,19 @@
+@font-face {
+  font-family: 'Sora';
+  src: url('./assets/fonts/Sora/static/Sora-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sora';
+  src: url('./assets/fonts/Sora/static/Sora-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 html,
 body,
 div,
@@ -129,14 +145,14 @@ table {
 
 html {
   font-size: 62.5%;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Sora', sans-serif;
   color: var(--black);
 }
 
 body {
   margin: 0;
   /* background-color: rgb(24, 24, 24); */
-  background-image: url('./ui/components/assets/background.jpg');
+  background-image: url('./assets/background.jpg');
   background-size: cover;
 }
 
@@ -159,7 +175,7 @@ body {
 .panel {
   border-radius: 0.5rem;
   overflow: hidden;
-  font-family: "Quantico", sans-serif;
+  font-family: 'Sora', sans-serif;
   box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.25);
   flex: 1;
   padding: 2rem 2.4rem;
@@ -195,7 +211,7 @@ body {
 .ant-menu-submenu-title,
 .ant-input::placeholder,
 .ant-select-selection-placeholder {
-  font-family: "Quantico", sans-serif !important;
+  font-family: 'Sora', sans-serif !important;
 }
 
 /* Color overrides */
@@ -273,7 +289,7 @@ body {
 
 .ant-alert {
   background-color: rgba(245, 159, 11, 0.5);
-  font-family: "Quantico", sans-serif;
+  font-family: 'Sora', sans-serif;
 }
 
 .recharts-surface:focus {

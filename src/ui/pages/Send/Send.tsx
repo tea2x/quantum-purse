@@ -10,7 +10,7 @@ import {
   Modal,
   Space
 } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, UserSwitchOutlined, SettingFilled } from "@ant-design/icons";
+import { QuestionCircleOutlined, ScanOutlined, OrderedListOutlined, SettingFilled } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../components";
@@ -211,7 +211,7 @@ const Send: React.FC = () => {
                     setIsSendToMyAccount(!isSendToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<UserSwitchOutlined />}
+                  icon={<OrderedListOutlined />}
                 />
               </Space.Compact>
             ) : (
@@ -226,7 +226,7 @@ const Send: React.FC = () => {
                     setIsSendToMyAccount(!isSendToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<UserSwitchOutlined />}
+                  icon={<OrderedListOutlined />}
                 />
               </Space.Compact>
 

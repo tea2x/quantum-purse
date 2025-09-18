@@ -16,6 +16,7 @@ import RequestWithdraw from "./svg/request-withdraw.svg?react";
 import Withdraw from "./svg/withdraw.svg?react";
 import Eject from "./svg/eject.svg?react";
 import Reveal from "./svg/reveal.svg?react";
+import Faucet from "./svg/faucet.svg?react";
 
 const Icon = {
   Logo,
@@ -36,6 +37,7 @@ const Icon = {
   Withdraw,
   Eject,
   Reveal,
+  Faucet,
 };
 
 export default Icon;

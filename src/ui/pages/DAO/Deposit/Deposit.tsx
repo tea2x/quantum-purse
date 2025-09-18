@@ -10,7 +10,7 @@ import {
   Modal,
   Space
 } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, UserSwitchOutlined, SettingFilled } from "@ant-design/icons";
+import { QuestionCircleOutlined, ScanOutlined, OrderedListOutlined, SettingFilled } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
@@ -212,7 +212,7 @@ const Deposit: React.FC = () => {
                     setIsDepositToMyAccount(!isDepositToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<UserSwitchOutlined />}
+                  icon={<OrderedListOutlined />}
                 />
               </Space.Compact>
             ) : (
@@ -227,7 +227,7 @@ const Deposit: React.FC = () => {
                     setIsDepositToMyAccount(!isDepositToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<UserSwitchOutlined />}
+                  icon={<OrderedListOutlined />}
                 />
               </Space.Compact>
             )}
