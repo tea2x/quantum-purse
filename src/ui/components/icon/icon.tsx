@@ -1,6 +1,5 @@
 import Logo from "./svg/logo.svg?react";
 import Explore from "./svg/block-explorer.svg?react";
-import Hamburger from "./svg/hamburger.svg?react";
 import Connections from "./svg/global-peers.svg?react";
 import NoConnections from "./svg/no-global-peers.svg?react";
 import Syncing from "./svg/sync-icon.svg?react";
@@ -21,7 +20,6 @@ import Faucet from "./svg/faucet.svg?react";
 const Icon = {
   Logo,
   Explore,
-  Hamburger,
   Connections,
   NoConnections,
   Syncing,
