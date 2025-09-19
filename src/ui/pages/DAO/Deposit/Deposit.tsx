@@ -10,7 +10,7 @@ import {
   Modal,
   Space
 } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, OrderedListOutlined, SettingFilled } from "@ant-design/icons";
+import { QuestionCircleOutlined, ScanOutlined, ArrowDownOutlined, SettingFilled, FullscreenOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
@@ -201,7 +201,7 @@ const Deposit: React.FC = () => {
                 <Input
                   value={values?.to}
                   placeholder="Input or scan the destination address"
-                  style={{ flex: 1, backgroundColor: "var(--gray-light)" }}
+                  style={{ backgroundColor: "var(--gray-light)" }}
                 />
                 <Button
                   onClick={() => setScannerUp(true)}
@@ -212,14 +212,13 @@ const Deposit: React.FC = () => {
                     setIsDepositToMyAccount(!isDepositToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<OrderedListOutlined />}
+                  icon={<ArrowDownOutlined />}
                 />
               </Space.Compact>
             ) : (
               <Space.Compact style={{ display: "Flex" }}>
                 <AccountSelect
                   accounts={wallet.accounts}
-                  placeholder="Please select an account from your wallet"
                   onAccountChange={(val) => form.setFieldsValue({ to: val })}
                 />
                 <Button
@@ -227,7 +226,7 @@ const Deposit: React.FC = () => {
                     setIsDepositToMyAccount(!isDepositToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<OrderedListOutlined />}
+                  icon={<ArrowDownOutlined />}
                 />
               </Space.Compact>
             )}
@@ -270,9 +269,8 @@ const Deposit: React.FC = () => {
                   />
                   <Button
                     onClick={() => setIsDepositMax(!isDepositMax)}
-                  >
-                    Max
-                  </Button>
+                    icon={<FullscreenOutlined />}
+                  />
                 </Space.Compact>
               </Form.Item>
             </Col>

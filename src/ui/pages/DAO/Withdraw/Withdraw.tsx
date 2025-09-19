@@ -1,5 +1,5 @@
-import { Button, notification, Form, Switch, Input, Empty, Tooltip, Row, Col } from "antd";
-import { QuestionCircleOutlined } from "@ant-design/icons";
+import { Button, notification, Form, Switch, Input, Empty, Tooltip, Row, Col, Space, Modal } from "antd";
+import { QuestionCircleOutlined, ScanOutlined, ArrowDownOutlined, SettingFilled } from "@ant-design/icons";
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
@@ -10,6 +10,7 @@ import QuantumPurse from "../../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../../core/config";
 import { parseEpoch, getClaimEpoch, getProfit } from "../../../../core/epoch";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 const Withdraw: React.FC = () => {
   const [form] = Form.useForm();
@@ -30,12 +31,16 @@ const Withdraw: React.FC = () => {
       blockNum: bigint;
     };
   }>({});
+  const [scannerUp, setScannerUp] = useState(false);
+  const [isWithdrawToMyAccount, setIsWithdrawToMyAccount] = useState(false);
+  const [isCustomFee, setIsCustomFee] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
-  const withdrawRequestCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
-  const isToValid = values?.to && form.getFieldError('to').length === 0;
   const { withdraw: loadingWithdraw } = useSelector(
     (state: RootState) => state.loading.effects.wallet
   );
+
+  const withdrawRequestCells = daoCells.filter(cell => cell.outputData !== "0x0000000000000000");
+  const isToValid = values?.to && form.getFieldError('to').length === 0;
 
   const quantumPurse = QuantumPurse.getInstance();
 
@@ -110,6 +115,32 @@ const Withdraw: React.FC = () => {
       };
     }
   }, [quantumPurse]);
+
+  useEffect(() => {
+    if (!scannerUp) return;
+
+    const scanner = new Html5QrcodeScanner(
+      "reader",
+      { fps: 10, qrbox: 250 },
+      false
+    );
+
+    scanner.render(
+      (decodedAddress) => {
+        form.setFieldsValue({ to: decodedAddress });
+        form.validateFields(["to"]);
+        setScannerUp(false);
+        scanner.clear();
+      },
+      (errorMessage) => {
+        console.log(errorMessage);
+      }
+    );
+
+    return () => {
+      scanner.clear().catch(() => {});
+    };
+  }, [scannerUp]);
 
   const calculateRemainingDays = async(
     depositHeader: ClientBlockHeader,
@@ -209,21 +240,11 @@ const Withdraw: React.FC = () => {
                     <Form.Item
                       name="to"
                       label={
-                        <div className="label-container">
-
-                          <div className="label-with-icon">
-                            Withdraw To
-                            <Tooltip title="Be careful! Withdrawing to an address transfers the deposit & reward to that address too.">
-                              <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                            </Tooltip>
-                          </div>
-
-                          <div className="switch-container">
-                            My Wallet
-                            <Form.Item name="withdrawToMyAccount" noStyle>
-                              <Switch size="small"/>
-                            </Form.Item>
-                          </div>
+                        <div className="label-with-icon">
+                          Withdraw To
+                          <Tooltip title="Be careful! Withdrawing to an address transfers the deposit & reward to that address too.">
+                            <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                          </Tooltip>
                         </div>
                       }
                       rules={[
@@ -240,18 +261,42 @@ const Withdraw: React.FC = () => {
                           },
                         },
                       ]}
-                      className={cx("field-to", values?.withdrawToMyAccount && "select-my-account")}
+                      className={cx("field-to", isWithdrawToMyAccount && "select-my-account")}
                     >
-                      {!values?.withdrawToMyAccount ? (
-                        <Input
-                          placeholder="Input the destination address"
-                          className={styles.inputField}
-                        />
+                      {!isWithdrawToMyAccount ? (
+                        <Space.Compact style={{ display: "flex" }}>
+                          <Input
+                            value={values?.to}
+                            placeholder="Input or scan the destination address"
+                            style={{backgroundColor: "var(--gray-light)"}}
+                          />
+                          <Button
+                            onClick={() => setScannerUp(true)}
+                            icon={<ScanOutlined />}
+                          />
+                          <Button
+                            onClick={() => {
+                              setIsWithdrawToMyAccount(!isWithdrawToMyAccount);
+                              form.setFieldsValue({ to: undefined });
+                            }}
+                            icon={<ArrowDownOutlined />}
+                          />
+                        </Space.Compact>
+
                       ) : (
-                        <AccountSelect
-                          accounts={wallet.accounts}
-                          placeholder="Please select an account from your wallet"
-                        />
+                        <Space.Compact style={{ display: "flex" }}>
+                          <AccountSelect
+                            accounts={wallet.accounts}
+                            onAccountChange={(val) => form.setFieldsValue({ to: val })}
+                          />
+                          <Button
+                            onClick={() => {
+                              setIsWithdrawToMyAccount(!isWithdrawToMyAccount);
+                              form.setFieldsValue({ to: undefined }); 
+                            }}
+                            icon={<ArrowDownOutlined />}
+                          />
+                        </Space.Compact>
                       )}
                     </Form.Item>
                   </Col>
@@ -260,27 +305,29 @@ const Withdraw: React.FC = () => {
                       name="feeRate"
                       className="field-to"
                       label={
-                        <div className="label-container">
-                          <div className="label-with-icon">
-                            Fee Rate
-                            <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
-                              <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                            </Tooltip>
-                          </div>
-                          <div className="switch-container">
-                            Custom
-                            <Form.Item name="isCustomFeeRate" noStyle>
-                              <Switch size="small"/>
-                            </Form.Item>
-                          </div>
+                        <div className="label-with-icon">
+                          Fee Rate
+                          <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
+                            <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                          </Tooltip>
                         </div>
                       }
                     >
-                      <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={values?.isCustomFeeRate}/>
+                      <Space.Compact style={{ display: "flex" }}>
+                        <div style={{ flex: 1 }}>
+                          <FeeRateSelect onFeeRateChange={handleFeeRateChange} custom={isCustomFee}/>
+                        </div>
+                        <Button 
+                          onClick={() => setIsCustomFee(!isCustomFee)}
+                          icon={<SettingFilled />}
+                        />
+                      </Space.Compact>
+                      
                     </Form.Item>
                   </Col>
                 </Row>
               </Form>
+
               <Authentication
                 ref={authenticationRef}
                 authenCallback={authenCallback}
@@ -292,6 +339,15 @@ const Withdraw: React.FC = () => {
                   }
                 }}
               />
+
+              <Modal
+                open={scannerUp}
+                onCancel={() => setScannerUp(false)}
+                footer={null}
+                title="Scan QR Code"
+              >
+                <div id="reader" style={{ width: "100%" }} />
+              </Modal>
             </div>
 
             <div className={styles.withdrawListContainer}>
@@ -343,7 +399,7 @@ const Withdraw: React.FC = () => {
           <div className={styles.withdrawListContainer}>
             <Empty
               description={
-                <span style={{ color: 'var(--gray-light)', fontFamily: "Sora, sans-serif" }}>
+                <span style={{ color: 'var(--gray-light)', fontFamily: 'Sora, sans-serif' }}>
                   No withdraw requests found! 🫠
                 </span>
               }
