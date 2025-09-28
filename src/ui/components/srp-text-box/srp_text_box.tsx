@@ -50,6 +50,12 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
     }
   }, []);
 
+  useEffect(() => {
+    if (!value) {
+      handleReset();
+    }
+  }, [value]);
+
   const { rules: passwordRules } = usePasswordValidator(paramSet ?? 0);
   const onSubmit = async (values: { password: string }) => {
     try {
@@ -67,7 +73,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
 
   const handleReset = async () => {
     await dispatch.wallet.ejectWallet();
-    navigate(ROUTES.WELCOME);
+    await navigate(ROUTES.WELCOME);
     notification.info({ message: "Wallet creation process reset" });
   };
 
