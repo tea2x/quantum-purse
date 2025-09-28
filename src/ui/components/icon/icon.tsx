@@ -16,6 +16,8 @@ import Withdraw from "./svg/withdraw.svg?react";
 import Eject from "./svg/eject.svg?react";
 import Reveal from "./svg/reveal.svg?react";
 import Faucet from "./svg/faucet.svg?react";
+import X from "./svg/x-icon.svg?react";
+import Telegram from "./svg/telegram-icon.svg?react";
 
 const Icon = {
   Logo,
@@ -36,6 +38,8 @@ const Icon = {
   Eject,
   Reveal,
   Faucet,
+  X,
+  Telegram,
 };
 
 export default Icon;

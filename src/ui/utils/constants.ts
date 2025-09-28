@@ -49,7 +49,10 @@ export const FIND_ACCOUNT_THRESHOLD = 5;
 
 export type WalletStepEnum = (typeof WALLET_STEP)[keyof typeof WALLET_STEP];
 
-export const REPOSITORY_URL =
+export const GITHUB_URL =
   "https://github.com/tea2x/quantum-purse";
+
+export const X_URL = "https://x.com/quantumpurse";
+export const TELEGRAM_URL = "http://t.me/quantumpurse";
 
 export const DEMO_PASSWORD = "tyonbygqp3R#nksunetuw9%";

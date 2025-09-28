@@ -122,17 +122,7 @@ export default class QuantumPurse extends QPSigner {
 
     const lock = this.getLockScript(spxLockArgs);
     const storageKey = QuantumPurse.START_BLOCK_PREFIX + "_" + spxLockArgs.slice(0, 16);
-
-    // wait until light client is ready
-    let startingBlock: bigint = BigInt(0);
-    while (startingBlock === BigInt(0)) {
-      const header = await this.client!.getTipHeader();
-      startingBlock = header.number;
-
-      if (startingBlock === BigInt(0)) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      }
-    }
+    let startingBlock: bigint = (await this.client!.getTipHeader()).number;
 
     await DB.setItem(storageKey, startingBlock.toString());
 
