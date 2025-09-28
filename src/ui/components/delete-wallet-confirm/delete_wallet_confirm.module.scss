@@ -12,6 +12,8 @@
     .ant-btn {
       background-color: #FF8C00;
       color: black;
+      border: none;
+      box-shadow: none;
       &:hover {
         background-color: #f9652f !important;
         color: white !important;
