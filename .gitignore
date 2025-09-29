@@ -2,7 +2,6 @@ dist/
 build/
 node_modules/
 bun.lockb
-package-lock.json
 .DS_Store
 zips/
 .env
