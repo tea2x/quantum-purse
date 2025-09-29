@@ -1,4 +1,5 @@
 import { Button, Grid, Tooltip, Alert } from "antd";
+import { MenuOutlined } from "@ant-design/icons";
 import React, { useContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import LayoutCtx from "../../context/layout_ctx";
@@ -280,7 +281,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
         <Button
           type="text"
           onClick={() => setShowSidebar(!showSidebar)}
-          icon={<Icon.Hamburger color="var(--white) !important" />}
+          icon={<MenuOutlined style={{color: "var(--white)", fontSize: "20px"}}/>}
         />
       )}
     </header>

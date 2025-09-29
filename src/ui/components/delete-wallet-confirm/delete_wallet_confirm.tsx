@@ -22,8 +22,16 @@ const DeleteWalletModal: React.FC<DeleteWalletModalProps> = ({
       centered
       footer={
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-          <Button onClick={onCancel}>Cancel</Button>
-          <Button type="primary" onClick={onOk}>
+          <Button
+            onClick={onCancel}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="primary"
+            onClick={onOk}
+          >
             OK
           </Button>
         </div>
