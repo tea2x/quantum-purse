@@ -21,21 +21,23 @@ const Welcome: React.FC = () => {
         Learn how to get started, explore new features, and stay up to date with the latest improvements.
       </p>
 
-      <Input
+      {/* <Input
         className={styles.emailInput}
         placeholder="e-mail address"
         bordered={false}
-      />
+      /> */}
 
-      <p className={styles.disclaimer}>
+      {/* <p className={styles.disclaimer}>
         Your email address is safe with us. We’ll only use it to share
         important product updates — no spam, ever.
-      </p>
+      </p> */}
 
       <div className={styles.footer}>
         <Button
           onClick={() => navigate(ROUTES.CREATE_WALLET, { replace: true })}
           className={styles.ctaButton}
+          disabled={!syncStatus.tipBlock}
+          loading={!syncStatus.tipBlock}
         >
           NEXT
         </Button>
