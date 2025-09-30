@@ -2,12 +2,16 @@ import { Button, Input } from "antd";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../../utils/constants";
 import styles from "./Welcome.module.scss";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 
 const Welcome: React.FC = () => {
   const navigate = useNavigate();
+  const syncStatus = useSelector((state: RootState) => state.wallet.syncStatus);
 
   return (
     <section className={styles.welcome}>
+      <div className={syncStatus.tipBlock ? styles.statusDotGreen : styles.statusDotRed}></div>
       <div className={styles.header}>
         <h1>WELCOME</h1>
       </div>

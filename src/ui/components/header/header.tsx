@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   const wallet = useSelector((state: RootState) => state.wallet);
   const { showSidebar, setShowSidebar } = useContext(LayoutCtx);
   const { useBreakpoint } = Grid;
-  const MAX_OUT_BOUNDS = 4; // Maximum number of outbound connections in light client config
+  const MAX_OUT_BOUNDS = 1; // Maximum number of outbound connections in light client config
   const [isUpdatingBalance, setIsUpdatingBalance] = useState(false);
   const [isUpdatingBlocks, setIsUpdatingBlockInfo] = useState(false);
   const [isUpdatingPeers, setIsUpdatingNodeInfo] = useState(false);
