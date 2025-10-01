@@ -51,6 +51,9 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   }, []);
 
   useEffect(() => {
+    if (location.pathname == "/settings/reveal-srp")
+      return;
+
     if (!value) {
       handleReset();
     }
