@@ -17,7 +17,7 @@ const Welcome: React.FC = () => {
       </div>
 
       <p className={styles.infoText}>
-        Quantum Purse is a post-quantum-hardened lightweight wallet powered by the CKB blockchain and SPHINCS+.
+        Quantum Purse is a non-custodial light-node wallet with post-quantum security from SPHINCS+ and the CKB blockchain.
       </p>
 
       {/* <Input
