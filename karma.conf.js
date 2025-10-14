@@ -1,3 +1,5 @@
+const webpack = require("webpack");
+
 module.exports = function (config) {
   config.set({
     frameworks: ["mocha"],
@@ -46,6 +48,12 @@ module.exports = function (config) {
           "stream": false
         }
       },
+      plugins: [
+        new webpack.DefinePlugin({
+          "process.env.MAIN_NET": JSON.stringify(process.env.MAIN_NET || "false"),
+          "process.env.NATIVE_APP": JSON.stringify(process.env.NATIVE_APP || "false"),
+        }),
+      ],
     },
     mime: {
       "application/wasm": ["wasm"],
