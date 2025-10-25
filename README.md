@@ -19,7 +19,7 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 | **Store model**        | Indexed DB                        |
 | **RPC endpoint**       | No                                |
 | **Client type**        | Fly Client                        |
-| **Demo site**          | Chrome-based, Safari              |
+| **Demo site**          | Brave, Google Chrome, Safari      |
 | **Native PC app**      | Windows, macOS, Linux             |
 
 ###### Architecture Overview
@@ -152,4 +152,4 @@ Until a proper SPHINCS+ hardware wallet is available for secure key management, 
    - Sign the transaction on the air-gapped device.
    - Transfer the signed transaction back via USB and broadcast it using a tool like [this one](https://explorer.nervos.org/tools/broadcast-tx). You might want to test the broadcaster with JoyID signed transactions first!
    - This effectively turns your dedicated device into a quantum-safe offline signer.
-   - ALTHOUGH THIS IS NOT SUPPORT YET, let me know if CKB community really wants this feature or not.
+   - ALTHOUGH THIS IS NOT WELL SUPPORTED YET, let me know if CKB community really wants this feature or not.
