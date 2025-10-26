@@ -19,7 +19,7 @@ Currently using an **under development** [CKB quantum resistant lockscript](http
 | **Store model**        | Indexed DB                        |
 | **RPC endpoint**       | No                                |
 | **Client type**        | Fly Client                        |
-| **Demo site**          | Chrome-based, Safari              |
+| **Demo site**          | Brave, Google Chrome, Safari      |
 | **Native PC app**      | Windows, macOS, Linux             |
 
 ###### Architecture Overview
@@ -146,10 +146,3 @@ Until a proper SPHINCS+ hardware wallet is available for secure key management, 
 1. Use a dedicated device with minimal software installed to run Quantum Purse.
 2. There's no guarantee your encrypted mnemonic can not be leaked. You have to have a strong enough password if you want to keep the wallet on your computer safe.
 3. Terminate the application after completing a transaction. Ideally, power off your computer to wipe residual password-related data from RAM.
-4. For maximum security (seems a little paranoid though xd), use an air-gapped device (one with no internet connection) to run Quantum Purse. To sign a transaction:
-   - Construct an unsigned transaction on an internet-connected device using your public address.
-   - Transfer it via a secure USB drive (ensure it's malware-free) to the air-gapped device.
-   - Sign the transaction on the air-gapped device.
-   - Transfer the signed transaction back via USB and broadcast it using a tool like [this one](https://explorer.nervos.org/tools/broadcast-tx). You might want to test the broadcaster with JoyID signed transactions first!
-   - This effectively turns your dedicated device into a quantum-safe offline signer.
-   - ALTHOUGH THIS IS NOT SUPPORT YET, let me know if CKB community really wants this feature or not.
