@@ -38,7 +38,6 @@ const App: React.FC = () => {
         description:
           "Your browser does not support Atomics.waitAsync which CKB light client depends on.",
       });
-      return;
     }
 
     const prepareMainnetLaunch = async () => {
