@@ -36,7 +36,7 @@ const App: React.FC = () => {
       notification.error({
         message: "Unsupported browser",
         description:
-          "Your browser does not support Atomics.waitAsync. Please try other browsers or wait till yours is supported.",
+          "Your browser does not support Atomics.waitAsync which CKB light client depends on.",
       });
       return;
     }
