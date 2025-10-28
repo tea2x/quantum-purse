@@ -1,5 +1,5 @@
-// signer.ts
-// A sphincs+ based ccc compatible signer
+// qp_signer.ts
+// A sphincs+_based CCC compatible signer
 
 import {
   Signer,
@@ -86,7 +86,7 @@ export class QPSigner extends Signer {
 
   /** Check connection status */
   async isConnected(): Promise<boolean> {
-    return true; // Always connected. todo
+    return false; // never connected
   }
 
   /** Get internal address */

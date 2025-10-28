@@ -1,5 +1,5 @@
-// client.ts
-// A light client based ccc compatible client
+// qp_client.ts
+// A CKB_light_client-based CCC compatible client
 
 import {
   Client,

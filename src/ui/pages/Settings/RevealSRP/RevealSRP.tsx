@@ -31,7 +31,7 @@ const RevealSRP: React.FC = () => {
   }, []);
 
   return (
-    <section className={cx(styles.revealSRP, "panel")}>
+    <section className={cx(styles.revealSrp, "panel")}>
       {/* <h1>Reveal Secret Recovery Phrase</h1> */}
       <div className={styles.content}>
         <p>WARNING! Never copy or screenshot! Only handwrite to backup your mnemonic phrase with your chosen SPHINCS+ variant [ {SpxVariant[Number(paramSet)]} ].</p>
