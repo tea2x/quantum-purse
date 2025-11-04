@@ -1,6 +1,6 @@
 // QuantumPurse.ts
 import { IS_MAIN_NET, SPHINCSPLUS_LOCK, NERVOS_DAO } from "./config";
-import __wbg_init, { KeyVault, Util as KeyVaultUtil, SpxVariant } from "quantum-purse-key-vault";
+import { KeyVault, Util as KeyVaultUtil, SpxVariant } from "quantum-purse-key-vault";
 import { randomSecretKey, LightClientSetScriptsCommand, ScriptStatus } from "@nervosnetwork/ckb-light-client-js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";

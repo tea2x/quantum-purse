@@ -214,7 +214,7 @@ interface BaseStepProps {
   form: FormInstance;
 }
 
-const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
+const StepInputSrp: React.FC<BaseStepProps> = ({ form }) => {
   const values = Form.useWatch([], form);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const { next } = useContext(ImportWalletContext);
@@ -228,7 +228,7 @@ const StepInputSRP: React.FC<BaseStepProps> = ({ form }) => {
   }, [form, values]);
 
   return (
-    <div className={styles.stepInputSRP}>
+    <div className={styles.stepInputSrp}>
       <h2>Import Your Secret Recovery Phrase</h2>
       <Form.Item
         name="srp"
@@ -315,7 +315,7 @@ const ImportWalletContent: React.FC = () => {
         title: "Import SRP",
         description: "Import your secret recovery phrase",
         icon: loadingExportSRP ? <LoadingOutlined /> : <LockOutlined />,
-        content: <StepInputSRP form={form} />,
+        content: <StepInputSrp form={form} />,
       },
       {
         key: STEP.PASSWORD,
