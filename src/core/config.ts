@@ -10,7 +10,7 @@ export const SPHINCSPLUS_LOCK = {
   hashType: "data1",
   outPoint: {
     txHash:
-      "0x7d6788d48b96e15c13fe572e4d7b327dbbeb6a009835234ce062b2a5009703d9",
+      "0x631d9a6049fb1fc3790e89d9daf35abe535b5e754cd8c3404319319710f0b106",
     index: "0x0",
   },
   depType: "code",
