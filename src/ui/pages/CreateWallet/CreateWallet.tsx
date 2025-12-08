@@ -25,6 +25,7 @@ import ParamSetSelectorForm from "../../components/sphincs-param-set/param_selec
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { useNavigate } from "react-router-dom";
 import { DB } from "../../../core/db";
+import { utf8ToBytes } from "../../../core/utils";
 
 const CreateWalletContext = createContext<CreateWalletContextType>({
   currentStep: WALLET_STEP.PASSWORD,
@@ -152,10 +153,16 @@ export const StepCreatePassword: React.FC = () => {
     // store chosen param set to storage, so wallet type retains when refreshed
     await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
     try {
+      const passwordBytes = utf8ToBytes(password);
+      password = '';
+      // each function call to key-vault clears the password bytes buffer,
+      // here it is firstly used to create the wallet then to export the SRP
+      // so clone password for the second call
+      const clonedPasswordBytes = passwordBytes.slice();
       await dispatch.wallet
-        .createWallet({ password })
+        .createWallet({ password: passwordBytes })
         .then(async () => {
-          await dispatch.wallet.exportSRP({ password });
+          await dispatch.wallet.exportSRP({ password: clonedPasswordBytes });
         })
         .then(async () => {
           next();
@@ -287,7 +294,7 @@ const StepSecureSRP: React.FC = () => {
     (state: RootState) => state.loading.effects.wallet
   );
 
-  const exportSrpHandler = async (password: string) => {
+  const exportSrpHandler = async (password: Uint8Array) => {
     await dispatch.wallet.exportSRP({ password });
   };
 

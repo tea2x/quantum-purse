@@ -11,7 +11,9 @@ import { useEffect, useState } from "react";
 const RevealSRP: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
   const srp = useSelector((state: RootState) => state.wallet.srp);
-  const exportSrpHandler = async (password: string) => await dispatch.wallet.exportSRP({ password });
+  const exportSrpHandler = async (password: Uint8Array) => {
+    await dispatch.wallet.exportSRP({ password })
+  };
   
   const [paramSet, setParamSet] = useState<number | null>(null);
 

@@ -33,7 +33,7 @@ const Deposit: React.FC = () => {
   );
   const [fromAccountBalance, setFromAccountBalance] = useState<string | null>(null);
   const [passwordResolver, setPasswordResolver] = useState<{
-    resolve: (password: string) => void;
+    resolve: (password: Uint8Array) => void;
     reject: () => void;
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
@@ -157,7 +157,7 @@ const Deposit: React.FC = () => {
   };
 
   // Handle password submission and pass it to QPsigner::signOnlyTransaction
-  const authenCallback = async (password: string) => {
+  const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
       passwordResolver.resolve(password);
       setPasswordResolver(null);

@@ -28,6 +28,7 @@ import ParamSetSelector from "../../components/sphincs-param-set/param_selector"
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { useNavigate } from "react-router-dom";
 import { DB } from "../../../core/db";
+import { utf8ToBytes } from "../../../core/utils";
 
 interface ImportWalletContext {
   currentStep?: WalletStepEnum;
@@ -290,9 +291,13 @@ const ImportWalletContent: React.FC = () => {
     await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
 
     const { srp, password } = values;
+    const srpBytes = utf8ToBytes(srp);
+    const passwordBytes = utf8ToBytes(password);
+    values.srp = "";
+    values.password = "";
 
     try {
-      await dispatch.wallet.importWallet({ srp, password });
+      await dispatch.wallet.importWallet({ srp: srpBytes, password: passwordBytes });
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
       dispatch.wallet.resetSRP();

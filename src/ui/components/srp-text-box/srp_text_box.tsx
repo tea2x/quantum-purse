@@ -10,13 +10,14 @@ import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { STORAGE_KEYS, ROUTES } from "../../utils/constants";
 import { useNavigate } from "react-router-dom";
 import { DB } from "../../../core/db";
+import { utf8ToBytes } from "../../../core/utils";
 
 interface SrpTextBoxProps {
   value?: string;
   loading?: boolean;
   title?: string;
   description?: string;
-  exportSrpHandler: (password: string) => Promise<any>;
+  exportSrpHandler: (password: Uint8Array) => Promise<any>;
   onConfirm: () => void;
   isCreateWalletPage?: boolean;
 }
@@ -53,7 +54,10 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   const { rules: passwordRules } = usePasswordValidator(paramSet ?? 0);
   const onSubmit = async (values: { password: string }) => {
     try {
-      await exportSrpHandler(values.password);
+      const passwordBytes = utf8ToBytes(values.password);
+      values.password = '';
+      
+      await exportSrpHandler(passwordBytes);
     } catch (error) {
       notification.error({
         message: "Failed to reveal SRP",

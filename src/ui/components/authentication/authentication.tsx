@@ -15,6 +15,7 @@ import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { STORAGE_KEYS } from "../../utils/constants";
 import ConfirmDeleteWalletModal from "../../components/delete-wallet-confirm/delete_wallet_confirm";
 import { DB } from "../../../core/db";
+import { utf8ToBytes } from "../../../core/utils";
 
 export interface AuthenticationRef {
   open: () => void;
@@ -25,7 +26,7 @@ interface AuthenticationProps extends ModalProps {
   title?: string;
   description?: string;
   loading?: boolean;
-  authenCallback: (password: string) => Promise<void>;
+  authenCallback: (password: Uint8Array) => Promise<void>;
 }
 
 const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
@@ -88,8 +89,11 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
       close: closeHandler,
     }));
 
-    const onFinish = async (values: any) => {
-      await authenCallback(values.password);
+    const onFinish = async (values: { password: string }) => {
+      const passwordBytes = utf8ToBytes(values.password);
+      values.password = "";
+      
+      await authenCallback(passwordBytes);
       form.resetFields();
     };
 
