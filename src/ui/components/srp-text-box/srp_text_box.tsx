@@ -1,5 +1,5 @@
-import { Button, Form, Input, notification } from "antd";
-import React, { useEffect, useState } from "react";
+import { Button, Form, notification } from "antd";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { Dispatch } from "../../store";
@@ -11,6 +11,7 @@ import { STORAGE_KEYS, ROUTES } from "../../utils/constants";
 import { useNavigate } from "react-router-dom";
 import { DB } from "../../../core/db";
 import { utf8ToBytes } from "../../../core/utils";
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 interface SrpTextBoxProps {
   value?: string;
@@ -35,6 +36,8 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   const dispatch = useDispatch<Dispatch>();
   const navigate = useNavigate();
   const [paramSet, setParamSet] = useState<number | null>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     let value: number | null = null;
@@ -52,11 +55,14 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   }, []);
 
   const { rules: passwordRules } = usePasswordValidator(paramSet ?? 0);
-  const onSubmit = async (values: { password: string }) => {
+
+  const onSubmit = async () => {
+    if (!passwordInputRef.current) return;
+
     try {
-      const passwordBytes = utf8ToBytes(values.password);
-      values.password = '';
-      
+      const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+      passwordInputRef.current.value = '';
+
       await exportSrpHandler(passwordBytes);
     } catch (error) {
       notification.error({
@@ -106,9 +112,24 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
         </>
       ) : (
         <Form layout="vertical" onFinish={onSubmit}>
-          <Form.Item name="password" rules={passwordRules}>
-            <Input.Password size="large" placeholder="Enter your password" />
-          </Form.Item>
+          <div className={styles.passwordWrapper}>
+            <input
+              ref={passwordInputRef}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
+              disabled={loading}
+              className={styles.passwordInput}
+            />
+            <button
+              type="button"
+              className={styles.toggleButton}
+              onClick={() => setShowPassword(!showPassword)}
+              disabled={loading}
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+            </button>
+          </div>
 
           <Form.Item>
             <div style={{ display: "flex", gap: "8px", width: "fit-content", margin: "0 auto" }}>
