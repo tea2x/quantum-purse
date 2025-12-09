@@ -4,7 +4,7 @@
 function requestSyncStatus() {
   return new Promise((resolve) => {
     // create & request
-    const requestId = Math.random().toString(36).substring(7);
+    const requestId = crypto.randomUUID();
     self.postMessage({ command: "getSyncStatus", requestId });
     // fulfill & remove
     self.addEventListener("message", function handler(event) {
