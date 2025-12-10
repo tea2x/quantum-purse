@@ -19,7 +19,7 @@ import { CKB_DECIMALS } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./Send.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
-import { Address } from "@ckb-ccc/core";
+import { Address, fixedPointFrom } from "@ckb-ccc/core";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
 const Send: React.FC = () => {
@@ -250,7 +250,7 @@ const Send: React.FC = () => {
                         !isSendMax &&
                         fromAccountBalance &&
                         value &&
-                        BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
+                        BigInt(fromAccountBalance) < fixedPointFrom(value)
                       ) {
                         return Promise.reject("Insufficient balance");
                       }
