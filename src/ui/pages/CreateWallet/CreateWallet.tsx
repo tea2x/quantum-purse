@@ -1,10 +1,11 @@
-import { KeyOutlined, LoadingOutlined, LockOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Flex, Form, Input, notification, Steps } from "antd";
+import { KeyOutlined, LoadingOutlined, LockOutlined, EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
+import { Button, Checkbox, Flex, Form, notification, Steps } from "antd";
 import React, {
   createContext,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -137,6 +138,15 @@ export const StepCreatePassword: React.FC = () => {
   const { rules: passwordRules } = usePasswordValidator(parameterSet);
   const navigate = useNavigate();
 
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string>('');
+  const [passwordWarning, setPasswordWarning] = useState<string>('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
+  const [passwordsValid, setPasswordsValid] = useState<boolean>(false);
+
   useEffect(() => {
     form
       .validateFields({ validateOnly: true })
@@ -144,17 +154,83 @@ export const StepCreatePassword: React.FC = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
-  const onFinish = async (
-    { password, parameterSet }: { password: string; parameterSet: SpxVariant }
-  ) => {
+  const handlePasswordChange = async () => {
+    if (!passwordInputRef.current) return;
+
+    setPasswordError('');
+    setPasswordWarning('');
+
+    if (!passwordInputRef.current.value) {
+      setPasswordsValid(false);
+      return;
+    }
+
+    let hasError = false;
+
+    // Reusing password rules that were previously defined for Ant Form.item
+    // but now plain html input
+    for (const rule of passwordRules) {
+      try {
+        if (rule.validator) {
+          await rule.validator({}, passwordInputRef.current.value);
+        }
+      } catch (error: any) {
+        if (rule.warningOnly) {
+          setPasswordWarning(rule.message || error.message || '');
+        } else {
+          setPasswordError(error.message || String(error));
+          hasError = true;
+        }
+        break;
+      }
+    }
+
+    if (confirmPasswordInputRef.current?.value) {
+      const passwordsMatch = passwordInputRef.current.value === confirmPasswordInputRef.current.value;
+      if (!passwordsMatch) {
+        setConfirmPasswordError('The passwords do not match!');
+      } else {
+        setConfirmPasswordError('');
+      }
+      setPasswordsValid(passwordsMatch && !hasError);
+    } else {
+      setPasswordsValid(!hasError);
+    }
+  };
+
+  const handleConfirmPasswordChange = () => {
+    if (!passwordInputRef.current || !confirmPasswordInputRef.current) return;
+
+    setConfirmPasswordError('');
+
+    if (!confirmPasswordInputRef.current.value) {
+      setPasswordsValid(false);
+      return;
+    }
+
+    const passwordsMatch = passwordInputRef.current.value === confirmPasswordInputRef.current.value;
+
+    if (!passwordsMatch) {
+      setConfirmPasswordError('The passwords do not match!');
+    }
+
+    setPasswordsValid(passwordsMatch && !passwordError);
+  };
+
+  const onFinish = async (formValues: any) => {
+    const parameterSet = formValues.parameterSet;
+
+    if (!passwordInputRef.current) return;
+
     if (parameterSet) {
       QuantumPurse.getInstance().initKeyVault(parameterSet);
     }
     // store chosen param set to storage, so wallet type retains when refreshed
     await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
     try {
-      const passwordBytes = utf8ToBytes(password);
-      password = '';
+      const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+      passwordInputRef.current.value = '';
+      confirmPasswordInputRef.current!.value = '';
       // each function call to key-vault clears the password bytes buffer,
       // here it is firstly used to create the wallet then to export the SRP
       // so clone password for the second call
@@ -188,40 +264,54 @@ export const StepCreatePassword: React.FC = () => {
         
         <ParamSetSelectorForm />
 
-        <Form.Item
-          name="password"
-          label={<span style={{ color: 'var(--gray-01)' }}>Password</span>}
-          rules={passwordRules}
-        >
-          <Input.Password
-            size="large"
-            placeholder="Please choose a strong password"
-            className={styles.inputField}
-          />
-        </Form.Item>
+        <div style={{ marginBottom: '1.6rem' }}>
+          <label style={{ color: 'var(--gray-01)', marginBottom: '0.8rem', display: 'block' }}>Password</label>
+          <div className={styles.passwordWrapper}>
+            <input
+              ref={passwordInputRef}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Please choose a strong password"
+              disabled={loadingCreateWallet || loadingExportSRP}
+              className={styles.passwordInput}
+              onChange={handlePasswordChange}
+            />
+            <button
+              type="button"
+              className={styles.toggleButton}
+              onClick={() => setShowPassword(!showPassword)}
+              disabled={loadingCreateWallet || loadingExportSRP}
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+            </button>
+          </div>
+          {passwordError && <div style={{ color: '#ff4d4f', fontSize: '1.4rem', marginTop: '0.4rem' }}>{passwordError}</div>}
+          {passwordWarning && <div style={{ color: '#faad14', fontSize: '1.4rem', marginTop: '0.4rem' }}>{passwordWarning}</div>}
+        </div>
 
-        <Form.Item
-          name="confirmPassword"
-          label={<span style={{ color: 'var(--gray-01)' }}>Confirm password</span>}
-          dependencies={["password"]}
-          rules={[
-            { required: true, message: "" },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue("password") === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error("The passwords do not match!"));
-              },
-            }),
-          ]}
-        >
-          <Input.Password
-            size="large"
-            placeholder="Confirm your password"
-            className={styles.inputField}
-          />
-        </Form.Item>
+        <div style={{ marginBottom: '1.6rem' }}>
+          <label style={{ color: 'var(--gray-01)', marginBottom: '0.8rem', display: 'block' }}>Confirm password</label>
+          <div className={styles.passwordWrapper}>
+            <input
+              ref={confirmPasswordInputRef}
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="Confirm your password"
+              disabled={loadingCreateWallet || loadingExportSRP}
+              className={styles.passwordInput}
+              onChange={handleConfirmPasswordChange}
+            />
+            <button
+              type="button"
+              className={styles.toggleButton}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              disabled={loadingCreateWallet || loadingExportSRP}
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+            </button>
+          </div>
+          {confirmPasswordError && <div style={{ color: '#ff4d4f', fontSize: '1.4rem', marginTop: '0.4rem' }}>{confirmPasswordError}</div>}
+        </div>
 
         <Form.Item
           name="walletTypeBackup"
@@ -274,7 +364,7 @@ export const StepCreatePassword: React.FC = () => {
             <Button
               htmlType="submit"
               type="primary"
-              disabled={!submittable || loadingCreateWallet || loadingExportSRP}
+              disabled={!submittable || !passwordsValid || loadingCreateWallet || loadingExportSRP}
               loading={loadingCreateWallet || loadingExportSRP}
             >
               Create
