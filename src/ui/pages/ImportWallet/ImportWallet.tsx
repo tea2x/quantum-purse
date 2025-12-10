@@ -1,4 +1,4 @@
-import { KeyOutlined, LoadingOutlined, LockOutlined } from "@ant-design/icons";
+import { KeyOutlined, LoadingOutlined, LockOutlined, EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import {
   Button,
   Checkbox,
@@ -15,6 +15,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -75,7 +76,7 @@ const ImportWalletProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
+export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInputRef, confirmPasswordInputRef }) => {
   const values = Form.useWatch([], form);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const { importWallet: loadingImportWallet, exportSRP: loadingExportSRP } =
@@ -83,6 +84,13 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
   const { prev } = useContext(ImportWalletContext);
   const parameterSet = Form.useWatch("parameterSet", form);
   const { rules: passwordRules } = usePasswordValidator(parameterSet);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string>('');
+  const [passwordWarning, setPasswordWarning] = useState<string>('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
+  const [passwordsValid, setPasswordsValid] = useState<boolean>(false);
 
   useEffect(() => {
     const validate = async () => {
@@ -100,13 +108,71 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
     validate();
   }, [form, values]);
 
+  const handlePasswordChange = async () => {
+    if (!passwordInputRef?.current) return;
 
-  useEffect(() => {
-    if (parameterSet) {
-      form.validateFields(['password']).catch(() => {});
-      form.validateFields(['confirmPassword']).catch(() => {});
+    setPasswordError('');
+    setPasswordWarning('');
+
+    if (!passwordInputRef.current.value) {
+      setPasswordsValid(false);
+      return;
     }
-  }, [parameterSet, form]);
+
+    let hasError = false;
+
+    for (const rule of passwordRules) {
+      try {
+        if (rule.validator) {
+          await rule.validator({}, passwordInputRef.current.value);
+        }
+      } catch (error: any) {
+        if (rule.warningOnly) {
+          setPasswordWarning(rule.message || error.message || '');
+        } else {
+          setPasswordError(error.message || String(error));
+          hasError = true;
+        }
+        break;
+      }
+    }
+
+    if (confirmPasswordInputRef?.current?.value) {
+      const passwordsMatch = passwordInputRef.current.value === confirmPasswordInputRef.current.value;
+      if (!passwordsMatch) {
+        setConfirmPasswordError('The passwords do not match!');
+      } else {
+        setConfirmPasswordError('');
+      }
+      setPasswordsValid(passwordsMatch && !hasError);
+    } else {
+      setPasswordsValid(!hasError);
+    }
+  };
+
+  const handleConfirmPasswordChange = () => {
+    if (!passwordInputRef?.current || !confirmPasswordInputRef?.current) return;
+
+    setConfirmPasswordError('');
+
+    if (!confirmPasswordInputRef.current.value) {
+      setPasswordsValid(false);
+      return;
+    }
+
+    const passwordsMatch = passwordInputRef.current.value === confirmPasswordInputRef.current.value;
+
+    if (!passwordsMatch) {
+      setConfirmPasswordError('The passwords do not match!');
+    }
+
+    setPasswordsValid(passwordsMatch && !passwordError);
+  };
+
+  const handleImportClick = () => {
+    // Don't clear password inputs here - we'll need them in onFinish
+    form.submit();
+  };
 
   return (
     <div className={styles.stepCreatePassword}>
@@ -114,40 +180,54 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
 
       <ParamSetSelector />
 
-      <Form.Item
-        name="password"
-        label={<span style={{ color: "var(--gray-01)" }}>Password</span>}
-        rules={passwordRules}
-      >
-        <Input.Password
-          size="large"
-          placeholder="Please choose a strong password"
-          className={styles.inputField}
-        />
-      </Form.Item>
+      <div style={{ marginBottom: '1.6rem' }}>
+        <label style={{ color: 'var(--gray-01)', marginBottom: '0.8rem', display: 'block' }}>Password</label>
+        <div className={styles.passwordWrapper}>
+          <input
+            ref={passwordInputRef}
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Please choose a strong password"
+            disabled={loadingImportWallet || loadingExportSRP}
+            className={styles.passwordInput}
+            onChange={handlePasswordChange}
+          />
+          <button
+            type="button"
+            className={styles.toggleButton}
+            onClick={() => setShowPassword(!showPassword)}
+            disabled={loadingImportWallet || loadingExportSRP}
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+          </button>
+        </div>
+        {passwordError && <div style={{ color: '#ff4d4f', fontSize: '1.4rem', marginTop: '0.4rem' }}>{passwordError}</div>}
+        {passwordWarning && <div style={{ color: '#faad14', fontSize: '1.4rem', marginTop: '0.4rem' }}>{passwordWarning}</div>}
+      </div>
 
-      <Form.Item
-        name="confirmPassword"
-        label={<span style={{ color: "var(--gray-01)" }}>Confirm password</span>}
-        dependencies={["password"]}
-        rules={[
-          { required: true, message: "" },
-          ({ getFieldValue }) => ({
-            validator(_, value) {
-              if (!value || getFieldValue("password") === value) {
-                return Promise.resolve();
-              }
-              return Promise.reject(new Error("The passwords do not match!"));
-            },
-          }),
-        ]}
-      >
-        <Input.Password
-          size="large"
-          placeholder="Confirm your password"
-          className={styles.inputField}
-        />
-      </Form.Item>
+      <div style={{ marginBottom: '1.6rem' }}>
+        <label style={{ color: 'var(--gray-01)', marginBottom: '0.8rem', display: 'block' }}>Confirm password</label>
+        <div className={styles.passwordWrapper}>
+          <input
+            ref={confirmPasswordInputRef}
+            type={showConfirmPassword ? 'text' : 'password'}
+            placeholder="Confirm your password"
+            disabled={loadingImportWallet || loadingExportSRP}
+            className={styles.passwordInput}
+            onChange={handleConfirmPasswordChange}
+          />
+          <button
+            type="button"
+            className={styles.toggleButton}
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            disabled={loadingImportWallet || loadingExportSRP}
+            tabIndex={-1}
+          >
+            {showConfirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+          </button>
+        </div>
+        {confirmPasswordError && <div style={{ color: '#ff4d4f', fontSize: '1.4rem', marginTop: '0.4rem' }}>{confirmPasswordError}</div>}
+      </div>
 
       <Form.Item
         name="walletTypeBackup"
@@ -199,8 +279,8 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
         <Form.Item>
           <Button
             type="primary"
-            htmlType="submit"
-            disabled={!submittable || loadingImportWallet || loadingExportSRP}
+            onClick={handleImportClick}
+            disabled={!submittable || !passwordsValid || loadingImportWallet || loadingExportSRP}
             loading={loadingImportWallet || loadingExportSRP}
           >
             Import
@@ -213,53 +293,55 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form }) => {
 
 interface BaseStepProps {
   form: FormInstance;
+  passwordInputRef?: React.RefObject<HTMLInputElement | null>;
+  confirmPasswordInputRef?: React.RefObject<HTMLInputElement | null>;
+  srpInputRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
-const StepInputSrp: React.FC<BaseStepProps> = ({ form }) => {
-  const values = Form.useWatch([], form);
+const StepInputSrp: React.FC<BaseStepProps> = ({ form, srpInputRef }) => {
   const [submittable, setSubmittable] = React.useState<boolean>(false);
+  const [srpError, setSrpError] = React.useState<string>('');
   const { next } = useContext(ImportWalletContext);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
-  }, [form, values]);
+  const handleSrpChange = () => {
+    if (!srpInputRef?.current) return;
+
+    setSrpError('');
+
+    const value = srpInputRef.current.value;
+    if (!value) {
+      setSubmittable(false);
+      return;
+    }
+
+    const words = value.trim().split(/\s+/);
+    if (![36, 54, 72].includes(words.length)) {
+      setSrpError(`Current word count is ${words.length} but expected to be 36, 54 or 72!`);
+      setSubmittable(false);
+      return;
+    }
+
+    setSubmittable(true);
+  };
+
+  const handleNextClick = () => {
+    next();
+  };
 
   return (
     <div className={styles.stepInputSrp}>
       <h2>Import Your Secret Recovery Phrase</h2>
-      <Form.Item
-        name="srp"
-        rules={[
-          {
-            required: true,
-            message: "",
-          },
-          {
-            validator: (_, value) => {
-              if (!value) return Promise.resolve();
-              const words = value.trim().split(/\s+/);
-              if (![36, 54, 72].includes(words.length)) {
-                return Promise.reject(
-                  new Error(
-                    `Current word count is ${words.length} but expected to be 36, 54 or 72!`
-                  )
-                );
-              }
-              return Promise.resolve();
-            },
-          },
-        ]}
-      >
-        <Input.TextArea
-          size="large"
+      <div style={{ marginBottom: '1.6rem' }}>
+        <textarea
+          ref={srpInputRef}
           placeholder="Enter the mnemonic phrase"
           rows={9}
+          className={styles.srpTextarea}
+          onChange={handleSrpChange}
         />
-      </Form.Item>
+        {srpError && <div style={{ color: '#ff4d4f', fontSize: '1.4rem', marginTop: '0.4rem' }}>{srpError}</div>}
+      </div>
       <Flex align="center" justify="center" gap={16}>
         <Form.Item>
           <Button onClick={() => navigate(ROUTES.WELCOME)}>Back</Button>
@@ -269,7 +351,7 @@ const StepInputSrp: React.FC<BaseStepProps> = ({ form }) => {
             type="primary"
             disabled={!submittable}
             loading={false}
-            onClick={() => next()}
+            onClick={handleNextClick}
             className="next-button"
           >
             Next
@@ -282,19 +364,29 @@ const StepInputSrp: React.FC<BaseStepProps> = ({ form }) => {
 
 const ImportWalletContent: React.FC = () => {
   const [form] = Form.useForm();
-  const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
 
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
+  const srpInputRef = useRef<HTMLTextAreaElement>(null);
+
   const onFinish = async ({ parameterSet }: { parameterSet: SpxVariant }) => {
+    if (!passwordInputRef.current || !srpInputRef.current) return;
+
+    // Convert to bytes immediately
+    const srpBytes = utf8ToBytes(srpInputRef.current.value);
+    const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+
+    // Clear the inputs immediately after conversion
+    srpInputRef.current.value = '';
+    passwordInputRef.current.value = '';
+    if (confirmPasswordInputRef.current) {
+      confirmPasswordInputRef.current.value = '';
+    }
+
     QuantumPurse.getInstance().initKeyVault(parameterSet);
     // store chosen param set to storage, so wallet type retains when refreshed
     await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
-
-    const { srp, password } = values;
-    const srpBytes = utf8ToBytes(srp);
-    const passwordBytes = utf8ToBytes(password);
-    values.srp = "";
-    values.password = "";
 
     try {
       await dispatch.wallet.importWallet({ srp: srpBytes, password: passwordBytes });
@@ -306,6 +398,9 @@ const ImportWalletContent: React.FC = () => {
         message: "Import wallet failed!",
         description: formatError(error),
       });
+    } finally {
+      srpBytes.fill(0);
+      passwordBytes.fill(0);
     }
   };
 
@@ -320,14 +415,14 @@ const ImportWalletContent: React.FC = () => {
         title: "Import SRP",
         description: "Import your secret recovery phrase",
         icon: loadingExportSRP ? <LoadingOutlined /> : <LockOutlined />,
-        content: <StepInputSrp form={form} />,
+        content: <StepInputSrp form={form} srpInputRef={srpInputRef} />,
       },
       {
         key: STEP.PASSWORD,
         title: "Wallet Type & Password",
         description: "Choose SPHINCS+ variant and create password",
         icon: loadingImportWallet ? <LoadingOutlined /> : <KeyOutlined />,
-        content: <StepCreatePassword form={form} />,
+        content: <StepCreatePassword form={form} passwordInputRef={passwordInputRef} confirmPasswordInputRef={confirmPasswordInputRef} />,
       },
     ],
     [loadingImportWallet, loadingExportSRP]
