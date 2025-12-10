@@ -90,7 +90,7 @@ export default class QuantumPurse extends QPSigner {
   private sendRequestToWorker(command: string): Promise<any> {
     if (!this.worker) throw new Error("Worker not initialized");
     return new Promise((resolve, reject) => {
-      const requestId = Math.random().toString(36).substring(7);
+      const requestId = crypto.randomUUID();
       this.pendingRequests.set(requestId, { resolve, reject });
       this.worker!.postMessage({ command, requestId });
     });
