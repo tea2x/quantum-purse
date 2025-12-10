@@ -1,8 +1,9 @@
-import { Form, Input, Modal, ModalProps } from "antd";
+import { Form, Modal, ModalProps } from "antd";
 import React, {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useDispatch } from "react-redux";
@@ -15,6 +16,8 @@ import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { STORAGE_KEYS } from "../../utils/constants";
 import ConfirmDeleteWalletModal from "../../components/delete-wallet-confirm/delete_wallet_confirm";
 import { DB } from "../../../core/db";
+import { utf8ToBytes } from "../../../core/utils";
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 export interface AuthenticationRef {
   open: () => void;
@@ -25,7 +28,7 @@ interface AuthenticationProps extends ModalProps {
   title?: string;
   description?: string;
   loading?: boolean;
-  authenCallback: (password: string) => Promise<void>;
+  authenCallback: (password: Uint8Array) => Promise<void>;
 }
 
 const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
@@ -40,9 +43,10 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     ref
   ) => {
     const [form] = Form.useForm();
-    const values = Form.useWatch([], form);
+    const passwordInputRef = useRef<HTMLInputElement>(null);
     const [open, setOpen] = useState(false);
     const [submittable, setSubmittable] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [isDeleteWalletConfirmModalOpen, setIsDeleteWalletConfirmModalOpen] = useState(false);
     const [paramSet, setParamSet] = useState<number | null>(null);
@@ -66,20 +70,17 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
 
     const { rules: passwordRules } = usePasswordValidator(paramSet ?? 0);
 
-    useEffect(() => {
-      if (values?.password) {
-        form
-          .validateFields()
-          .then(() => setSubmittable(true))
-          .catch(() => setSubmittable(false));
-      } else {
-        setSubmittable(false);
-      }
-    }, [form, values]);
+    const handlePasswordChange = () => {
+      setSubmittable((passwordInputRef.current?.value?.length ?? 0) > 0);
+    };
 
     const closeHandler = () => {
       setOpen(false);
       setIsForgotPassword(false);
+      setShowPassword(false);
+      if (passwordInputRef.current) {
+        passwordInputRef.current.value = '';
+      }
       form.resetFields();
     };
 
@@ -88,8 +89,13 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
       close: closeHandler,
     }));
 
-    const onFinish = async (values: any) => {
-      await authenCallback(values.password);
+    const onFinish = async () => {
+      if (!passwordInputRef.current) return;
+
+      const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+      passwordInputRef.current.value = '';
+      
+      await authenCallback(passwordBytes);
       form.resetFields();
     };
 
@@ -145,12 +151,25 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
                 className="form-authentication"
                 disabled={loading}
               >
-                <Form.Item name="password" rules={passwordRules}>
-                  <Input.Password
-                    size="large"
+                <div className={styles.passwordWrapper}>
+                  <input
+                    ref={passwordInputRef}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
+                    onChange={handlePasswordChange}
+                    disabled={loading}
+                    className={styles.passwordInput}
                   />
-                </Form.Item>
+                  <button
+                    type="button"
+                    className={styles.toggleButton}
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={loading}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                  </button>
+                </div>
               </Form>
               <p
                 className="forgot-password"

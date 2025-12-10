@@ -19,7 +19,7 @@ const RequestWithdraw: React.FC = () => {
   const wallet = useSelector((state: RootState) => state.wallet);
   const [daoCells, setDaoCells] = useState<ccc.Cell[]>([]);
   const [passwordResolver, setPasswordResolver] = useState<{
-    resolve: (password: string) => void;
+    resolve: (password: Uint8Array) => void;
     reject: () => void;
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
@@ -200,7 +200,7 @@ const RequestWithdraw: React.FC = () => {
     }
   };
 
-  const authenCallback = async (password: string) => {
+  const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
       passwordResolver.resolve(password);
       setPasswordResolver(null);

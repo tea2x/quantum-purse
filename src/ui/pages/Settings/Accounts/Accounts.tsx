@@ -34,7 +34,7 @@ const Accounts: React.FC = () => {
 
   const authenticationRef = useRef<AuthenticationRef>(null);
 
-  const createAccountHandler = async (password: string) => {
+  const createAccountHandler = async (password: Uint8Array) => {
     try {
       const newAccount = await dispatch.wallet.createAccount({ password });
       authenticationRef.current?.close();
