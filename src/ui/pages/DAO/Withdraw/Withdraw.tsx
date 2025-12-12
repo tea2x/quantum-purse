@@ -11,6 +11,7 @@ import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../../core/config";
 import { parseEpoch, getClaimEpoch, getProfit } from "../../../../core/epoch";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import { logger } from '../../../../core/logger';
 
 const Withdraw: React.FC = () => {
   const [form] = Form.useForm();
@@ -92,7 +93,7 @@ const Withdraw: React.FC = () => {
           const blockNum = withdrawHeader.number;
           daysMap[key] = { remain, profit, blockNum };
         } catch (error) {
-          console.error('Error calculating remaining days for cell:', cell, error);
+          logger("error", "Error calculating remaining days for cell: " + JSON.stringify(cell) + " Error: " + String(error));
           daysMap[key] = { remain: Infinity, profit: 0, blockNum: BigInt(0) }; // Error indicators
         }
       }
@@ -133,7 +134,7 @@ const Withdraw: React.FC = () => {
         scanner.clear();
       },
       (errorMessage) => {
-        console.log(errorMessage);
+        logger("info", errorMessage);
       }
     );
 

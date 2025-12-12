@@ -25,6 +25,7 @@ import { ROUTES, STORAGE_KEYS } from "./ui/utils/constants";
 import packageJson from '../package.json';
 import { DB } from "./core/db";
 import { notification } from "antd";
+import { logger } from './core/logger';
 
 const currentVersion:string|null = packageJson.version;
 
@@ -45,7 +46,7 @@ const App: React.FC = () => {
       try {
         previousVersion = localStorage.getItem('appVersion');
       } catch (error) {
-        console.error("Error accessing localStorage:", error);
+        logger("error", "Error accessing localStorage: " + String(error));
       }
 
       function compareVersions(v1: string | null, v2: string): number {

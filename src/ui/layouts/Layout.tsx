@@ -8,6 +8,7 @@ import { ROUTES } from "../utils/constants";
 import { cx } from "../utils/methods";
 import styles from "./Layout.module.scss";
 import { useLocation } from "react-router-dom";
+import { logger } from '../../core/logger';
 type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement>;
 
 const Layout: React.FC<AuthLayoutProps> = ({
@@ -58,7 +59,7 @@ const Layout: React.FC<AuthLayoutProps> = ({
     if (wallet.active) {
       intervalId = setInterval(() => {
         dispatch.wallet.loadCurrentAccount({}).catch((error) => {
-          console.error("Failed to load current account:", error);
+          logger("error", "Failed to load current account: " + String(error));
         });
       }, 1000);
     }

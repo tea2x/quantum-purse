@@ -2,6 +2,7 @@ import { expect } from "chai";
 import QuantumPurse, { SpxVariant } from "../src/core/quantum_purse";
 import { utf8ToBytes, bytesToUtf8 } from "../src/core/utils";
 import __wbg_init from "quantum-purse-key-vault";
+import { logger } from "../src/core/logger";
 
 describe("Quantum Purse Basics", () => {
   let wallet: QuantumPurse;
@@ -105,7 +106,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch (error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("the mnemonic has an invalid checksum");
     }
   });
@@ -117,7 +118,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch (error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("mnemonic contains an unknown word");
     }
   });
@@ -130,7 +131,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.importSeedPhrase(seedPhraseHandler, passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch (error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Mismatch: The chosen SPHINCS+ parameter set");
     }
   });
@@ -143,7 +144,7 @@ describe("Quantum Purse Basics", () => {
       );
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -156,7 +157,7 @@ describe("Quantum Purse Basics", () => {
       );
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Seed phrase cannot be empty or uninitialized");
     }
   });
@@ -169,7 +170,7 @@ describe("Quantum Purse Basics", () => {
       );
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -182,7 +183,7 @@ describe("Quantum Purse Basics", () => {
       );
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Seed phrase cannot be empty or uninitialized");
     }
   });
@@ -193,7 +194,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.generateMasterSeed(passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -204,7 +205,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.generateMasterSeed(passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -217,7 +218,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.genAccount(passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -230,7 +231,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.genAccount(passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -243,7 +244,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.exportSeedPhrase(passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -256,7 +257,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.exportSeedPhrase(passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -269,7 +270,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.genAccountInBatch(passwordStrHandler, 0, 3);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -282,7 +283,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.genAccountInBatch(passwordStrHandler, 0, 3);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -296,7 +297,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.recoverAccounts(passwordStrHandler, 3);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -310,7 +311,7 @@ describe("Quantum Purse Basics", () => {
       await wallet.recoverAccounts(passwordStrHandler, 3);
       expect.fail("Expected an error to be thrown");
     } catch(error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -321,7 +322,7 @@ describe("Quantum Purse Basics", () => {
       await QuantumPurse.checkPassword(passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch (error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
@@ -332,7 +333,7 @@ describe("Quantum Purse Basics", () => {
       await QuantumPurse.checkPassword(passwordStrHandler);
       expect.fail("Expected an error to be thrown");
     } catch (error) {
-      console.error(error)
+      logger("error", String(error))
       expect(error).to.contain("Password cannot be empty or uninitialized");
     }
   });
