@@ -36,6 +36,7 @@ function createWindow() {
             nodeIntegration: false,
             contextIsolation: true,
             sandbox: true,
+            devTools: !app.isPackaged,
         },
     });
 
