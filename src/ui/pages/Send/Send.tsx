@@ -21,6 +21,7 @@ import styles from "./Send.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
 import { Address, fixedPointFrom } from "@ckb-ccc/core";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import { logger } from "../../../core/logger";
 
 const Send: React.FC = () => {
   const [form] = Form.useForm();
@@ -123,7 +124,7 @@ const Send: React.FC = () => {
         scanner.clear();
       },
       (errorMessage) => {
-        console.log(errorMessage);
+        logger("info", errorMessage);
       }
     );
 

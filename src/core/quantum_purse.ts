@@ -8,6 +8,7 @@ import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, Bytes
 import { getClaimEpoch } from "./epoch";
 import { QPSigner } from "./ccc-adapter/qp_signer";
 import { DB } from "./db";
+import { logger } from './logger';
 
 export { SpxVariant } from "quantum-purse-key-vault";
 
@@ -116,7 +117,7 @@ export default class QuantumPurse extends QPSigner {
     firstAccount: boolean
   ): Promise<void> {
     if (!this.hasClientStarted) {
-      console.error("Light client has not initialized");
+      logger("error", "Light client has not initialized");
       return Promise.resolve();
     }
 
@@ -135,7 +136,7 @@ export default class QuantumPurse extends QPSigner {
   /* Calculate sync status */
   private async getSyncStatus() {
     if (!this.hasClientStarted) {
-      console.error("Light client has not initialized");
+      logger("error", "Light client has not initialized");
       return {
         nodeId: "NULL",
         connections: 0,
@@ -209,14 +210,14 @@ export default class QuantumPurse extends QPSigner {
       );
       this.hasClientStarted = true;
     } catch (error) {
-      console.error("Failed to start light client:", error);
+      logger("error", "Failed to start light client: " + String(error));
     }
   }
 
   /* Fetch the sphincs+ celldeps to the light client in quantumPurse wallet setup */
   private async fetchSphincsPlusCellDeps() {
     if (!this.hasClientStarted) {
-      console.error("Light client has not initialized");
+      logger("error", "Light client has not initialized");
       return;
     }
     await this.client.fetchTransaction(SPHINCSPLUS_LOCK.outPoint.txHash);
@@ -333,7 +334,7 @@ export default class QuantumPurse extends QPSigner {
    */
   public async getBalance(spxLockArgs?: Hex): Promise<bigint> {
     if (!this.hasClientStarted) {
-      console.error("Light client has not initialized");
+      logger("error", "Light client has not initialized");
       return Promise.resolve(BigInt(0));
     }
 
@@ -358,7 +359,7 @@ export default class QuantumPurse extends QPSigner {
    */
   public async getNervosDaoBalance(spxLockArgs?: Hex): Promise<bigint> {
     if (!this.hasClientStarted) {
-      console.error("Light client has not initialized");
+      logger("error", "Light client has not initialized");
       return Promise.resolve(BigInt(0));
     }
 
@@ -488,7 +489,7 @@ export default class QuantumPurse extends QPSigner {
     const spxLockArgsList = await this.keyVault.recover_accounts(password, count) as Hex[];
 
     if (!this.hasClientStarted) {
-      console.error("Light client has not initialized");
+      logger("error", "Light client has not initialized");
       return;
     }
 
