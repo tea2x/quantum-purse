@@ -1,11 +1,11 @@
 // logger.ts
 import { IS_MAIN_NET } from './config';
 
-const isNativeApp = process.env.NATIVE_APP === "true";
+const IS_NATIVE_APP = process.env.NATIVE_APP === "true";
 
 export function logger(type: "info" | "error", message: string): void {
-    // no logging in production build
-    if (isNativeApp && IS_MAIN_NET)
+    // No logging in production build
+    if (IS_NATIVE_APP && IS_MAIN_NET)
         return;
 
     if (type === "info") {
