@@ -35,13 +35,24 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
+            sandbox: true,
         },
     });
 
     mainWindow.setMinimumSize(1010, 760);
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
+
+    mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
+        const parsedUrl = new URL(navigationUrl);
+        if (parsedUrl.protocol !== 'file:') {
+            event.preventDefault();
+            shell.openExternal(navigationUrl);
+        }
+    });
+
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         shell.openExternal(url);
+        return { action: 'deny' };
     });
 }
 
@@ -63,7 +74,31 @@ app.whenReady().then(() => {
         const responseHeaders = Object.assign({}, details.responseHeaders);
         responseHeaders['Cross-Origin-Opener-Policy'] = ['same-origin'];
         responseHeaders['Cross-Origin-Embedder-Policy'] = ['require-corp'];
+
+        responseHeaders['Content-Security-Policy'] = [
+            "default-src 'self'; " +
+            "script-src 'self' 'unsafe-eval'; " +
+            "style-src 'self' 'unsafe-inline'; " +
+            "font-src 'self'; " +
+            "img-src 'self'; " +
+            "connect-src 'self' https://ckb-faucet-proxy.vercel.app ws: wss:; " +
+            "worker-src 'self' blob:; " +
+            "manifest-src 'self'; " +
+            "object-src 'none'; " +
+            "base-uri 'self'; " +
+            "form-action 'self'; " +
+            "frame-ancestors 'none';"
+        ];
+
+        responseHeaders['X-Content-Type-Options'] = ['nosniff'];
+        responseHeaders['X-Frame-Options'] = ['DENY'];
+
         callback({ responseHeaders });
+    });
+
+    session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+        const allowedPermissions = ['clipboard-read', 'clipboard-write'];
+        callback(allowedPermissions.includes(permission));
     });
 
     createWindow();
