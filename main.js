@@ -51,7 +51,14 @@ function createWindow() {
     });
 
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-        shell.openExternal(url);
+        try {
+            const parsedUrl = new URL(url);
+            if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+                shell.openExternal(url);
+            }
+        } catch (e) {
+            // nothing
+        }
         return { action: 'deny' };
     });
 }
