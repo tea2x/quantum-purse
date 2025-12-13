@@ -402,13 +402,17 @@ export default class QuantumPurse extends QPSigner {
    * @remark The password is overwritten with zeros after use.
    */
   public async genAccount(password: Uint8Array): Promise<string> {
-    if (!this.keyVault) throw new Error("KeyVault not initialized!");
-    const [lockArgsList, lockArgs] = await Promise.all([
-      this.getAllLockScriptArgs(),
-      this.keyVault.gen_new_account(password)
-    ]);
-    await this.setSellectiveSyncFilterInternal(lockArgs as Hex, (lockArgsList.length === 0));
-    return lockArgs;
+    try {
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      const [lockArgsList, lockArgs] = await Promise.all([
+        this.getAllLockScriptArgs(),
+        this.keyVault.gen_new_account(password)
+      ]);
+      await this.setSellectiveSyncFilterInternal(lockArgs as Hex, (lockArgsList.length === 0));
+      return lockArgs;
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
@@ -418,7 +422,11 @@ export default class QuantumPurse extends QPSigner {
    * @remark The input password is overwritten with zeros after calculation.
    */
   public static checkPassword(password: Uint8Array): number {
-    return KeyVaultUtil.password_checker(password);
+    try {
+      return KeyVaultUtil.password_checker(password);
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
@@ -432,8 +440,13 @@ export default class QuantumPurse extends QPSigner {
     seedPhrase: Uint8Array,
     password: Uint8Array
   ): Promise<void> {
-    if (!this.keyVault) throw new Error("KeyVault not initialized!");
-    await this.keyVault.import_seed_phrase(seedPhrase, password);
+    try {
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      await this.keyVault.import_seed_phrase(seedPhrase, password);
+    } finally {
+      seedPhrase.fill(0);
+      password.fill(0);
+    }
   }
 
   /**
@@ -444,9 +457,13 @@ export default class QuantumPurse extends QPSigner {
    * @remark The password is overwritten with zeros after use. Handle the returned seed carefully to avoid leakage.
    */
   public async exportSeedPhrase(password: Uint8Array): Promise<Uint8Array> {
-    if (!this.keyVault) throw new Error("KeyVault not initialized!");
-    const mnemonic = await this.keyVault.export_seed_phrase(password);
-    return mnemonic;
+    try {
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      const mnemonic = await this.keyVault.export_seed_phrase(password);
+      return mnemonic;
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
@@ -455,8 +472,12 @@ export default class QuantumPurse extends QPSigner {
    * @remark The password is overwritten with zeros after use.
    */
   public async generateMasterSeed(password: Uint8Array): Promise<void> {
-    if (!this.keyVault) throw new Error("KeyVault not initialized!");
-    await this.keyVault.generate_master_seed(password);
+    try {
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      await this.keyVault.generate_master_seed(password);
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
@@ -472,9 +493,13 @@ export default class QuantumPurse extends QPSigner {
     startIndex: number,
     count: number
   ): Promise<string[]> {
-    if (!this.keyVault) throw new Error("KeyVault not initialized!");
-    const list = await this.keyVault.try_gen_account_batch(password, startIndex, count);
-    return list;
+    try {
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      const list = await this.keyVault.try_gen_account_batch(password, startIndex, count);
+      return list;
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
@@ -482,36 +507,39 @@ export default class QuantumPurse extends QPSigner {
    * @param password - The password to decrypt the master seed (will be zeroed out).
    * @param count - The number of keys to search for.
    * @remark The password is overwritten with zeros after use.
-   * TODO test set sellective sync
    */
   public async recoverAccounts(password: Uint8Array, count: number): Promise<void> {
-    if (!this.keyVault) throw new Error("KeyVault not initialized!");
-    const spxLockArgsList = await this.keyVault.recover_accounts(password, count) as Hex[];
+    try {
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+      const spxLockArgsList = await this.keyVault.recover_accounts(password, count) as Hex[];
 
-    if (!this.hasClientStarted) {
-      logger("error", "Light client has not initialized");
-      return;
-    }
-
-    const startBlocksPromises = spxLockArgsList.map(async (lockArgs) => {
-      const lock = this.getLockScript(lockArgs);
-      const searchKey: ClientIndexerSearchKeyLike = {
-        scriptType: "lock",
-        script: lock,
-        scriptSearchMode: "prefix",
-      };
-
-      let startBlock = BigInt(0);
-      const response = await this.client.getTransactions(searchKey, "asc", 1);
-      if (response.transactions && response.transactions.length > 0) {
-        // found the first transation, set to the block prior
-        startBlock = response.transactions[0].blockNumber - BigInt(1);
+      if (!this.hasClientStarted) {
+        logger("error", "Light client has not initialized");
+        return;
       }
-      return startBlock;
-    });
 
-    const startBlocks = await Promise.all(startBlocksPromises);
-    await this.setSellectiveSyncFilter(spxLockArgsList, startBlocks, LightClientSetScriptsCommand.All);
+      const startBlocksPromises = spxLockArgsList.map(async (lockArgs) => {
+        const lock = this.getLockScript(lockArgs);
+        const searchKey: ClientIndexerSearchKeyLike = {
+          scriptType: "lock",
+          script: lock,
+          scriptSearchMode: "prefix",
+        };
+
+        let startBlock = BigInt(0);
+        const response = await this.client.getTransactions(searchKey, "asc", 1);
+        if (response.transactions && response.transactions.length > 0) {
+          // found the first transation, set to the block prior
+          startBlock = response.transactions[0].blockNumber - BigInt(1);
+        }
+        return startBlock;
+      });
+
+      const startBlocks = await Promise.all(startBlocksPromises);
+      await this.setSellectiveSyncFilter(spxLockArgsList, startBlocks, LightClientSetScriptsCommand.All);
+    } finally {
+      password.fill(0);
+    }
   }
 
   /**
