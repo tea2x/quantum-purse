@@ -12,7 +12,11 @@ const RevealSRP: React.FC = () => {
   const dispatch = useDispatch<Dispatch>();
   const srp = useSelector((state: RootState) => state.wallet.srp);
   const exportSrpHandler = async (password: Uint8Array) => {
-    await dispatch.wallet.exportSRP({ password })
+    try {
+      await dispatch.wallet.exportSRP({ password })
+    } finally {
+      password.fill(0);
+    }
   };
   
   const [paramSet, setParamSet] = useState<number | null>(null);

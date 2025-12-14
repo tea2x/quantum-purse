@@ -85,7 +85,7 @@ export const wallet = createModel<RootModel>()({
     setSRP(state: StateType, srp: string) {
       return { ...state, srp };
     },
-    resetSRP(state: StateType) { //todo improve
+    resetSRP(state: StateType) {
       return { ...state, srp: undefined };
     },
     reset() {
@@ -190,29 +190,33 @@ export const wallet = createModel<RootModel>()({
         // The new account is the last account in the accountsData array
         // Return it to the caller to explorer the new account
         return accountsData?.at(-1);
-      } catch (error) {
-        throw error;
+      } finally {
+        payload.password.fill(0);
       }
     },
     async createWallet({ password }) {
-      try {
       // each function call to key-vault clears the password bytes buffer,
       // here it is firstly used to generate the main wallet seed the to generate the first default account
       // so clone password for the second call
-        const clonedPassword = password.slice();
+      let clonedPassword: Uint8Array = new Uint8Array(0);
+      try {
+        clonedPassword = password.slice();
         await quantum.generateMasterSeed(password);
         await quantum.genAccount(clonedPassword);
         this.loadCurrentAccount({});
-      } catch (error) {
-        throw error;
+      } finally {
+        password.fill(0);
+        clonedPassword.fill(0);
       }
     },
     async exportSRP({ password }) {
+      let srp: Uint8Array = new Uint8Array(0);
       try {
-        const srp = await quantum.exportSeedPhrase(password);
+        srp = await quantum.exportSeedPhrase(password);
         this.setSRP(bytesToUtf8(srp));
-      } catch (error) {
-        throw error;
+      } finally {
+        password.fill(0);
+        srp.fill(0);
       }
     },
     async getAccountBalance({ spxLockArgs }) {
@@ -306,7 +310,7 @@ export const wallet = createModel<RootModel>()({
       // so clone password for the sequential calls
       let clonedPassword: Uint8Array = new Uint8Array(password.length);
       let inloopClonePassword: Uint8Array = new Uint8Array(password.length);
-      
+
       try {
         clonedPassword = password.slice();
         await quantum.importSeedPhrase(srp, password);
@@ -346,10 +350,9 @@ export const wallet = createModel<RootModel>()({
         await quantum.recoverAccounts(clonedPassword, accountsToRecover);
 
         this.setActive(true);
-      } catch (error) {
-        throw error;
       } finally {
         // clean up always
+        srp.fill(0);
         password.fill(0);
         clonedPassword.fill(0);
         inloopClonePassword.fill(0);

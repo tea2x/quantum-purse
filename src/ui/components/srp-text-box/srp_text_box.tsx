@@ -59,16 +59,18 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   const onSubmit = async () => {
     if (!passwordInputRef.current) return;
 
-    try {
-      const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
-      passwordInputRef.current.value = '';
+    const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+    passwordInputRef.current.value = '';
 
+    try {
       await exportSrpHandler(passwordBytes);
     } catch (error) {
       notification.error({
         message: "Failed to reveal SRP",
         description: formatError(error),
       });
+    } finally {
+      passwordBytes.fill(0);
     }
   };
 

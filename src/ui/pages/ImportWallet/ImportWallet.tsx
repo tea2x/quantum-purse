@@ -373,7 +373,12 @@ const ImportWalletContent: React.FC = () => {
   const onFinish = async ({ parameterSet }: { parameterSet: SpxVariant }) => {
     if (!passwordInputRef.current || !srpInputRef.current) return;
 
-    // Convert to bytes immediately
+    QuantumPurse.getInstance().initKeyVault(parameterSet);
+    
+    // store chosen param set to storage, so wallet type retains when refreshed
+    await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+
+    // Convert to bytes immediately to allow referencing throughout the call stack
     const srpBytes = utf8ToBytes(srpInputRef.current.value);
     const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
 
@@ -383,10 +388,6 @@ const ImportWalletContent: React.FC = () => {
     if (confirmPasswordInputRef.current) {
       confirmPasswordInputRef.current.value = '';
     }
-
-    QuantumPurse.getInstance().initKeyVault(parameterSet);
-    // store chosen param set to storage, so wallet type retains when refreshed
-    await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
 
     try {
       await dispatch.wallet.importWallet({ srp: srpBytes, password: passwordBytes });
