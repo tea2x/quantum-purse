@@ -36,13 +36,15 @@ const Accounts: React.FC = () => {
 
   const createAccountHandler = async (password: Uint8Array) => {
     try {
-      const newAccount = await dispatch.wallet.createAccount({ password });
+      await dispatch.wallet.createAccount({ password });
       authenticationRef.current?.close();
     } catch (error) {
       notification.error({
         message: "Failed to create account",
         description: formatError(error),
       });
+    } finally {
+      password.fill(0);
     }
   };
 

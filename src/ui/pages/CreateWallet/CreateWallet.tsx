@@ -227,14 +227,19 @@ export const StepCreatePassword: React.FC = () => {
     }
     // store chosen param set to storage, so wallet type retains when refreshed
     await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+
+    // Convert to bytes immediately to allow referencing throughout the call stack
+    const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+
+    // each function call to key-vault clears the password bytes buffer, here it is firstly
+    // used to create the wallet then to export the SRP. So clone password for the second call
+    const clonedPasswordBytes = passwordBytes.slice();
+
+    // Clear the inputs immediately after conversion
+    passwordInputRef.current.value = '';
+    confirmPasswordInputRef.current!.value = '';
+
     try {
-      const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
-      passwordInputRef.current.value = '';
-      confirmPasswordInputRef.current!.value = '';
-      // each function call to key-vault clears the password bytes buffer,
-      // here it is firstly used to create the wallet then to export the SRP
-      // so clone password for the second call
-      const clonedPasswordBytes = passwordBytes.slice();
       await dispatch.wallet
         .createWallet({ password: passwordBytes })
         .then(async () => {
@@ -249,6 +254,9 @@ export const StepCreatePassword: React.FC = () => {
         message: "Wallet creation failed!",
         description: formatError(error),
       });
+    } finally {
+      passwordBytes.fill(0);
+      clonedPasswordBytes.fill(0);
     }
   };
 
@@ -385,7 +393,11 @@ const StepSecureSRP: React.FC = () => {
   );
 
   const exportSrpHandler = async (password: Uint8Array) => {
-    await dispatch.wallet.exportSRP({ password });
+    try {
+      await dispatch.wallet.exportSRP({ password });
+    } finally {
+      password.fill(0);
+    }
   };
 
   return (

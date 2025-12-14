@@ -7,11 +7,15 @@ const usePasswordValidator = (variant: SpxVariant) => {
       return Promise.resolve();
     }
 
+    let passwordBytes: Uint8Array = new Uint8Array(0);
     try {
-      QuantumPurse.checkPassword(utf8ToBytes(password));
+      passwordBytes = utf8ToBytes(password);
+      QuantumPurse.checkPassword(passwordBytes);
       return Promise.resolve();
     } catch (error) {
       return Promise.reject(new Error(error as string));
+    } finally {
+      passwordBytes.fill(0);
     }
   };
 
@@ -19,8 +23,10 @@ const usePasswordValidator = (variant: SpxVariant) => {
     if (!password) {
       return Promise.resolve();
     }
+    let passwordBytes: Uint8Array = new Uint8Array(0);
     try {
-      const level = QuantumPurse.checkPassword(utf8ToBytes(password));
+      passwordBytes = utf8ToBytes(password);
+      const level = QuantumPurse.checkPassword(passwordBytes);
       const entropyMap = {
         [SpxVariant.Sha2128F]: 128,
         [SpxVariant.Shake128F]: 128,
@@ -43,6 +49,8 @@ const usePasswordValidator = (variant: SpxVariant) => {
     } catch (error) {
       // Ignore errors here
       return Promise.resolve();
+    } finally {
+      passwordBytes.fill(0);
     }
   };
 
