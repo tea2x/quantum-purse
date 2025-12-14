@@ -48,7 +48,7 @@
   "devDependencies": {
     "@babel/core": "7.28.4",
     "@babel/preset-env": "7.28.3",
-    "@electron/rebuild": "4.0.1",
+    "@electron/rebuild": "4.0.2",
     "@pmmmwh/react-refresh-webpack-plugin": "0.6.1",
     "@svgr/webpack": "8.1.0",
     "@types/chai": "5.2.2",
@@ -71,7 +71,7 @@
     "karma-mocha": "2.0.1",
     "karma-typescript": "5.5.4",
     "karma-webpack": "5.0.1",
-    "mocha": "11.7.4",
+    "mocha": "11.7.5",
     "react-refresh": "0.18.0",
     "sass": "1.93.2",
     "sass-loader": "16.0.5",
