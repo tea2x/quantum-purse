@@ -105,7 +105,7 @@ app.whenReady().then(() => {
     });
 
     session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-        const allowedPermissions = ['clipboard-read', 'clipboard-write'];
+        const allowedPermissions = ['clipboard-read', 'clipboard-write', 'media'];
         callback(allowedPermissions.includes(permission));
     });
 
