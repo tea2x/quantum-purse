@@ -10,6 +10,7 @@ if (process.env.NATIVE_APP === "true") {
 
 module.exports = merge(common, {
   mode: "production",
+  devtool: false,
   output: {
     publicPath: publicPath,
   },

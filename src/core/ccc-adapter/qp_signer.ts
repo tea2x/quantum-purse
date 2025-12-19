@@ -18,14 +18,14 @@ import {
 import { QPClient } from "./qp_client";
 import { IS_MAIN_NET } from "../config";
 import __wbg_init, { KeyVault, SpxVariant } from "quantum-purse-key-vault";
-import { get_ckb_tx_message_all_hash, utf8ToBytes } from "../utils";
+import { get_ckb_tx_message_all_hash } from "../utils";
 
 export class QPSigner extends Signer {
   public accountPointer?: BytesLike;
   protected spxLock: { codeHash: BytesLike, hashType: HashTypeLike };
   protected keyVault?: KeyVault;
   public requestPassword?: (
-    resolve: (password: string) => void,
+    resolve: (password: Uint8Array) => void,
     reject: () => void
   ) => void;
 
@@ -149,23 +149,23 @@ export class QPSigner extends Signer {
 
   /** Sign only the transaction */
   async signOnlyTransaction(txLike: TransactionLike): Promise<Transaction> {
-    if (!this.keyVault) throw new Error("KeyVault not initialized!");
-
-    const tx = Transaction.from(txLike);
-    const message = get_ckb_tx_message_all_hash(tx); // TODO: Update when new CCC core support is released
-
-    const passwordPromise = new Promise<string>((resolve, reject) => {
-      if (this.requestPassword) {
-        this.requestPassword(resolve, reject);
-      } else {
-        reject(new Error("Password request callback not available"));
-      }
-    });
-
-    let passwordBytes: Uint8Array | undefined;
+    let password: Uint8Array = new Uint8Array(0);
     try {
-      passwordBytes = utf8ToBytes(await passwordPromise);
-      const spxSig = await this.keyVault.sign(passwordBytes, this.accountPointer as string, message);
+      if (!this.keyVault) throw new Error("KeyVault not initialized!");
+
+      const tx = Transaction.from(txLike);
+      const message = get_ckb_tx_message_all_hash(tx); // TODO: Update when new CCC core support is released
+
+      const passwordPromise = new Promise<Uint8Array>((resolve, reject) => {
+        if (this.requestPassword) {
+          this.requestPassword(resolve, reject);
+        } else {
+          reject(new Error("Password request callback not available"));
+        }
+      });
+
+      password = await passwordPromise;
+      const spxSig = await this.keyVault.sign(password, this.accountPointer as string, message);
       const position = 0;
       const witness = tx.getWitnessArgsAt(position) ?? WitnessArgs.from({});
       witness.lock = hexFrom(spxSig);
@@ -173,6 +173,8 @@ export class QPSigner extends Signer {
       return tx;
     } catch (error: any) {
       throw new Error("Failed to sign transaction: " + error);
+    } finally {
+      password.fill(0);
     }
   }
 }

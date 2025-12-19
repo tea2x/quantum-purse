@@ -19,8 +19,9 @@ import { CKB_DECIMALS } from "../../utils/constants";
 import { cx, formatError } from "../../utils/methods";
 import styles from "./Send.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
-import { Address } from "@ckb-ccc/core";
+import { Address, fixedPointFrom } from "@ckb-ccc/core";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import { logger } from "../../../core/logger";
 
 const Send: React.FC = () => {
   const [form] = Form.useForm();
@@ -33,7 +34,7 @@ const Send: React.FC = () => {
   );
   const [fromAccountBalance, setFromAccountBalance] = useState<string | null>(null);
   const [passwordResolver, setPasswordResolver] = useState<{
-    resolve: (password: string) => void;
+    resolve: (password: Uint8Array) => void;
     reject: () => void;
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
@@ -123,7 +124,7 @@ const Send: React.FC = () => {
         scanner.clear();
       },
       (errorMessage) => {
-        console.log(errorMessage);
+        logger("info", errorMessage);
       }
     );
 
@@ -157,7 +158,7 @@ const Send: React.FC = () => {
   };
 
   // Handle password submission and pass it to QPsigner::signOnlyTransaction
-  const authenCallback = async (password: string) => {
+  const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
       passwordResolver.resolve(password);
       setPasswordResolver(null);
@@ -250,7 +251,7 @@ const Send: React.FC = () => {
                         !isSendMax &&
                         fromAccountBalance &&
                         value &&
-                        BigInt(fromAccountBalance) / BigInt(CKB_DECIMALS) < BigInt(value)
+                        BigInt(fromAccountBalance) < fixedPointFrom(value)
                       ) {
                         return Promise.reject("Insufficient balance");
                       }
