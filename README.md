@@ -89,8 +89,8 @@ Quantum Purse offers pre-built binaries for macOS, Windows and Linux but if you 
 
 ## Build from source
 ###### <u>Dependencies</u>
-1. Node >=20.
-2. Chrome-based or safari browsers.
+1. Node >=22.12
+2. Brave, Google Chrome, Safari
 
 ###### <u>Command list</u>
 ```shell
