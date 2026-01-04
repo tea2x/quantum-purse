@@ -79,7 +79,7 @@ const RequestWithdraw: React.FC = () => {
           const blockNum = depositHeader.number;
           estimatedInfos[key] = {tilMaxProfit, currentProfit, blockNum};
         } catch (error) {
-          logger("error", "Error calculating remaining days for cell: " + JSON.stringify(cell) + " Error: " + String(error));
+          logger("error", "Error calculating remaining days for cell: " + cell.outPoint.txHash + "/" + cell.outPoint.index + " Error: " + String(error));
           estimatedInfos[key] = {tilMaxProfit: Infinity, currentProfit: 0, blockNum: BigInt(0)};
         }
       }

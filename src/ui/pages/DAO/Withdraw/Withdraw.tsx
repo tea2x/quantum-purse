@@ -93,7 +93,7 @@ const Withdraw: React.FC = () => {
           const blockNum = withdrawHeader.number;
           daysMap[key] = { remain, profit, blockNum };
         } catch (error) {
-          logger("error", "Error calculating remaining days for cell: " + JSON.stringify(cell) + " Error: " + String(error));
+          logger("error", "Error calculating remaining days for cell: " + cell.outPoint.txHash + "/" + cell.outPoint.index + " Error: " + String(error));
           daysMap[key] = { remain: Infinity, profit: 0, blockNum: BigInt(0) }; // Error indicators
         }
       }
