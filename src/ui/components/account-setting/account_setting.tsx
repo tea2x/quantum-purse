@@ -66,7 +66,7 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account, onClose }) => 
           <Input
             value={startingBlock}
             onChange={(e) => setStartingBlock(e.target.value)}
-            placeholder={`In range [0, ${syncStatus.tipBlock}]`}
+            placeholder={`Valid range: [0, ${syncStatus.tipBlock}]`}
             style={{ flex: 1 }}
           />
           <Button
