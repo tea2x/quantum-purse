@@ -129,6 +129,7 @@ export const AccountItem: React.FC<AccountItemProps> = ({
         onCancel={() => setIsModalOpen(false)}
         footer={null}
         centered
+        width={450}
       >
         <AccountSetting 
           account={{ name, address, spxLockArgs }} 
