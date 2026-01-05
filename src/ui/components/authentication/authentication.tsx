@@ -101,11 +101,11 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
 
     const modalOptions = useMemo(() => {
       return {
-        okText: isForgotPassword ? "Ok, re-import my wallet" : "Submit",
+        okText: isForgotPassword ? "Delete & re-import" : "Submit",
         onOk: isForgotPassword
           ? () => setIsDeleteWalletConfirmModalOpen(true)
           : form.submit,
-        cancelText: isForgotPassword ? "Back to Authentication" : "Cancel",
+        cancelText: isForgotPassword ? "Cancel" : "Cancel",
         onCancel: isForgotPassword
           ? () => setIsForgotPassword(false)
           : closeHandler,
