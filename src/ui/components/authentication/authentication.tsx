@@ -78,6 +78,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
       setOpen(false);
       setIsForgotPassword(false);
       setShowPassword(false);
+      setSubmittable(false);
       if (passwordInputRef.current) {
         passwordInputRef.current.value = '';
       }
