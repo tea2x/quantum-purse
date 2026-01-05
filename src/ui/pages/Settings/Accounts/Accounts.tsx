@@ -115,7 +115,7 @@ const Accounts: React.FC = () => {
         </Spin>
       </div>
       <Authentication
-        title="Generating A New Account"
+        title="Generate a new account"
         ref={authenticationRef}
         loading={loadingCreateAccount}
         authenCallback={createAccountHandler}

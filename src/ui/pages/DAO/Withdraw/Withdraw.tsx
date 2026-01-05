@@ -332,7 +332,7 @@ const Withdraw: React.FC = () => {
               <Authentication
                 ref={authenticationRef}
                 authenCallback={authenCallback}
-                title="Withdraw from the DAO"
+                title="Make a withdraw"
                 afterClose={() => {
                   if (passwordResolver) {
                     passwordResolver.reject();

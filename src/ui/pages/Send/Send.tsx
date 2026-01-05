@@ -318,7 +318,7 @@ const Send: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Transferring CKB"
+          title="Transfer CKB"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();
