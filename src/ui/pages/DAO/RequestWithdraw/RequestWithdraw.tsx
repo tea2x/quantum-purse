@@ -185,7 +185,7 @@ const RequestWithdraw: React.FC = () => {
         feeRate
       });
       notification.success({
-        message: "Withdraw request transaction successful",
+        message: "Withdraw request successful",
         description: (
           <div>
             <p>

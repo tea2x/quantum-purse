@@ -4,7 +4,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import LayoutCtx from "../../context/layout_ctx";
 import { cx, shortenAddress, formatBalance } from "../../utils/methods";
-import Icon from "../icon/icon";
 import styles from "./header.module.scss";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";

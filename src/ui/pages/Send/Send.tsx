@@ -141,7 +141,7 @@ const Send: React.FC = () => {
         : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
       form.resetFields();
       notification.success({
-        message: "Send transaction successful",
+        message: "Send successful",
         description: (
           <div>
             <p>

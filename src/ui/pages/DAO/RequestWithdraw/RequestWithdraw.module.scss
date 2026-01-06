@@ -1,6 +1,6 @@
 .withdrawRequestForm {
   :global {
-    height: 55rem;
+    height: 50rem;
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(12px);
 
@@ -43,7 +43,7 @@
 .requestWithdrawListContainer {
   overflow-y: auto;
   margin-top: 2rem;
-  max-height: 40rem; // tuned w/o exact calculation, adjust as needed
+  max-height: 35rem; // tuned w/o exact calculation, adjust as needed
   @media (max-width: 768px) {
     max-height: 31rem;
     margin-top: 0;
