@@ -42,6 +42,7 @@ const Send: React.FC = () => {
   const [isSendToMyAccount, setIsSendToMyAccount] = useState(false);
   const [isSendMax, setIsSendMax] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -154,16 +155,19 @@ const Send: React.FC = () => {
         message: "Send transaction failed",
         description: formatError(error),
       });
+    } finally {
+      setIsAuthenticating(false);
+      authenticationRef.current?.close();
     }
   };
 
   // Handle password submission and pass it to QPsigner::signOnlyTransaction
   const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
+      setIsAuthenticating(true);
       passwordResolver.resolve(password);
       setPasswordResolver(null);
     }
-    authenticationRef.current?.close();
   };
 
   return (
@@ -318,6 +322,7 @@ const Send: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
+          loading={isAuthenticating}
           title="Transfer CKB"
           afterClose={() => {
             if (passwordResolver) {

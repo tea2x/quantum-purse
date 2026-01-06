@@ -35,6 +35,7 @@ const Withdraw: React.FC = () => {
   const [scannerUp, setScannerUp] = useState(false);
   const [isWithdrawToMyAccount, setIsWithdrawToMyAccount] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
   const { withdraw: loadingWithdraw } = useSelector(
     (state: RootState) => state.loading.effects.wallet
@@ -217,15 +218,18 @@ const Withdraw: React.FC = () => {
         message: "Withdraw transaction failed",
         description: formatError(error),
       });
+    } finally {
+      setIsAuthenticating(false);
+      authenticationRef.current?.close();
     }
   };
 
   const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
+      setIsAuthenticating(true);
       passwordResolver.resolve(password);
       setPasswordResolver(null);
     }
-    authenticationRef.current?.close();
   };
 
   return (
@@ -332,6 +336,7 @@ const Withdraw: React.FC = () => {
               <Authentication
                 ref={authenticationRef}
                 authenCallback={authenCallback}
+                loading={isAuthenticating}
                 title="Make a withdraw"
                 afterClose={() => {
                   if (passwordResolver) {

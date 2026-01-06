@@ -42,6 +42,7 @@ const Deposit: React.FC = () => {
   const [isDepositToMyAccount, setIsDepositToMyAccount] = useState(false);
   const [isDepositMax, setIsDepositMax] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -154,16 +155,19 @@ const Deposit: React.FC = () => {
         message: "Deposit transaction failed",
         description: formatError(error),
       });
+    } finally {
+      setIsAuthenticating(false);
+      authenticationRef.current?.close();
     }
   };
 
   // Handle password submission and pass it to QPsigner::signOnlyTransaction
   const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
+      setIsAuthenticating(true);
       passwordResolver.resolve(password);
       setPasswordResolver(null);
     }
-    authenticationRef.current?.close();
   };
 
   return (
@@ -318,6 +322,7 @@ const Deposit: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
+          loading={isAuthenticating}
           title="Make a deposit"
           afterClose={() => {
             if (passwordResolver) {

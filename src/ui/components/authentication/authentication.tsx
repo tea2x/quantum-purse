@@ -125,7 +125,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
           onCancel={modalOptions.onCancel}
           centered
           className={styles.authentication}
-          confirmLoading={loading}
+          loading={loading}
           cancelButtonProps={{
             disabled: loading,
           }}
