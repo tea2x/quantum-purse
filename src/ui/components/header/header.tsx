@@ -82,9 +82,9 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
 
   // Define scaling factor and dynamic sizes for mobile view
   const scalingFactor = screens.md ? 1 : 0.8;
-  const pieChartSize = 90 * scalingFactor;
-  const innerRadius = 25 * scalingFactor;
-  const outerRadius = 45 * scalingFactor;
+  const pieChartSize = 80 * scalingFactor;
+  const innerRadius = 20 * scalingFactor;
+  const outerRadius = 35 * scalingFactor;
   const fontSize = Math.round(12 * scalingFactor);
   const labelStyle = {
     fontSize: `${fontSize}px`,
@@ -96,7 +96,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
       {showWarning && (
         <Alert
           closable
-          type="warning"
+          type="info"
           message="Only send CKB to this wallet and be sure to have your client sync finalized before making any transactions!"
           onClose={() => setShowWarning(false)}
           banner={true}
