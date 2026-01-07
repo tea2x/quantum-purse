@@ -71,7 +71,7 @@ Quantum Purse is a true light wallet. It runs its own [CKB light client node](ht
 
 ## CCC
 
-Quantum Purse integrates [CCC](https://github.com/ckb-devrel/ccc) as its main CKB off-chain engine for e.g. transaction building. But in order to ensure light-client-js compatibility with CCC temporarily, Quantum Purse has to use a [fork from CCC](https://www.npmjs.com/package/ckb-ccc-core-light-client-js-patch). This fork is fairly simple and will be suspended in the future.
+Quantum Purse integrates [CCC](https://github.com/ckb-devrel/ccc) as its main CKB off-chain engine for e.g. transaction building. But in order to ensure light-client-js compatibility with CCC temporarily, Quantum Purse has to use a [fork from CCC](https://www.npmjs.com/package/ckb-ccc-core-light-client-js-patch). This fork is fairly simple and will find its way to the official CCC in the future.
 
 ## Wallet recovery
 
