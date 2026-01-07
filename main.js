@@ -45,8 +45,8 @@ function isUpgradeToMainnet() {
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
-        width: 920,
-        height: 800,
+        width: 910,
+        height: 700,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -55,7 +55,8 @@ function createWindow() {
         },
     });
 
-    mainWindow.setMinimumSize(920, 760);
+    mainWindow.setMinimumSize(400, 650);
+    mainWindow.setMaximumSize(910, 700);
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
 
     mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
