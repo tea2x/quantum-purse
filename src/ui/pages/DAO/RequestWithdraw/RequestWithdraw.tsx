@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Explore, Authentication, AuthenticationRef, AccountSelect, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
-import { cx, formatError } from "../../../utils/methods";
+import { cx, formatError, download } from "../../../utils/methods";
 import styles from "./RequestWithdraw.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
@@ -171,35 +171,44 @@ const RequestWithdraw: React.FC = () => {
     setFeeRate(feeRate);
   };
 
-  const handleWithdrawRequest = async (depositCell: ccc.Cell) => {
+  const handleWithdrawRequest = async (depositCell: ccc.Cell, signOffline: boolean) => {
     try {
       // todo update when light client js updates ccc core.
       const { depositHeader } = await getNervosDaoInfo(depositCell);
       const depositBlockNum = depositHeader.number;
       const depositBlockHash = depositHeader.hash;
-      const txId = await dispatch.wallet.requestWithdraw({
-        to: values.to,
-        depositCell: depositCell,
-        depositBlockNum: depositBlockNum,
-        depositBlockHash: depositBlockHash,
-        feeRate
-      });
-      notification.success({
-        message: "Withdraw request successful",
-        description: (
-          <div>
-            <p>
-              <Explore.Transaction txId={txId as string} />
-            </p>
-          </div>
-        ),
-      });
+
+      if (signOffline) {
+        const tx = await dispatch.wallet.requestWithdraw({
+          to: values.to,
+          depositCell: depositCell,
+          depositBlockNum: depositBlockNum,
+          depositBlockHash: depositBlockHash,
+          feeRate,
+          signOffline: true
+        });
+        notification.success({ message: "Transaction is signed successfully" });
+        download(tx);
+      } else {
+        const txId = await dispatch.wallet.requestWithdraw({
+          to: values.to,
+          depositCell: depositCell,
+          depositBlockNum: depositBlockNum,
+          depositBlockHash: depositBlockHash,
+          feeRate
+        });
+        notification.success({
+          message: "Withdraw request successful",
+          description: (<div> <p> <Explore.Transaction txId={txId as string} /> </p> </div>),
+        });
+      }
     } catch (error) {
       notification.error({
         message: "Withdraw request transaction failed",
         description: formatError(error),
       });
     } finally {
+      form.resetFields();
       setIsAuthenticating(false);
       authenticationRef.current?.close();
     }
@@ -362,10 +371,17 @@ const RequestWithdraw: React.FC = () => {
                             <div>Next locking cycle will start in {Number(tilMaxProfit.toFixed(1))} days</div>
                           </span>
                           <Button
+                            onClick={() => handleWithdrawRequest(cell, true)}
+                            style={{ marginRight: 8, height: "3rem" }}
+                            disabled={!isToValid || loadingRequest}
+                          >
+                            Sign & Export
+                          </Button>
+                          <Button
                             type="primary"
                             loading={loadingRequest}
-                            onClick={() => handleWithdrawRequest(cell)}
-                            disabled={!isToValid}
+                            onClick={() => handleWithdrawRequest(cell, false)}
+                            disabled={!isToValid || loadingRequest}
                           >
                             Request
                           </Button>

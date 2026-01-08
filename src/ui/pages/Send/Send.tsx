@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { CKB_DECIMALS } from "../../utils/constants";
-import { cx, formatError } from "../../utils/methods";
+import { cx, formatError, download } from "../../utils/methods";
 import styles from "./Send.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
 import { Address, fixedPointFrom } from "@ckb-ccc/core";
@@ -134,28 +134,32 @@ const Send: React.FC = () => {
     };
   }, [scannerUp]);
 
-  const handleSend = async () => {
+  const handleSend = async (signOffline: boolean) => {
     try {
-      const txId = isSendMax
-        ? await dispatch.wallet.sendAll({ to: values.to, feeRate })
-        : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
-      form.resetFields();
-      notification.success({
-        message: "Send successful",
-        description: (
-          <div>
-            <p>
-              <Explore.Transaction txId={txId as string} />
-            </p>
-          </div>
-        ),
-      });
+      if (signOffline) {
+        const tx = isSendMax
+          ? await dispatch.wallet.sendAll({ to: values.to, feeRate, signOffline: true })
+          : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate , signOffline: true });
+        notification.success({ message: "Transaction is signed successfully" });
+        download(tx);
+      } else {
+        const txId = isSendMax
+          ? await dispatch.wallet.sendAll({ to: values.to, feeRate })
+          : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
+        notification.success({
+          message: "Send successful",
+          description: (
+            <div> <p> <Explore.Transaction txId={txId as string} /> </p> </div>
+          ),
+        });
+      }
     } catch (error) {
       notification.error({
         message: "Send transaction failed",
         description: formatError(error),
       });
     } finally {
+      form.resetFields();
       setIsAuthenticating(false);
       authenticationRef.current?.close();
     }
@@ -308,8 +312,16 @@ const Send: React.FC = () => {
           <Form.Item>
             <Flex justify="end">
               <Button
+                onClick={() => handleSend(true)}
+                style={{ marginRight: 8, height: "3rem" }}
+                disabled={!submittable || loadingSend}
+              >
+                Sign & Export
+              </Button>
+
+              <Button
                 type="primary"
-                onClick={handleSend}
+                onClick={() => handleSend(false)}
                 disabled={!submittable || loadingSend}
                 loading={loadingSend}
                 className={styles.sendButton}

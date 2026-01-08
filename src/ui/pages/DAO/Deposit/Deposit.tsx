@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
 import { CKB_DECIMALS } from "../../../utils/constants";
-import { cx, formatError } from "../../../utils/methods";
+import { cx, formatError, download } from "../../../utils/methods";
 import styles from "./Deposit.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
 import { Address, fixedPointFrom } from "@ckb-ccc/core";
@@ -134,28 +134,30 @@ const Deposit: React.FC = () => {
     setFeeRate(feeRate);
   };
 
-  const handleDeposit = async () => {
+  const handleDeposit = async (signOffline: boolean) => {
     try {
-      const txId = isDepositMax
-        ? await dispatch.wallet.depositAll({to: values.to, feeRate})
-        : await dispatch.wallet.deposit({to: values.to, amount: values.amount, feeRate});
-      form.resetFields();
-      notification.success({
-        message: "Deposit successful",
-        description: (
-          <div>
-            <p>
-              <Explore.Transaction txId={txId as string} />
-            </p>
-          </div>
-        ),
-      });
+      if (signOffline) {
+        const tx = isDepositMax
+          ? await dispatch.wallet.depositAll({ to: values.to, feeRate, signOffline: true })
+          : await dispatch.wallet.deposit({ to: values.to, amount: values.amount, feeRate , signOffline: true });
+        notification.success({ message: "Transaction is signed successfully" });
+        download(tx);
+      } else {
+        const txId = isDepositMax
+          ? await dispatch.wallet.depositAll({to: values.to, feeRate})
+          : await dispatch.wallet.deposit({to: values.to, amount: values.amount, feeRate});
+        notification.success({
+          message: "Deposit successful",
+          description: ( <div> <p> <Explore.Transaction txId={txId as string} /> </p> </div> ),
+        });
+      }
     } catch (error) {
       notification.error({
         message: "Deposit transaction failed",
         description: formatError(error),
       });
     } finally {
+      form.resetFields();
       setIsAuthenticating(false);
       authenticationRef.current?.close();
     }
@@ -308,8 +310,15 @@ const Deposit: React.FC = () => {
           <Form.Item>
             <Flex justify="end">
               <Button
+                onClick={() => handleDeposit(true)}
+                style={{ marginRight: 8, height: "3rem" }}
+                disabled={!submittable || loadingDeposit}
+              >
+                Sign & Export
+              </Button>
+              <Button
                 type="primary"
-                onClick={handleDeposit}
+                onClick={() => handleDeposit(false)}
                 disabled={!submittable || loadingDeposit}
                 loading={loadingDeposit}
                 className={styles.depositButton}
