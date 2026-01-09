@@ -272,7 +272,6 @@ const Send: React.FC = () => {
                   <Input
                     value={values?.amount}
                     placeholder="Enter transfer amount"
-                    className={styles.inputField}
                     disabled={isSendMax}
                     style={{backgroundColor: "var(--gray-light)"}}
                   />

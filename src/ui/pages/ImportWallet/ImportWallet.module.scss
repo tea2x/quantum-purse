@@ -100,23 +100,6 @@
   }
 }
 
-.inputField {
-  width: 100%;
-  height: 4rem;
-  background-color: transparent !important;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-  :global(.ant-input),
-  :global(.ant-input-password-icon) {
-    color: var(--gray-light) !important;
-  }
-
-  :global(.ant-input::placeholder) {
-    color: var(--gray-03) !important;
-  }
-}
-
 .passwordWrapper {
   position: relative;
   width: 100%;
