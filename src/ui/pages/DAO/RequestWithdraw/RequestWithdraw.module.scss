@@ -108,3 +108,25 @@
     font-size: 1.4rem;
   }
 }
+
+.buttons {
+  padding: 2px 3px;
+  font-size: smaller;
+  border: 0.5px solid var(--teal-2) !important;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+.buttonsContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}

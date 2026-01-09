@@ -370,21 +370,26 @@ const RequestWithdraw: React.FC = () => {
                             <div>+ {Number((currentProfit / 10**8).toFixed(5))} CKB gained so far</div>
                             <div>Next locking cycle will start in {Number(tilMaxProfit.toFixed(1))} days</div>
                           </span>
-                          <Button
-                            onClick={() => handleWithdrawRequest(cell, true)}
-                            style={{ marginRight: 8, height: "3rem" }}
-                            disabled={!isToValid || loadingRequest}
+                          <div
+                            className={styles.buttonsContainer}
                           >
-                            Sign & Export
-                          </Button>
-                          <Button
-                            type="primary"
-                            loading={loadingRequest}
-                            onClick={() => handleWithdrawRequest(cell, false)}
-                            disabled={!isToValid || loadingRequest}
-                          >
-                            Request
-                          </Button>
+                            <Button
+                              className={styles.buttons}
+                              type="primary"
+                              onClick={() => handleWithdrawRequest(cell, true)}
+                              disabled={!isToValid || loadingRequest}
+                            >
+                              Sign & Export
+                            </Button>
+                            <Button
+                              className={styles.buttons}
+                              type="primary"
+                              onClick={() => handleWithdrawRequest(cell, false)}
+                              disabled={!isToValid || loadingRequest}
+                            >
+                              Request
+                            </Button>
+                          </div>
                         </div>
                       </li>
                     );

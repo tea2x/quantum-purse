@@ -393,21 +393,26 @@ const Withdraw: React.FC = () => {
                               {remain > 0 ? `Withdrawable in ${Number(remain.toFixed(1))} days` : <span style={{ color: 'green' }}>Withdrawable now!</span>}
                             </div>
                           </span>
-                          <Button
-                            onClick={() => handleWithdraw(cell, true)}
-                            style={{ marginRight: 8, height: "3rem" }}
-                            disabled={!isToValid || remain > 0 || loadingWithdraw}
+                          <div
+                            className={styles.buttonsContainer}
                           >
-                            Sign & Export
-                          </Button>
-                          <Button
-                            type="primary"
-                            loading={loadingWithdraw}
-                            onClick={() => handleWithdraw(cell, false)}
-                            disabled={!isToValid || remain > 0 || loadingWithdraw}
-                          >
-                            Withdraw
-                          </Button>
+                            <Button
+                              className={styles.buttons}
+                              type="primary"
+                              onClick={() => handleWithdraw(cell, true)}
+                              disabled={!isToValid || remain > 0 || loadingWithdraw}
+                            >
+                              Sign & Export
+                            </Button>
+                            <Button
+                              className={styles.buttons}
+                              type="primary"
+                              onClick={() => handleWithdraw(cell, false)}
+                              disabled={!isToValid || remain > 0 || loadingWithdraw}
+                            >
+                              Withdraw
+                            </Button>
+                          </div>
                         </div>
                       </li>
                     );
