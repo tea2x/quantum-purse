@@ -11,12 +11,11 @@ import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Authentication,
-  AuthenticationRef,
-  Explore,
+  AuthenticationRef
 } from "../../../components";
 import { useAccountSearch } from "../../../hooks/useAccountSearch";
 import { Dispatch, RootState } from "../../../store";
-import { cx, formatError, shortenAddress } from "../../../utils/methods";
+import { cx, formatError } from "../../../utils/methods";
 import styles from "./Accounts.module.scss";
 import { AccountItem } from "../../../components/account-item/account_item";
 
@@ -37,7 +36,6 @@ const Accounts: React.FC = () => {
   const createAccountHandler = async (password: Uint8Array) => {
     try {
       await dispatch.wallet.createAccount({ password });
-      authenticationRef.current?.close();
     } catch (error) {
       notification.error({
         message: "Failed to create account",
@@ -45,6 +43,7 @@ const Accounts: React.FC = () => {
       });
     } finally {
       password.fill(0);
+      authenticationRef.current?.close();
     }
   };
 
