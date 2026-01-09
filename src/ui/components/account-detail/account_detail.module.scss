@@ -40,9 +40,9 @@
   transition: all 0.3s ease-out;
   padding: 5px;
   border-radius: 0.5rem;
-  border: 0.5px solid rgba(0, 0, 0, 0.5);
-  color: var(--black);
-  background-color: var(--gray-light);
+  border: 0.5px solid rgba(255, 255, 255, 0.8);
+  color: var(--white);
+  background-color: transparent;
   cursor: pointer;
 
   &:hover {
