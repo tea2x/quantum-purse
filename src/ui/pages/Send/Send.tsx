@@ -10,7 +10,14 @@ import {
   Modal,
   Space
 } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, ArrowDownOutlined, SettingFilled, FullscreenOutlined } from "@ant-design/icons";
+import {
+  QuestionCircleOutlined,
+  ScanOutlined,
+  DoubleRightOutlined,
+  SettingFilled,
+  FullscreenOutlined,
+  FullscreenExitOutlined
+} from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../components";
@@ -220,7 +227,7 @@ const Send: React.FC = () => {
                     setIsSendToMyAccount(!isSendToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<ArrowDownOutlined />}
+                  icon={<DoubleRightOutlined rotate={90} />}
                 />
               </Space.Compact>
             ) : (
@@ -234,7 +241,7 @@ const Send: React.FC = () => {
                     setIsSendToMyAccount(!isSendToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<ArrowDownOutlined />}
+                  icon={<DoubleRightOutlined rotate={270} />}
                 />
               </Space.Compact>
 
@@ -277,7 +284,7 @@ const Send: React.FC = () => {
                   />
                   <Button
                     onClick={() => setIsSendMax(!isSendMax)}
-                    icon={<FullscreenOutlined />}
+                    icon={isSendMax? <FullscreenExitOutlined /> : <FullscreenOutlined />}
                   />
                 </Space.Compact>
               </Form.Item>

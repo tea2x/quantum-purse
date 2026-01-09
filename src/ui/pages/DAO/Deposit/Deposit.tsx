@@ -10,7 +10,14 @@ import {
   Modal,
   Space
 } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, ArrowDownOutlined, SettingFilled, FullscreenOutlined } from "@ant-design/icons";
+import {
+  QuestionCircleOutlined,
+  ScanOutlined,
+  DoubleRightOutlined,
+  SettingFilled,
+  FullscreenOutlined,
+  FullscreenExitOutlined
+} from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
@@ -219,7 +226,7 @@ const Deposit: React.FC = () => {
                     setIsDepositToMyAccount(!isDepositToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<ArrowDownOutlined />}
+                  icon={<DoubleRightOutlined rotate={90} />}
                 />
               </Space.Compact>
             ) : (
@@ -233,7 +240,7 @@ const Deposit: React.FC = () => {
                     setIsDepositToMyAccount(!isDepositToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<ArrowDownOutlined />}
+                  icon={<DoubleRightOutlined rotate={270} />}
                 />
               </Space.Compact>
             )}
@@ -276,7 +283,7 @@ const Deposit: React.FC = () => {
                   />
                   <Button
                     onClick={() => setIsDepositMax(!isDepositMax)}
-                    icon={<FullscreenOutlined />}
+                    icon={isDepositMax? <FullscreenExitOutlined /> : <FullscreenOutlined />}
                   />
                 </Space.Compact>
               </Form.Item>

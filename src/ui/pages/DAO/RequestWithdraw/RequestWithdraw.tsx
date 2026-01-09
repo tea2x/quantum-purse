@@ -1,5 +1,5 @@
 import { Button, notification, Form, Input, Empty, Tooltip, Row, Col, Space, Modal } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, ArrowDownOutlined, SettingFilled } from "@ant-design/icons";
+import { QuestionCircleOutlined, ScanOutlined, DoubleRightOutlined, SettingFilled } from "@ant-design/icons";
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Explore, Authentication, AuthenticationRef, AccountSelect, FeeRateSelect } from "../../../components";
@@ -273,7 +273,7 @@ const RequestWithdraw: React.FC = () => {
                               setIsRequestToMyAccount(!isRequestToMyAccount);
                               form.setFieldsValue({ to: undefined }); 
                             }}
-                            icon={<ArrowDownOutlined />}
+                            icon={<DoubleRightOutlined rotate={90} />}
                           />
                         </Space.Compact>
                       ) : (
@@ -287,7 +287,7 @@ const RequestWithdraw: React.FC = () => {
                               setIsRequestToMyAccount(!isRequestToMyAccount);
                               form.setFieldsValue({ to: undefined }); 
                             }}
-                            icon={<ArrowDownOutlined />}
+                            icon={<DoubleRightOutlined rotate={270} />}
                           />
                         </Space.Compact>
                       )}

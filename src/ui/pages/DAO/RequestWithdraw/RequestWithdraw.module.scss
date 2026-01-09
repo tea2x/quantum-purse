@@ -42,8 +42,7 @@
 
 .requestWithdrawListContainer {
   overflow-y: auto;
-  margin-top: 2rem;
-  max-height: 35rem; // tuned w/o exact calculation, adjust as needed
+  max-height: 37rem; // tuned w/o exact calculation, adjust as needed
   @media (max-width: 768px) {
     max-height: 31rem;
     margin-top: 0;
