@@ -43,3 +43,22 @@ export const formatError = (error: any) => {
 
   return description;
 };
+
+// Create a Blob and trigger a download via an element
+// Originally made for exporting signed transaction JSON
+export const download = (jsonData: any) => {
+  const jsonString = JSON.stringify(
+    jsonData,
+    (key, value) => typeof value === 'bigint' ? value.toString() : value, 2
+  );
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.download = 'signed_tx.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};

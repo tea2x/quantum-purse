@@ -1,6 +1,6 @@
 .withdrawForm {
   :global {
-    height: 55rem;
+    height: 50rem;
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(12px);
 
@@ -42,8 +42,7 @@
 
 .withdrawListContainer {
   overflow-y: auto;
-  margin-top: 2rem;
-  max-height: 40rem; // tuned w/o exact calculation, adjust as needed
+  max-height: 37rem; // tuned w/o exact calculation, adjust as needed
   @media (max-width: 768px) {
     max-height: 31rem;
     margin-top: 0;
@@ -87,7 +86,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.6rem 1.6rem;
+  padding: 0.2rem 1.6rem;
   color: var(--gray-01);
   @media (max-width: 768px) {
     padding: 0.6rem 0.4rem;
@@ -97,7 +96,6 @@
 .capacity {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
   color: var(--gray-01);
   
   > div {
@@ -108,4 +106,26 @@
     font-weight: bold;
     font-size: 1.4rem;
   }
+}
+
+.buttons {
+  padding: 2px 3px;
+  font-size: smaller;
+  border: 0.5px solid var(--teal-2) !important;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+.buttonsContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
 }

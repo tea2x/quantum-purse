@@ -5,13 +5,14 @@
 .centeredHeading {
   text-align: center;
   margin-bottom: 1rem;
+  font-size: larger;
+  font-weight: bold;
 }
 
 .address {
   font-size: 1.4rem;
   color: var(--gray-02);
   transition: color 0.3s ease-out;
-  display: flex;
   justify-content: center;
 }
 

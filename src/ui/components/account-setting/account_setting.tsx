@@ -4,7 +4,7 @@ import Copy from "../copy/copy";
 import { IAccount } from "../../store/models/interface";
 import { shortenAddress } from "../../utils/methods";
 import styles from "./account_setting.module.scss";
-import { Button, Flex, Input, notification } from "antd";
+import { Button, Flex, Form, Input, notification } from "antd";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import QuantumPurse from "../../../core/quantum_purse";
@@ -22,10 +22,16 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account, onClose }) => 
   const [startingBlock, setStartingBlock] = useState("");
   const [isSettingBlock, setIsSettingBlock] = useState(false);
   const tipBlock = syncStatus.tipBlock;
-  const isValidStartingBlock =
-    startingBlock !== "" &&
-    /^\d+$/.test(startingBlock) &&
-    Number(startingBlock) <= tipBlock;
+
+  const startBlockValidator = (): string | undefined => {
+    if (startingBlock === "") return undefined;
+    if (!/^\d+$/.test(startingBlock)) return "Please enter a valid number";
+    if (Number(startingBlock) > tipBlock) return `Valid range is [0, ${tipBlock}]`;
+    return undefined;
+  };
+
+  const validationResult = startBlockValidator();
+  const isValidStartingBlock = (startingBlock !== "") && !validationResult;
 
   const handleSetStartingBlock = async () => {
     setIsSettingBlock(true);
@@ -62,22 +68,28 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account, onClose }) => 
         </Flex>
       </Copy>
       <div className={styles.startingBlock}>
-        <Flex align="center" gap={8}>
-          <Input
-            value={startingBlock}
-            onChange={(e) => setStartingBlock(e.target.value)}
-            placeholder={`In range [0, ${syncStatus.tipBlock}]`}
-            style={{ flex: 1 }}
-          />
-          <Button
-            type="primary"
-            onClick={handleSetStartingBlock}
-            disabled={!isValidStartingBlock || isSettingBlock}
-            loading={isSettingBlock}
-          >
-            Set Start Block
-          </Button>
-        </Flex>
+        <Form.Item
+          validateStatus={validationResult ? "error" : undefined}
+          help={validationResult}
+          style={{ marginBottom: 0 }}
+        >
+          <Flex align="center" gap={8}>
+            <Input
+              value={startingBlock}
+              onChange={(e) => setStartingBlock(e.target.value)}
+              placeholder={`Valid range: [0, ${syncStatus.tipBlock}]`}
+              style={{ flex: 1 }}
+            />
+            <Button
+              type="primary"
+              onClick={handleSetStartingBlock}
+              disabled={!isValidStartingBlock || isSettingBlock}
+              loading={isSettingBlock}
+            >
+              Set Start Block
+            </Button>
+          </Flex>
+        </Form.Item>
       </div>
     </div>
   );

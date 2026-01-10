@@ -1,8 +1,11 @@
 .authentication {
   :global {
+    width: 40rem !important;
     .title {
       text-align: center;
       margin-bottom: 1.6rem;
+      font-size:larger;
+      font-weight: bold;
     }
     .description {
       text-align: center;
@@ -14,9 +17,11 @@
       }
     }
     .forgot-password {
+      font-size:xx-small;
+      font-weight: 400;
       text-align: center;
       width: fit-content;
-      margin: 1.6rem auto 0;
+      margin: 0 0 0 auto;
       cursor: pointer;
 
       transition: color 0.3s ease-in-out;
@@ -30,6 +35,7 @@
       display: flex;
       justify-content: center;
       gap: 0.4rem;
+      margin: 0 auto;
     }
 
     .ant-modal-footer .ant-btn {

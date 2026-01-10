@@ -2,6 +2,21 @@ const { app, BrowserWindow, session, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+function compareVersions(v1, v2) {
+    if (!v1) return -1;
+    const parts1 = v1.split(".").map(Number);
+    const parts2 = v2.split(".").map(Number);
+
+    const len = Math.max(parts1.length, parts2.length);
+    for (let i = 0; i < len; i++) {
+        const p1 = parts1[i] || 0;
+        const p2 = parts2[i] || 0;
+        if (p1 > p2) return 1;
+        if (p1 < p2) return -1;
+    }
+    return 0;
+}
+
 function isUpgradeToMainnet() {
     const userData = app.getPath('userData');
     const versionFile = path.join(userData, 'version.json');
@@ -17,8 +32,8 @@ function isUpgradeToMainnet() {
     }
 
     // V0.3.0 marks the first transition from testnet to mainnet
-    const fromTestnet = previousVersion < "0.3.0";
-    const toMainnet = currentVersion >= "0.3.0";
+    const fromTestnet = compareVersions(previousVersion, "0.3.0") === -1;
+    const toMainnet = compareVersions(currentVersion, "0.3.0") >= 0;
 
     // Store version in a local file
     if (previousVersion !== currentVersion) {
@@ -30,8 +45,8 @@ function isUpgradeToMainnet() {
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
-        width: 1200,
-        height: 800,
+        width: 910,
+        height: 700,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -40,7 +55,8 @@ function createWindow() {
         },
     });
 
-    mainWindow.setMinimumSize(1010, 760);
+    mainWindow.setMinimumSize(400, 650);
+    mainWindow.setMaximumSize(910, 700);
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
 
     mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
@@ -73,7 +89,7 @@ app.whenReady().then(() => {
             title: 'Quantum Purse Mainnet Upgrade Detected',
             message: `Your wallet has been upgraded from testnet to mainnet.
             \n\nPre-release/testnet light client data has been reset to ensure compatibility and your keys are now in control of mainnet assets.
-            \n\nBe sure you intend to continue using this wallet otherwise it is recommended to delete the current wallet instance and create a new one.
+            \n\nBe sure you intend to continue using this wallet for mainnet otherwise it is recommended to delete the current wallet instance and create a new one.
             \n\nIn case you would like to keep using the current wallet for mainnet, you have to manually set starting blocks for each account (in account settings) to start syncing.`,
         });
     }

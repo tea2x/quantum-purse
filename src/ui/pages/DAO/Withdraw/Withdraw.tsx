@@ -1,10 +1,10 @@
 import { Button, notification, Form, Input, Empty, Tooltip, Row, Col, Space, Modal } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, ArrowDownOutlined, SettingFilled } from "@ant-design/icons";
+import { QuestionCircleOutlined, ScanOutlined, DoubleRightOutlined, SettingFilled } from "@ant-design/icons";
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
-import { cx, formatError } from "../../../utils/methods";
+import { cx, formatError, download } from "../../../utils/methods";
 import styles from "./Withdraw.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
@@ -35,6 +35,7 @@ const Withdraw: React.FC = () => {
   const [scannerUp, setScannerUp] = useState(false);
   const [isWithdrawToMyAccount, setIsWithdrawToMyAccount] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
   const { withdraw: loadingWithdraw } = useSelector(
     (state: RootState) => state.loading.effects.wallet
@@ -93,7 +94,7 @@ const Withdraw: React.FC = () => {
           const blockNum = withdrawHeader.number;
           daysMap[key] = { remain, profit, blockNum };
         } catch (error) {
-          logger("error", "Error calculating remaining days for cell: " + JSON.stringify(cell) + " Error: " + String(error));
+          logger("error", "Error calculating remaining days for cell: " + cell.outPoint.txHash + "/" + cell.outPoint.index + " Error: " + String(error));
           daysMap[key] = { remain: Infinity, profit: 0, blockNum: BigInt(0) }; // Error indicators
         }
       }
@@ -189,43 +190,55 @@ const Withdraw: React.FC = () => {
     setFeeRate(feeRate);
   };
 
-  const handleWithdraw = async (withdrawnCell: ccc.Cell) => {
+  const handleWithdraw = async (withdrawnCell: ccc.Cell,  signOffline: boolean) => {
     try {
       // todo update when light client js updates ccc core.
       const { depositHeader, withdrawHeader } = await getNervosDaoInfo(withdrawnCell);
       const depositBlockHash = depositHeader.hash;
       const withdrawingBlockHash = withdrawHeader.hash;
-      const txId = await dispatch.wallet.withdraw({
-        to: values.to,
-        withdrawCell: withdrawnCell,
-        depositBlockHash: depositBlockHash,
-        withdrawingBlockHash: withdrawingBlockHash,
-        feeRate
-      });
-      notification.success({
-        message: "Withdraw transaction successful",
-        description: (
-          <div>
-            <p>
-              <Explore.Transaction txId={txId as string} />
-            </p>
-          </div>
-        ),
-      });
+
+      if (signOffline) {
+        const tx = await dispatch.wallet.withdraw({
+          to: values.to,
+          withdrawCell: withdrawnCell,
+          depositBlockHash: depositBlockHash,
+          withdrawingBlockHash: withdrawingBlockHash,
+          feeRate,
+          signOffline: true
+        });
+        notification.success({ message: "Transaction is signed successfully" });
+        download(tx);
+      } else {
+        const txId = await dispatch.wallet.withdraw({
+          to: values.to,
+          withdrawCell: withdrawnCell,
+          depositBlockHash: depositBlockHash,
+          withdrawingBlockHash: withdrawingBlockHash,
+          feeRate
+        });
+        notification.success({
+          message: "Withdraw successful",
+          description: ( <div> <p> <Explore.Transaction txId={txId as string} /> </p> </div> ),
+        });
+      }
     } catch (error) {
       notification.error({
         message: "Withdraw transaction failed",
         description: formatError(error),
       });
+    } finally {
+      form.resetFields();
+      setIsAuthenticating(false);
+      authenticationRef.current?.close();
     }
   };
 
   const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
+      setIsAuthenticating(true);
       passwordResolver.resolve(password);
       setPasswordResolver(null);
     }
-    authenticationRef.current?.close();
   };
 
   return (
@@ -280,7 +293,7 @@ const Withdraw: React.FC = () => {
                               setIsWithdrawToMyAccount(!isWithdrawToMyAccount);
                               form.setFieldsValue({ to: undefined });
                             }}
-                            icon={<ArrowDownOutlined />}
+                            icon={<DoubleRightOutlined rotate={90} />}
                           />
                         </Space.Compact>
 
@@ -295,7 +308,7 @@ const Withdraw: React.FC = () => {
                               setIsWithdrawToMyAccount(!isWithdrawToMyAccount);
                               form.setFieldsValue({ to: undefined }); 
                             }}
-                            icon={<ArrowDownOutlined />}
+                            icon={<DoubleRightOutlined rotate={270} />}
                           />
                         </Space.Compact>
                       )}
@@ -332,7 +345,8 @@ const Withdraw: React.FC = () => {
               <Authentication
                 ref={authenticationRef}
                 authenCallback={authenCallback}
-                title="Withdraw from the DAO"
+                loading={isAuthenticating}
+                title="Make a withdraw"
                 afterClose={() => {
                   if (passwordResolver) {
                     passwordResolver.reject();
@@ -378,16 +392,27 @@ const Withdraw: React.FC = () => {
                             <div>
                               {remain > 0 ? `Withdrawable in ${Number(remain.toFixed(1))} days` : <span style={{ color: 'green' }}>Withdrawable now!</span>}
                             </div>
-
                           </span>
-                          <Button
-                            type="primary"
-                            loading={loadingWithdraw}
-                            onClick={() => handleWithdraw(cell)}
-                            disabled={!isToValid || remain > 0}
+                          <div
+                            className={styles.buttonsContainer}
                           >
-                            Withdraw
-                          </Button>
+                            <Button
+                              className={styles.buttons}
+                              type="primary"
+                              onClick={() => handleWithdraw(cell, true)}
+                              disabled={!isToValid || remain > 0 || loadingWithdraw}
+                            >
+                              Sign & Export
+                            </Button>
+                            <Button
+                              className={styles.buttons}
+                              type="primary"
+                              onClick={() => handleWithdraw(cell, false)}
+                              disabled={!isToValid || remain > 0 || loadingWithdraw}
+                            >
+                              Withdraw
+                            </Button>
+                          </div>
                         </div>
                       </li>
                     );

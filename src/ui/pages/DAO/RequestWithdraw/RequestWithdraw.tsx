@@ -1,10 +1,10 @@
 import { Button, notification, Form, Input, Empty, Tooltip, Row, Col, Space, Modal } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, ArrowDownOutlined, SettingFilled } from "@ant-design/icons";
+import { QuestionCircleOutlined, ScanOutlined, DoubleRightOutlined, SettingFilled } from "@ant-design/icons";
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Explore, Authentication, AuthenticationRef, AccountSelect, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
-import { cx, formatError } from "../../../utils/methods";
+import { cx, formatError, download } from "../../../utils/methods";
 import styles from "./RequestWithdraw.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
@@ -35,6 +35,7 @@ const RequestWithdraw: React.FC = () => {
   const [scannerUp, setScannerUp] = useState(false);
   const [isRequestToMyAccount, setIsRequestToMyAccount] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
   const { requestWithdraw: loadingRequest } = useSelector(
     (state: RootState) => state.loading.effects.wallet
@@ -79,7 +80,7 @@ const RequestWithdraw: React.FC = () => {
           const blockNum = depositHeader.number;
           estimatedInfos[key] = {tilMaxProfit, currentProfit, blockNum};
         } catch (error) {
-          logger("error", "Error calculating remaining days for cell: " + JSON.stringify(cell) + " Error: " + String(error));
+          logger("error", "Error calculating remaining days for cell: " + cell.outPoint.txHash + "/" + cell.outPoint.index + " Error: " + String(error));
           estimatedInfos[key] = {tilMaxProfit: Infinity, currentProfit: 0, blockNum: BigInt(0)};
         }
       }
@@ -170,43 +171,55 @@ const RequestWithdraw: React.FC = () => {
     setFeeRate(feeRate);
   };
 
-  const handleWithdrawRequest = async (depositCell: ccc.Cell) => {
+  const handleWithdrawRequest = async (depositCell: ccc.Cell, signOffline: boolean) => {
     try {
       // todo update when light client js updates ccc core.
       const { depositHeader } = await getNervosDaoInfo(depositCell);
       const depositBlockNum = depositHeader.number;
       const depositBlockHash = depositHeader.hash;
-      const txId = await dispatch.wallet.requestWithdraw({
-        to: values.to,
-        depositCell: depositCell,
-        depositBlockNum: depositBlockNum,
-        depositBlockHash: depositBlockHash,
-        feeRate
-      });
-      notification.success({
-        message: "Withdraw request transaction successful",
-        description: (
-          <div>
-            <p>
-              <Explore.Transaction txId={txId as string} />
-            </p>
-          </div>
-        ),
-      });
+
+      if (signOffline) {
+        const tx = await dispatch.wallet.requestWithdraw({
+          to: values.to,
+          depositCell: depositCell,
+          depositBlockNum: depositBlockNum,
+          depositBlockHash: depositBlockHash,
+          feeRate,
+          signOffline: true
+        });
+        notification.success({ message: "Transaction is signed successfully" });
+        download(tx);
+      } else {
+        const txId = await dispatch.wallet.requestWithdraw({
+          to: values.to,
+          depositCell: depositCell,
+          depositBlockNum: depositBlockNum,
+          depositBlockHash: depositBlockHash,
+          feeRate
+        });
+        notification.success({
+          message: "Withdraw request successful",
+          description: (<div> <p> <Explore.Transaction txId={txId as string} /> </p> </div>),
+        });
+      }
     } catch (error) {
       notification.error({
         message: "Withdraw request transaction failed",
         description: formatError(error),
       });
+    } finally {
+      form.resetFields();
+      setIsAuthenticating(false);
+      authenticationRef.current?.close();
     }
   };
 
   const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
+      setIsAuthenticating(true);
       passwordResolver.resolve(password);
       setPasswordResolver(null);
     }
-    authenticationRef.current?.close();
   };
 
   return (
@@ -260,7 +273,7 @@ const RequestWithdraw: React.FC = () => {
                               setIsRequestToMyAccount(!isRequestToMyAccount);
                               form.setFieldsValue({ to: undefined }); 
                             }}
-                            icon={<ArrowDownOutlined />}
+                            icon={<DoubleRightOutlined rotate={90} />}
                           />
                         </Space.Compact>
                       ) : (
@@ -274,7 +287,7 @@ const RequestWithdraw: React.FC = () => {
                               setIsRequestToMyAccount(!isRequestToMyAccount);
                               form.setFieldsValue({ to: undefined }); 
                             }}
-                            icon={<ArrowDownOutlined />}
+                            icon={<DoubleRightOutlined rotate={270} />}
                           />
                         </Space.Compact>
                       )}
@@ -311,7 +324,8 @@ const RequestWithdraw: React.FC = () => {
               <Authentication
                 ref={authenticationRef}
                 authenCallback={authenCallback}
-                title="Make a Withdraw Request from the DAO"
+                loading={isAuthenticating}
+                title="Make a withdraw request"
                 afterClose={() => {
                   if (passwordResolver) {
                     passwordResolver.reject();
@@ -356,14 +370,26 @@ const RequestWithdraw: React.FC = () => {
                             <div>+ {Number((currentProfit / 10**8).toFixed(5))} CKB gained so far</div>
                             <div>Next locking cycle will start in {Number(tilMaxProfit.toFixed(1))} days</div>
                           </span>
-                          <Button
-                            type="primary"
-                            loading={loadingRequest}
-                            onClick={() => handleWithdrawRequest(cell)}
-                            disabled={!isToValid}
+                          <div
+                            className={styles.buttonsContainer}
                           >
-                            Request
-                          </Button>
+                            <Button
+                              className={styles.buttons}
+                              type="primary"
+                              onClick={() => handleWithdrawRequest(cell, true)}
+                              disabled={!isToValid || loadingRequest}
+                            >
+                              Sign & Export
+                            </Button>
+                            <Button
+                              className={styles.buttons}
+                              type="primary"
+                              onClick={() => handleWithdrawRequest(cell, false)}
+                              disabled={!isToValid || loadingRequest}
+                            >
+                              Request
+                            </Button>
+                          </div>
                         </div>
                       </li>
                     );

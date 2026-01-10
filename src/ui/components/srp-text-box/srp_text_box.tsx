@@ -92,7 +92,10 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
       {value ? (
         <>
           <div>
-            <div className={styles.textBox}>
+            <div
+              className={styles.textBox}
+              onCopy={(e) => e.preventDefault()}
+            >
               <p className="srp">{value}</p>
             </div>
           </div>

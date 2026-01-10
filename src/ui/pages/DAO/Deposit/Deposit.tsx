@@ -10,13 +10,20 @@ import {
   Modal,
   Space
 } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, ArrowDownOutlined, SettingFilled, FullscreenOutlined } from "@ant-design/icons";
+import {
+  QuestionCircleOutlined,
+  ScanOutlined,
+  DoubleRightOutlined,
+  SettingFilled,
+  FullscreenOutlined,
+  FullscreenExitOutlined
+} from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
 import { Dispatch, RootState } from "../../../store";
 import { CKB_DECIMALS } from "../../../utils/constants";
-import { cx, formatError } from "../../../utils/methods";
+import { cx, formatError, download } from "../../../utils/methods";
 import styles from "./Deposit.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
 import { Address, fixedPointFrom } from "@ckb-ccc/core";
@@ -42,6 +49,7 @@ const Deposit: React.FC = () => {
   const [isDepositToMyAccount, setIsDepositToMyAccount] = useState(false);
   const [isDepositMax, setIsDepositMax] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -133,37 +141,42 @@ const Deposit: React.FC = () => {
     setFeeRate(feeRate);
   };
 
-  const handleDeposit = async () => {
+  const handleDeposit = async (signOffline: boolean) => {
     try {
-      const txId = isDepositMax
-        ? await dispatch.wallet.depositAll({to: values.to, feeRate})
-        : await dispatch.wallet.deposit({to: values.to, amount: values.amount, feeRate});
-      form.resetFields();
-      notification.success({
-        message: "Deposit transaction successful",
-        description: (
-          <div>
-            <p>
-              <Explore.Transaction txId={txId as string} />
-            </p>
-          </div>
-        ),
-      });
+      if (signOffline) {
+        const tx = isDepositMax
+          ? await dispatch.wallet.depositAll({ to: values.to, feeRate, signOffline: true })
+          : await dispatch.wallet.deposit({ to: values.to, amount: values.amount, feeRate , signOffline: true });
+        notification.success({ message: "Transaction is signed successfully" });
+        download(tx);
+      } else {
+        const txId = isDepositMax
+          ? await dispatch.wallet.depositAll({to: values.to, feeRate})
+          : await dispatch.wallet.deposit({to: values.to, amount: values.amount, feeRate});
+        notification.success({
+          message: "Deposit successful",
+          description: ( <div> <p> <Explore.Transaction txId={txId as string} /> </p> </div> ),
+        });
+      }
     } catch (error) {
       notification.error({
         message: "Deposit transaction failed",
         description: formatError(error),
       });
+    } finally {
+      form.resetFields();
+      setIsAuthenticating(false);
+      authenticationRef.current?.close();
     }
   };
 
   // Handle password submission and pass it to QPsigner::signOnlyTransaction
   const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
+      setIsAuthenticating(true);
       passwordResolver.resolve(password);
       setPasswordResolver(null);
     }
-    authenticationRef.current?.close();
   };
 
   return (
@@ -213,7 +226,7 @@ const Deposit: React.FC = () => {
                     setIsDepositToMyAccount(!isDepositToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<ArrowDownOutlined />}
+                  icon={<DoubleRightOutlined rotate={90} />}
                 />
               </Space.Compact>
             ) : (
@@ -227,7 +240,7 @@ const Deposit: React.FC = () => {
                     setIsDepositToMyAccount(!isDepositToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<ArrowDownOutlined />}
+                  icon={<DoubleRightOutlined rotate={270} />}
                 />
               </Space.Compact>
             )}
@@ -270,7 +283,7 @@ const Deposit: React.FC = () => {
                   />
                   <Button
                     onClick={() => setIsDepositMax(!isDepositMax)}
-                    icon={<FullscreenOutlined />}
+                    icon={isDepositMax? <FullscreenExitOutlined /> : <FullscreenOutlined />}
                   />
                 </Space.Compact>
               </Form.Item>
@@ -304,8 +317,15 @@ const Deposit: React.FC = () => {
           <Form.Item>
             <Flex justify="end">
               <Button
+                onClick={() => handleDeposit(true)}
+                style={{ marginRight: 8, height: "3rem" }}
+                disabled={!submittable || loadingDeposit}
+              >
+                Sign & Export
+              </Button>
+              <Button
                 type="primary"
-                onClick={handleDeposit}
+                onClick={() => handleDeposit(false)}
                 disabled={!submittable || loadingDeposit}
                 loading={loadingDeposit}
                 className={styles.depositButton}
@@ -318,7 +338,8 @@ const Deposit: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Deposit to the DAO"
+          loading={isAuthenticating}
+          title="Make a deposit"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();

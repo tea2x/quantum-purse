@@ -4,7 +4,19 @@ import { KeyVault, Util as KeyVaultUtil, SpxVariant } from "quantum-purse-key-va
 import { randomSecretKey, LightClientSetScriptsCommand, ScriptStatus } from "@nervosnetwork/ckb-light-client-js";
 import testnetConfig from "../../light-client/network.test.toml";
 import mainnetConfig from "../../light-client/network.main.toml";
-import { ClientIndexerSearchKeyLike, Hex, ccc, Cell, HashType, ScriptLike, BytesLike, HashTypeLike, Address, DepType } from "@ckb-ccc/core";
+import {
+  ClientIndexerSearchKeyLike,
+  Hex,
+  ccc,
+  Cell,
+  HashType,
+  ScriptLike,
+  BytesLike,
+  HashTypeLike,
+  Address,
+  DepType,
+  Transaction
+} from "@ckb-ccc/core";
 import { getClaimEpoch } from "./epoch";
 import { QPSigner } from "./ccc-adapter/qp_signer";
 import { DB } from "./db";
@@ -548,14 +560,16 @@ export default class QuantumPurse extends QPSigner {
    * @param to - The recipient's address.
    * @param amount - The amount to transfer in CKB.
    * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
+   * @param signOffline - To sign and export the transaction without sending it to the network.
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async transfer(
     to: string,
     amount: string,
-    feeRate: bigint = BigInt(1500)
-  ): Promise<Hex> {
+    feeRate: bigint = BigInt(1500),
+    signOffline: boolean = false
+  ): Promise<Hex|Transaction> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     const tx = ccc.Transaction.from({
@@ -582,8 +596,11 @@ export default class QuantumPurse extends QPSigner {
 
     await tx.completeInputsByCapacity(this);
     await tx.completeFeeBy(this, feeRate);
-    const hash = await this.sendTransaction(tx);
-    return hash;
+
+    if (signOffline)
+      return (await this.signTransaction(tx));
+    else
+      return (await this.sendTransaction(tx));
   }
 
   /**
@@ -591,13 +608,15 @@ export default class QuantumPurse extends QPSigner {
    *
    * @param to - The recipient's address.
    * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
+   * @param signOffline - To sign and export the transaction without sending it to the network.
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async transferAll(
     to: string,
-    feeRate: bigint = BigInt(1500)
-  ): Promise<Hex> {
+    feeRate: bigint = BigInt(1500),
+    signOffline: boolean = false
+  ): Promise<Hex | Transaction> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     const tx = ccc.Transaction.from({
@@ -619,9 +638,10 @@ export default class QuantumPurse extends QPSigner {
 
     await tx.completeInputsAll(this);
     await tx.completeFeeChangeToOutput(this, 0, feeRate);
-
-    const hash = await this.sendTransaction(tx);
-    return hash;
+    if (signOffline)
+      return (await this.signTransaction(tx));
+    else
+      return (await this.sendTransaction(tx));
   }
 
   /**
@@ -632,14 +652,16 @@ export default class QuantumPurse extends QPSigner {
    * @param to - The recipient's address.
    * @param amount - The amount to deposit in CKB.
    * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
+   * @param signOffline - To sign and export the transaction without sending it to the network.
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async daoDeposit(
     to: string,
     amount: string,
-    feeRate: bigint = BigInt(1500)
-  ): Promise<Hex> {
+    feeRate: bigint = BigInt(1500),
+    signOffline: boolean = false
+  ): Promise<Hex | Transaction> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     const tx = ccc.Transaction.from({
@@ -675,8 +697,10 @@ export default class QuantumPurse extends QPSigner {
 
     await tx.completeInputsByCapacity(this);
     await tx.completeFeeBy(this, feeRate);
-    const hash = await this.sendTransaction(tx);
-    return hash;
+    if (signOffline)
+      return (await this.signTransaction(tx));
+    else
+      return (await this.sendTransaction(tx));
   }
 
   /**
@@ -686,13 +710,15 @@ export default class QuantumPurse extends QPSigner {
    *
    * @param to - The recipient's address.
    * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
+   * @param signOffline - To sign and export the transaction without sending it to the network.
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
   public async daoDepositAll(
     to: string,
-    feeRate: bigint = BigInt(1500)
-  ): Promise<Hex> {
+    feeRate: bigint = BigInt(1500),
+    signOffline: boolean = false
+  ): Promise<Hex | Transaction> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     const tx = ccc.Transaction.from({
@@ -723,8 +749,10 @@ export default class QuantumPurse extends QPSigner {
     
     await tx.completeInputsAll(this);
     await tx.completeFeeChangeToOutput(this, 0, feeRate);
-    const hash = await this.sendTransaction(tx);
-    return hash;
+    if (signOffline)
+      return (await this.signTransaction(tx));
+    else
+      return (await this.sendTransaction(tx));
   }
 
   /**
@@ -737,6 +765,7 @@ export default class QuantumPurse extends QPSigner {
    * @param depositBlockNumber - The block number of the deposit cell.
    * @param depositCellBlockHash - The block hash of the deposit cell.
    * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
+   * @param signOffline - To sign and export the transaction without sending it to the network.
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
@@ -745,8 +774,9 @@ export default class QuantumPurse extends QPSigner {
     depositCell: Cell,
     depositBlockNumber: bigint,
     depositCellBlockHash: Hex,
-    feeRate: bigint = BigInt(1500)
-  ): Promise<Hex> {
+    feeRate: bigint = BigInt(1500),
+    signOffline: boolean = false
+  ): Promise<Hex | Transaction> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     const desLock = (await Address.fromString(to, this.client)).script;
@@ -779,8 +809,10 @@ export default class QuantumPurse extends QPSigner {
 
     await tx.completeInputsByCapacity(this);
     await tx.completeFeeBy(this, feeRate);
-    const hash = await this.sendTransaction(tx);
-    return hash;
+    if (signOffline)
+      return (await this.signTransaction(tx));
+    else
+      return (await this.sendTransaction(tx));
   }
 
   /**
@@ -793,6 +825,7 @@ export default class QuantumPurse extends QPSigner {
    * @param depositBlockHash - The block hash of the deposit cell.
    * @param withdrawingBlockHash - The block hash of the withdrawing cell.
    * @param feeRate - The fee rate for the transaction in shannons per byte (default is 1500).
+   * @param signOffline - To sign and export the transaction without sending it to the network.
    * @returns A Promise that resolves to a transaction hash when successful.
    * @throws Error if Light client is not ready / insufficient balance.
    */
@@ -801,8 +834,9 @@ export default class QuantumPurse extends QPSigner {
     withdrawingCell: Cell,
     depositBlockHash: Hex,
     withdrawingBlockHash: Hex,
-    feeRate: bigint = BigInt(1500)
-  ): Promise<Hex> {
+    feeRate: bigint = BigInt(1500),
+    signOffline: boolean = false
+  ): Promise<Hex | Transaction> {
     if (!this.hasClientStarted) throw new Error("Light client has not initialized");
 
     const [depositBlockHeader, withdrawBlockHeader] = await Promise.all([
@@ -848,8 +882,9 @@ export default class QuantumPurse extends QPSigner {
 
     await tx.completeInputsByCapacity(this);
     await tx.completeFeeChangeToOutput(this, 0, feeRate);
-
-    const hash = await this.sendTransaction(tx);
-    return hash;
+    if (signOffline)
+      return (await this.signTransaction(tx));
+    else
+      return (await this.sendTransaction(tx));
   }
 }

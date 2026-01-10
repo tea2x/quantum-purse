@@ -156,7 +156,7 @@ export class QPSigner extends Signer {
       const tx = Transaction.from(txLike);
       const message = get_ckb_tx_message_all_hash(tx); // TODO: Update when new CCC core support is released
 
-      const passwordPromise = new Promise<Uint8Array>((resolve, reject) => {
+      const passwordHandler = new Promise<Uint8Array>((resolve, reject) => {
         if (this.requestPassword) {
           this.requestPassword(resolve, reject);
         } else {
@@ -164,7 +164,7 @@ export class QPSigner extends Signer {
         }
       });
 
-      password = await passwordPromise;
+      password = await passwordHandler;
       const spxSig = await this.keyVault.sign(password, this.accountPointer as string, message);
       const position = 0;
       const witness = tx.getWitnessArgsAt(position) ?? WitnessArgs.from({});

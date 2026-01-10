@@ -339,6 +339,7 @@ const StepInputSrp: React.FC<BaseStepProps> = ({ form, srpInputRef }) => {
           rows={9}
           className={styles.srpTextarea}
           onChange={handleSrpChange}
+          onPaste={(e) => e.preventDefault()}
         />
         {srpError && <div style={{ color: '#ff4d4f', fontSize: '1.4rem', marginTop: '0.4rem' }}>{srpError}</div>}
       </div>

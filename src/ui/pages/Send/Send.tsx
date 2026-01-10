@@ -10,13 +10,20 @@ import {
   Modal,
   Space
 } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, ArrowDownOutlined, SettingFilled, FullscreenOutlined } from "@ant-design/icons";
+import {
+  QuestionCircleOutlined,
+  ScanOutlined,
+  DoubleRightOutlined,
+  SettingFilled,
+  FullscreenOutlined,
+  FullscreenExitOutlined
+} from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../components";
 import { Dispatch, RootState } from "../../store";
 import { CKB_DECIMALS } from "../../utils/constants";
-import { cx, formatError } from "../../utils/methods";
+import { cx, formatError, download } from "../../utils/methods";
 import styles from "./Send.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
 import { Address, fixedPointFrom } from "@ckb-ccc/core";
@@ -42,6 +49,7 @@ const Send: React.FC = () => {
   const [isSendToMyAccount, setIsSendToMyAccount] = useState(false);
   const [isSendMax, setIsSendMax] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const authenticationRef = useRef<AuthenticationRef>(null);
 
   const quantumPurse = QuantumPurse.getInstance();
@@ -133,37 +141,44 @@ const Send: React.FC = () => {
     };
   }, [scannerUp]);
 
-  const handleSend = async () => {
+  const handleSend = async (signOffline: boolean) => {
     try {
-      const txId = isSendMax
-        ? await dispatch.wallet.sendAll({ to: values.to, feeRate })
-        : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
-      form.resetFields();
-      notification.success({
-        message: "Send transaction successful",
-        description: (
-          <div>
-            <p>
-              <Explore.Transaction txId={txId as string} />
-            </p>
-          </div>
-        ),
-      });
+      if (signOffline) {
+        const tx = isSendMax
+          ? await dispatch.wallet.sendAll({ to: values.to, feeRate, signOffline: true })
+          : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate , signOffline: true });
+        notification.success({ message: "Transaction is signed successfully" });
+        download(tx);
+      } else {
+        const txId = isSendMax
+          ? await dispatch.wallet.sendAll({ to: values.to, feeRate })
+          : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
+        notification.success({
+          message: "Send successful",
+          description: (
+            <div> <p> <Explore.Transaction txId={txId as string} /> </p> </div>
+          ),
+        });
+      }
     } catch (error) {
       notification.error({
         message: "Send transaction failed",
         description: formatError(error),
       });
+    } finally {
+      form.resetFields();
+      setIsAuthenticating(false);
+      authenticationRef.current?.close();
     }
   };
 
   // Handle password submission and pass it to QPsigner::signOnlyTransaction
   const authenCallback = async (password: Uint8Array) => {
     if (passwordResolver) {
+      setIsAuthenticating(true);
       passwordResolver.resolve(password);
       setPasswordResolver(null);
     }
-    authenticationRef.current?.close();
   };
 
   return (
@@ -212,7 +227,7 @@ const Send: React.FC = () => {
                     setIsSendToMyAccount(!isSendToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<ArrowDownOutlined />}
+                  icon={<DoubleRightOutlined rotate={90} />}
                 />
               </Space.Compact>
             ) : (
@@ -226,7 +241,7 @@ const Send: React.FC = () => {
                     setIsSendToMyAccount(!isSendToMyAccount);
                     form.setFieldsValue({ to: undefined }); 
                   }}
-                  icon={<ArrowDownOutlined />}
+                  icon={<DoubleRightOutlined rotate={270} />}
                 />
               </Space.Compact>
 
@@ -264,13 +279,12 @@ const Send: React.FC = () => {
                   <Input
                     value={values?.amount}
                     placeholder="Enter transfer amount"
-                    className={styles.inputField}
                     disabled={isSendMax}
                     style={{backgroundColor: "var(--gray-light)"}}
                   />
                   <Button
                     onClick={() => setIsSendMax(!isSendMax)}
-                    icon={<FullscreenOutlined />}
+                    icon={isSendMax? <FullscreenExitOutlined /> : <FullscreenOutlined />}
                   />
                 </Space.Compact>
               </Form.Item>
@@ -304,8 +318,16 @@ const Send: React.FC = () => {
           <Form.Item>
             <Flex justify="end">
               <Button
+                onClick={() => handleSend(true)}
+                style={{ marginRight: 8, height: "3rem" }}
+                disabled={!submittable || loadingSend}
+              >
+                Sign & Export
+              </Button>
+
+              <Button
                 type="primary"
-                onClick={handleSend}
+                onClick={() => handleSend(false)}
                 disabled={!submittable || loadingSend}
                 loading={loadingSend}
                 className={styles.sendButton}
@@ -318,7 +340,8 @@ const Send: React.FC = () => {
         <Authentication
           ref={authenticationRef}
           authenCallback={authenCallback}
-          title="Transferring CKB"
+          loading={isAuthenticating}
+          title="Transfer CKB"
           afterClose={() => {
             if (passwordResolver) {
               passwordResolver.reject();

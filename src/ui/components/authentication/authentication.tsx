@@ -78,6 +78,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
       setOpen(false);
       setIsForgotPassword(false);
       setShowPassword(false);
+      setSubmittable(false);
       if (passwordInputRef.current) {
         passwordInputRef.current.value = '';
       }
@@ -101,11 +102,11 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
 
     const modalOptions = useMemo(() => {
       return {
-        okText: isForgotPassword ? "Ok, re-import my wallet" : "Submit",
+        okText: isForgotPassword ? "Delete & re-import" : "Submit",
         onOk: isForgotPassword
           ? () => setIsDeleteWalletConfirmModalOpen(true)
           : form.submit,
-        cancelText: isForgotPassword ? "Back to Authentication" : "Cancel",
+        cancelText: isForgotPassword ? "Cancel" : "Cancel",
         onCancel: isForgotPassword
           ? () => setIsForgotPassword(false)
           : closeHandler,
@@ -124,7 +125,7 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
           onCancel={modalOptions.onCancel}
           centered
           className={styles.authentication}
-          confirmLoading={loading}
+          loading={loading}
           cancelButtonProps={{
             disabled: loading,
           }}

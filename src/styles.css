@@ -218,7 +218,6 @@ body {
 .ant-menu,
 .ant-menu-item,
 .ant-menu-submenu-title,
-.ant-select-selection-placeholder,
 .ant-select,
 .ant-select-selector,
 .ant-select-item-option-content,
@@ -231,7 +230,8 @@ body {
 }
 
 .ant-input {
-  color: var(--black) !important;
+  color: var(--gray-light) !important;
+  background-color: transparent !important;
 }
 
 .ant-input::placeholder {
