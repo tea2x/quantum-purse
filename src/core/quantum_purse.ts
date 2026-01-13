@@ -26,13 +26,10 @@ export { SpxVariant } from "quantum-purse-key-vault";
 
 /**
  * Manages a wallet using the SPHINCS+ post-quantum signature scheme on the Nervos CKB blockchain.
- * This class provides functionality for generating accounts, signing transactions,
- * managing cryptographic keys, and interacting with the blockchain.
+ * This class is a wraper of quantum-purse-key-vault (https://github.com/tea2x/quantum-purse-key-vault) as signer,
+ * transaction builder, and ckb light client connector.
  */
 export default class QuantumPurse extends QPSigner {
-  //**************************************************************************************//
-  //*********************************** ATRIBUTES ****************************************//
-  //**************************************************************************************//
   private static instance?: QuantumPurse;
   public hasClientStarted: boolean = false;
   
@@ -49,9 +46,6 @@ export default class QuantumPurse extends QPSigner {
   private static readonly CLIENT_SECRET_PREFIX = "client-secret-key";
   private static readonly START_BLOCK_PREFIX = "start-block";
 
-  //**************************************************************************************//
-  //*************************************** METHODS **************************************//
-  //**************************************************************************************//
   /** Constructor that takes sphincs+ on-chain binary deployment info */
   private constructor(scriptInfo: { codeHash: BytesLike, hashType: HashTypeLike }) {
     super(scriptInfo);
