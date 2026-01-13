@@ -101,7 +101,7 @@ app.whenReady().then(() => {
 
         responseHeaders['Content-Security-Policy'] = [
             "default-src 'self'; " +
-            "script-src 'self' 'unsafe-eval'; " +
+            "script-src 'self' 'wasm-unsafe-eval'; " +
             "style-src 'self' 'unsafe-inline'; " +
             "font-src 'self'; " +
             "img-src 'self'; " +
