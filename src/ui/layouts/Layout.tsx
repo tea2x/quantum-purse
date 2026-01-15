@@ -26,12 +26,12 @@ const Layout: React.FC<AuthLayoutProps> = ({
         await dispatch.wallet.init({});
         await dispatch.wallet.loadCurrentAccount({});
       } catch (error: any) {
-        if (error.message.includes("SharedArrayBuffer is not defined")) {
+        if (error.message && error.message.includes("SharedArrayBuffer is not defined")) {
           notification.error({
             message: "Insecure browser context",
             description: "You are accessing this site from an insecure context. Try localhost or https!",
           });
-        } else if (error.message.includes("WALLET_NOT_READY")) {
+        } else if (error.message && error.message.includes("WALLET_NOT_READY")) {
           const errorInfo = JSON.parse(error.message);
           if (errorInfo.code === "WALLET_NOT_READY") {
             navigate(ROUTES.CREATE_WALLET, {
