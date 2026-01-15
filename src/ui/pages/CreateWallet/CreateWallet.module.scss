@@ -35,6 +35,8 @@
 }
 
 .stepCreatePassword {
+  width: 90%;
+  margin: 0 auto;
   button[type="submit"] {
     display: block;
     margin: 0 auto;
@@ -58,72 +60,6 @@
       max-width: 40rem;
       text-align: center;
     }
-  }
-}
-
-.passwordWrapper {
-  position: relative;
-  width: 100%;
-}
-
-.passwordInput {
-  width: 100%;
-  height: 4rem;
-  padding: 0.4rem 4rem 0.4rem 1.1rem;
-  font-size: 1.6rem;
-  line-height: 1.5715;
-  background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0.5rem;
-  outline: none;
-  transition: all 0.3s;
-  color: var(--gray-light);
-  font-family: inherit;
-
-  &::placeholder {
-    color: var(--gray-03);
-  }
-
-  &:hover:not(:disabled) {
-    border-color: var(--teal-2);
-  }
-
-  &:focus {
-    border-color: var(--teal-2);
-    box-shadow: 0 0 0 2px rgb(from var(--teal-2) r g b / 0.2);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-    background-color: rgba(0, 0, 0, 0.1);
-  }
-}
-
-.toggleButton {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  color: var(--gray-03);
-  cursor: pointer;
-  font-size: 1.8rem;
-  padding: 0.4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.3s;
-  outline: none;
-
-  &:hover:not(:disabled) {
-    color: var(--gray-light);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
   }
 }
 

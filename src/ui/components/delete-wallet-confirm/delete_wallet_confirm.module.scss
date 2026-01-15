@@ -5,9 +5,14 @@
     .ant-modal-body {
       text-align: center;
     }
-    .ant-modal-content,
-    .ant-modal-header {
+    .ant-modal-title {
+      width: 95%;
+      margin: 0 auto;
       background-color: #FFD580;
+    }
+    .ant-modal-close {
+      margin-right: -12px;
+      margin-top: -12px;
     }
     .ant-btn {
       background-color: #FF8C00;

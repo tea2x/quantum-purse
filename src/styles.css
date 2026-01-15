@@ -232,6 +232,7 @@ body {
 .ant-input {
   color: var(--gray-light) !important;
   background-color: transparent !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.7);
 }
 
 .ant-input::placeholder {
