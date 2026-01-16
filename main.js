@@ -17,9 +17,10 @@ function compareVersions(v1, v2) {
     return 0;
 }
 
-function isUpgradeToMainnet() {
+function testnetToMainnet() {
     const userData = app.getPath('userData');
     const versionFile = path.join(userData, 'version.json');
+    const indexedDbDir = path.join(userData, 'IndexedDB/')
     const currentVersion = app.getVersion();
 
     let previousVersion = "0.0.0";
@@ -40,7 +41,7 @@ function isUpgradeToMainnet() {
         fs.writeFileSync(versionFile, JSON.stringify({ version: currentVersion }));
     }
 
-    return (fromTestnet && toMainnet);
+    return (fromTestnet && toMainnet && fs.existsSync(indexedDbDir));
 }
 
 function createWindow() {
@@ -80,18 +81,49 @@ function createWindow() {
     });
 }
 
-app.whenReady().then(() => {
-    /* The actual data cleaning happens in App.tsx.
-       Here only shows a dialog to inform the user. */
-    if (isUpgradeToMainnet()) {
-        dialog.showMessageBoxSync({
+app.whenReady().then(async () => {
+    if (testnetToMainnet()) {
+        const currentVersion = app.getVersion();
+        const result = await dialog.showMessageBox({
             type: 'info',
-            title: 'Quantum Purse Mainnet Upgrade Detected',
-            message: `Your wallet has been upgraded from testnet to mainnet.
-            \n\nPre-release/testnet light client data has been reset to ensure compatibility and your keys are now in control of mainnet assets.
-            \n\nBe sure you intend to continue using this wallet for mainnet otherwise it is recommended to delete the current wallet instance and create a new one.
-            \n\nIn case you would like to keep using the current wallet for mainnet, you have to manually set starting blocks for each account (in account settings) to start syncing.`,
+            title: `Quantum Purse ${currentVersion}`,
+            message: `Pre-release testnet data found!`,
+            detail: `You SHOULD clean the testnet data for a smooth transition to mainnet. For the details, see https://github.com/tea2x/quantum-purse/issues/116`,
+            buttons: ['✅ Delete Now (Recommended)', '⚠️ Eject Later (Not recommended)'],
+            defaultId: 0,
+            cancelId: 1,
         });
+
+        // Delete Old Data Now button
+        if (result.response === 0) {
+            try {
+                const userData = app.getPath('userData');
+                const itemsToDelete = [
+                    'IndexedDB',
+                ];
+
+                itemsToDelete.forEach(item => {
+                    const itemPath = path.join(userData, item);
+                    if (fs.existsSync(itemPath)) {
+                        fs.rmSync(itemPath, { recursive: true, force: true });
+                    }
+                });
+
+                await dialog.showMessageBox({
+                    type: 'info',
+                    title: 'Data Deleted',
+                    message: 'Pre-release/testnet data has been cleaned up.\n\nYou can now create a new mainnet wallet.',
+                    buttons: ['OK']
+                });
+            } catch (error) {
+                await dialog.showMessageBox({
+                    type: 'error',
+                    title: 'Error',
+                    message: `Failed to delete testnet data: ${error.message}\n\nPlease delete manually via Settings → Eject Wallet.`,
+                    buttons: ['OK']
+                });
+            }
+        }
     }
 
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
