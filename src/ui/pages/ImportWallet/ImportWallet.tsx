@@ -5,9 +5,7 @@ import {
   Flex,
   Form,
   FormInstance,
-  Input,
   notification,
-  // Steps,
   Tabs,
 } from "antd";
 import React, {
@@ -107,6 +105,10 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
     };
     validate();
   }, [form, values]);
+
+  useEffect(() => {
+    handlePasswordChange();
+  }, [parameterSet]);
 
   const handlePasswordChange = async () => {
     if (!passwordInputRef?.current) return;

@@ -1,5 +1,5 @@
 import { KeyOutlined, LoadingOutlined, LockOutlined, EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Flex, Form, notification, Steps } from "antd";
+import { Button, Checkbox, Flex, Form, notification } from "antd";
 import React, {
   createContext,
   useContext,
@@ -153,6 +153,10 @@ export const StepCreatePassword: React.FC = () => {
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
   }, [form, values]);
+
+  useEffect(() => {
+    handlePasswordChange();
+  }, [parameterSet]);
 
   const handlePasswordChange = async () => {
     if (!passwordInputRef.current) return;
