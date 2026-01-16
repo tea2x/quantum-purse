@@ -3,13 +3,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { Dispatch } from "../../store";
-import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { formatError } from "../../utils/methods";
 import styles from "./srp_text_box.module.scss";
-import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
-import { STORAGE_KEYS, ROUTES } from "../../utils/constants";
+import { ROUTES } from "../../utils/constants";
 import { useNavigate } from "react-router-dom";
-import { DB } from "../../../core/db";
 import { utf8ToBytes } from "../../../core/utils";
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
@@ -35,26 +32,8 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   const location = useLocation();
   const dispatch = useDispatch<Dispatch>();
   const navigate = useNavigate();
-  const [paramSet, setParamSet] = useState<number | null>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    let value: number | null = null;
-    try {
-      value = QuantumPurse.getInstance().getSphincsPlusParamSet();
-      setParamSet(value);
-    } catch (e) {
-      (async () => {
-        const paramId = await DB.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
-        if (paramId !== null) {
-          setParamSet(Number(paramId));
-        }
-      })();
-    }
-  }, []);
-
-  const { rules: passwordRules } = usePasswordValidator(paramSet ?? 0);
 
   const onSubmit = async () => {
     if (!passwordInputRef.current) return;
