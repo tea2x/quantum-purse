@@ -131,13 +131,18 @@ app.whenReady().then(async () => {
         responseHeaders['Cross-Origin-Opener-Policy'] = ['same-origin'];
         responseHeaders['Cross-Origin-Embedder-Policy'] = ['require-corp'];
 
+        // for packaged app - meaning mainnet only - only allow secure connections
+        const connectSrc = app.isPackaged 
+            ? "connect-src 'self' wss:; "
+            : "connect-src 'self' https://ckb-faucet-proxy.vercel.app ws: wss:; ";
+
         responseHeaders['Content-Security-Policy'] = [
             "default-src 'self'; " +
             "script-src 'self' 'wasm-unsafe-eval'; " +
             "style-src 'self' 'unsafe-inline'; " +
             "font-src 'self'; " +
             "img-src 'self'; " +
-            "connect-src 'self' https://ckb-faucet-proxy.vercel.app ws: wss:; " +
+            connectSrc +
             "worker-src 'self' blob:; " +
             "manifest-src 'self'; " +
             "object-src 'none'; " +

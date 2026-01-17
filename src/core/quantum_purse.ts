@@ -212,7 +212,7 @@ export default class QuantumPurse extends QPSigner {
         { type: IS_MAIN_NET ? "MainNet" : "TestNet", config },
         secretKey as Hex,
         "info",
-        "ws"
+        IS_MAIN_NET ? "wss" : "ws"
       );
       this.hasClientStarted = true;
     } catch (error) {
