@@ -72,10 +72,13 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
         <>
           <div>
             <div
-              className={styles.textBox}
+              className={styles.srpArea}
               onCopy={(e) => e.preventDefault()}
             >
-              <p className="srp">{value}</p>
+              <span className={styles.revealIcon}><EyeOutlined /></span>
+              <div className={styles.textBox}>
+                <p className="srp">{value}</p>
+              </div>
             </div>
           </div>
           <div style={{ display: "flex", gap: "8px", width: "fit-content", margin: "0 auto" }}>

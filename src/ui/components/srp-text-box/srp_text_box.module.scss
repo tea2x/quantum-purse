@@ -28,29 +28,48 @@
     font-size: 1.4rem;
   }
 
-  .textBox {
-    margin: 0.8rem 0;
-    padding: 1.2rem;
-    border-radius: 0.5rem;
-    border: 0.1rem solid var(--gray-light);
-    width: 100%;
-    background-color: var(--white-abs);
-    transition: all 0.2s ease;
-    color: var(--gray-03);
-    user-select: none;
-    filter: blur(5px);
+  .srpArea {
+    position: relative;
     
-    &:hover {
-      filter: blur(0);
+    .textBox {
+      margin: 0.8rem 0;
+      padding: 1.2rem;
+      border-radius: 0.5rem;
+      border: 0.1rem solid var(--gray-light);
+      width: 100%;
+      background-color: var(--white-abs);
+      transition: all 0.2s ease;
+      color: var(--gray-03);
+      user-select: none;
+      filter: blur(5px);
+      
+      :global(.srp) {
+        margin: 0;
+        text-align: center;
+        word-break: break-word;
+        font-family: monospace;
+        font-size: 1.2rem;
+        line-height: 1.5;
+      }
     }
     
-    :global(.srp) {
-      margin: 0;
-      text-align: center;
-      word-break: break-word;
-      font-family: monospace;
-      font-size: 1.2rem;
-      line-height: 1.5;
+    .revealIcon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 8rem;
+      opacity: 0.8;
+      transition: opacity 0.5s ease;
+      z-index: 1;
+      display: flex;
+
+      &:hover {
+        opacity: 0;
+        ~ .textBox {
+          filter: blur(0);
+        }
+      }
     }
   }
   

@@ -40,7 +40,7 @@ const RevealSRP: React.FC = () => {
     <section className={cx(styles.revealSrp, "panel")}>
       {/* <h1>Reveal Secret Recovery Phrase</h1> */}
       <div className={styles.content}>
-        <p>WARNING! Never copy or screenshot!<br />Only handwrite to backup your mnemonic phrase!<br /> Backup too your chosen SPHINCS+ variant [{SpxVariant[Number(paramSet)]}]!</p>
+        <p>WARNING! Never copy or screenshot! Handwrite is recommended! Backup too your chosen SPHINCS+ variant [{SpxVariant[Number(paramSet)]}] with the mnemonic!</p>
         <SrpTextBox
           value={srp}
           exportSrpHandler={exportSrpHandler}
