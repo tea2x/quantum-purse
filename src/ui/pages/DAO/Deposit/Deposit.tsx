@@ -7,12 +7,10 @@ import {
   Tooltip,
   Row,
   Col,
-  Modal,
   Space
 } from "antd";
 import {
   QuestionCircleOutlined,
-  ScanOutlined,
   DoubleRightOutlined,
   SettingFilled,
   FullscreenOutlined,
@@ -27,8 +25,8 @@ import { cx, formatError, download } from "../../../utils/methods";
 import styles from "./Deposit.module.scss";
 import QuantumPurse from "../../../../core/quantum_purse";
 import { Address, fixedPointFrom } from "@ckb-ccc/core";
-import { Html5QrcodeScanner } from "html5-qrcode";
-import { logger } from '../../../../core/logger';
+// import { Html5QrcodeScanner } from "html5-qrcode";
+// import { logger } from '../../../../core/logger';
 
 const Deposit: React.FC = () => {
   const [form] = Form.useForm();
@@ -45,7 +43,7 @@ const Deposit: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
-  const [scannerUp, setScannerUp] = useState(false);
+  // const [scannerUp, setScannerUp] = useState(false);
   const [isDepositToMyAccount, setIsDepositToMyAccount] = useState(false);
   const [isDepositMax, setIsDepositMax] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
@@ -110,31 +108,31 @@ const Deposit: React.FC = () => {
     }
   }, [isDepositMax, fromAccountBalance]);
 
-  useEffect(() => {
-    if (!scannerUp) return;
+  // useEffect(() => {
+  //   if (!scannerUp) return;
 
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      { fps: 10, qrbox: 250 },
-      false
-    );
+  //   const scanner = new Html5QrcodeScanner(
+  //     "reader",
+  //     { fps: 10, qrbox: 250 },
+  //     false
+  //   );
 
-    scanner.render(
-      (decodedAddress) => {
-        form.setFieldsValue({ to: decodedAddress });
-        form.validateFields(["to"]);
-        setScannerUp(false);
-        scanner.clear();
-      },
-      (errorMessage) => {
-        logger("info", errorMessage);
-      }
-    );
+  //   scanner.render(
+  //     (decodedAddress) => {
+  //       form.setFieldsValue({ to: decodedAddress });
+  //       form.validateFields(["to"]);
+  //       setScannerUp(false);
+  //       scanner.clear();
+  //     },
+  //     (errorMessage) => {
+  //       logger("info", errorMessage);
+  //     }
+  //   );
 
-    return () => {
-      scanner.clear().catch(() => {});
-    };
-  }, [scannerUp]);
+  //   return () => {
+  //     scanner.clear().catch(() => {});
+  //   };
+  // }, [scannerUp]);
 
   // Catch fee rate changes from FeeRateSelect component
   const handleFeeRateChange = (feeRate: number) => {
@@ -214,13 +212,13 @@ const Deposit: React.FC = () => {
               <Space.Compact style={{ display: "Flex" }}>
                 <Input
                   value={values?.to}
-                  placeholder="Input or scan the destination address"
+                  placeholder="Input the destination address"
                   style={{ backgroundColor: "var(--gray-light)" }}
                 />
-                <Button
+                {/* <Button
                   onClick={() => setScannerUp(true)}
                   icon={<ScanOutlined />}
-                />
+                /> */}
                 <Button
                   onClick={() => {
                     setIsDepositToMyAccount(!isDepositToMyAccount);
@@ -347,14 +345,14 @@ const Deposit: React.FC = () => {
             }
           }}
         />
-        <Modal
+        {/* <Modal
           open={scannerUp}
           onCancel={() => setScannerUp(false)}
           footer={null}
           title="Scan QR Code"
         >
           <div id="reader" style={{ width: "100%" }} />
-        </Modal>
+        </Modal> */}
       </div>
     </section>
   );

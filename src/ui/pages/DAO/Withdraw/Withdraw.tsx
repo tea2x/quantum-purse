@@ -1,5 +1,5 @@
-import { Button, notification, Form, Input, Empty, Tooltip, Row, Col, Space, Modal } from "antd";
-import { QuestionCircleOutlined, ScanOutlined, DoubleRightOutlined, SettingFilled } from "@ant-design/icons";
+import { Button, notification, Form, Input, Empty, Tooltip, Row, Col, Space } from "antd";
+import { QuestionCircleOutlined, DoubleRightOutlined, SettingFilled } from "@ant-design/icons";
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AccountSelect, Explore, Authentication, AuthenticationRef, FeeRateSelect } from "../../../components";
@@ -10,7 +10,7 @@ import QuantumPurse from "../../../../core/quantum_purse";
 import { ccc, ClientBlockHeader, Hex } from "@ckb-ccc/core";
 import { NERVOS_DAO } from "../../../../core/config";
 import { parseEpoch, getClaimEpoch, getProfit } from "../../../../core/epoch";
-import { Html5QrcodeScanner } from "html5-qrcode";
+// import { Html5QrcodeScanner } from "html5-qrcode";
 import { logger } from '../../../../core/logger';
 
 const Withdraw: React.FC = () => {
@@ -32,7 +32,7 @@ const Withdraw: React.FC = () => {
       blockNum: bigint;
     };
   }>({});
-  const [scannerUp, setScannerUp] = useState(false);
+  // const [scannerUp, setScannerUp] = useState(false);
   const [isWithdrawToMyAccount, setIsWithdrawToMyAccount] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -118,31 +118,31 @@ const Withdraw: React.FC = () => {
     }
   }, [quantumPurse]);
 
-  useEffect(() => {
-    if (!scannerUp) return;
+  // useEffect(() => {
+  //   if (!scannerUp) return;
 
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      { fps: 10, qrbox: 250 },
-      false
-    );
+  //   const scanner = new Html5QrcodeScanner(
+  //     "reader",
+  //     { fps: 10, qrbox: 250 },
+  //     false
+  //   );
 
-    scanner.render(
-      (decodedAddress) => {
-        form.setFieldsValue({ to: decodedAddress });
-        form.validateFields(["to"]);
-        setScannerUp(false);
-        scanner.clear();
-      },
-      (errorMessage) => {
-        logger("info", errorMessage);
-      }
-    );
+  //   scanner.render(
+  //     (decodedAddress) => {
+  //       form.setFieldsValue({ to: decodedAddress });
+  //       form.validateFields(["to"]);
+  //       setScannerUp(false);
+  //       scanner.clear();
+  //     },
+  //     (errorMessage) => {
+  //       logger("info", errorMessage);
+  //     }
+  //   );
 
-    return () => {
-      scanner.clear().catch(() => {});
-    };
-  }, [scannerUp]);
+  //   return () => {
+  //     scanner.clear().catch(() => {});
+  //   };
+  // }, [scannerUp]);
 
   const calculateRemainingDays = async(
     depositHeader: ClientBlockHeader,
@@ -281,13 +281,13 @@ const Withdraw: React.FC = () => {
                         <Space.Compact style={{ display: "flex" }}>
                           <Input
                             value={values?.to}
-                            placeholder="Input or scan the destination address"
+                            placeholder="Input the destination address"
                             style={{backgroundColor: "var(--gray-light)"}}
                           />
-                          <Button
+                          {/* <Button
                             onClick={() => setScannerUp(true)}
                             icon={<ScanOutlined />}
-                          />
+                          /> */}
                           <Button
                             onClick={() => {
                               setIsWithdrawToMyAccount(!isWithdrawToMyAccount);
@@ -355,14 +355,14 @@ const Withdraw: React.FC = () => {
                 }}
               />
 
-              <Modal
+              {/* <Modal
                 open={scannerUp}
                 onCancel={() => setScannerUp(false)}
                 footer={null}
                 title="Scan QR Code"
               >
                 <div id="reader" style={{ width: "100%" }} />
-              </Modal>
+              </Modal> */}
             </div>
 
             <div className={styles.withdrawListContainer}>

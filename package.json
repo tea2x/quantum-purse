@@ -93,7 +93,6 @@
     "@rematch/core": "2.2.0",
     "@rematch/loading": "2.1.2",
     "antd": "6.2.0",
-    "html5-qrcode": "2.3.8",
     "qrcode.react": "4.2.0",
     "quantum-purse-key-vault": "0.3.0",
     "react": "19.2.3",

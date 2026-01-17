@@ -7,12 +7,10 @@ import {
   Tooltip,
   Row,
   Col,
-  Modal,
   Space
 } from "antd";
 import {
   QuestionCircleOutlined,
-  ScanOutlined,
   DoubleRightOutlined,
   SettingFilled,
   FullscreenOutlined,
@@ -27,8 +25,8 @@ import { cx, formatError, download } from "../../utils/methods";
 import styles from "./Send.module.scss";
 import QuantumPurse from "../../../core/quantum_purse";
 import { Address, fixedPointFrom } from "@ckb-ccc/core";
-import { Html5QrcodeScanner } from "html5-qrcode";
-import { logger } from "../../../core/logger";
+// import { Html5QrcodeScanner } from "html5-qrcode";
+// import { logger } from "../../../core/logger";
 
 const Send: React.FC = () => {
   const [form] = Form.useForm();
@@ -45,7 +43,7 @@ const Send: React.FC = () => {
     reject: () => void;
   } | null>(null);
   const [feeRate, setFeeRate] = useState<number | undefined>(undefined);
-  const [scannerUp, setScannerUp] = useState(false);
+  // const [scannerUp, setScannerUp] = useState(false);
   const [isSendToMyAccount, setIsSendToMyAccount] = useState(false);
   const [isSendMax, setIsSendMax] = useState(false);
   const [isCustomFee, setIsCustomFee] = useState(false);
@@ -115,31 +113,31 @@ const Send: React.FC = () => {
     setFeeRate(feeRate);
   };
 
-  useEffect(() => {
-    if (!scannerUp) return;
+  // useEffect(() => {
+  //   if (!scannerUp) return;
 
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      { fps: 10, qrbox: 250 },
-      false
-    );
+  //   const scanner = new Html5QrcodeScanner(
+  //     "reader",
+  //     { fps: 10, qrbox: 250 },
+  //     false
+  //   );
 
-    scanner.render(
-      (decodedAddress) => {
-        form.setFieldsValue({ to: decodedAddress });
-        form.validateFields(["to"]);
-        setScannerUp(false);
-        scanner.clear();
-      },
-      (errorMessage) => {
-        logger("info", errorMessage);
-      }
-    );
+  //   scanner.render(
+  //     (decodedAddress) => {
+  //       form.setFieldsValue({ to: decodedAddress });
+  //       form.validateFields(["to"]);
+  //       setScannerUp(false);
+  //       scanner.clear();
+  //     },
+  //     (errorMessage) => {
+  //       logger("info", errorMessage);
+  //     }
+  //   );
 
-    return () => {
-      scanner.clear().catch(() => {});
-    };
-  }, [scannerUp]);
+  //   return () => {
+  //     scanner.clear().catch(() => {});
+  //   };
+  // }, [scannerUp]);
 
   const handleSend = async (signOffline: boolean) => {
     try {
@@ -215,13 +213,13 @@ const Send: React.FC = () => {
               <Space.Compact style={{ display: "flex" }}>
                 <Input
                   value={values?.to}
-                  placeholder="Input or scan the destination address"
+                  placeholder="Input the destination address"
                   style={{ backgroundColor: "var(--gray-light)" }}
                 />
-                <Button
+                {/* <Button
                   onClick={() => setScannerUp(true)}
                   icon={<ScanOutlined />}
-                />
+                /> */}
                 <Button
                   onClick={() => {
                     setIsSendToMyAccount(!isSendToMyAccount);
@@ -350,14 +348,14 @@ const Send: React.FC = () => {
           }}
         />
 
-        <Modal
+        {/* <Modal
           open={scannerUp}
           onCancel={() => setScannerUp(false)}
           footer={null}
           title="Scan QR Code"
         >
           <div id="reader" style={{ width: "100%" }} />
-        </Modal>
+        </Modal> */}
 
       </div>
     </section>
