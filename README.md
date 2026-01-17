@@ -131,20 +131,16 @@ https://quantum-purse.vercel.app/
 1. Mnemonic seed phrases are very long. *256s/f variants with 72 words may feel overwhelming if you're new to quantum-safe wallets. For easier backup, consider starting with *128s/f variants (36 words), which still provide strong quantum resistance.
 2. Back up your mnemonic phrase. Losing your mnemonic means losing access to your wallet.
 3. Quantum Purse does NOT store your passwords. Passwords are used only temporarily to encrypt and decrypt your secret data.
-4. Quantum Purse stores only public data and encrypted secret data. Your SPHINCS+ private keys remain protected as long as your password is strong enough.
+4. There's no guarantee your encrypted wallet seed can not be exposed. In case it is exposed, you will want it to have sufficiently strong encrytion with an equaly strong password. Pick a strong password for your self!
 5. What is a strong password? Quantum Purse does guide you in wallet creation to create strong passwords but it will be best for you to come up with your own that passes Quantum Purse's validation. For what is a strong password, you might want to refer to this [link](https://www.antivirus.promo/password-strength-checker).
 6. Forgot your password? Recover access by importing your seed phrase and setting a new password instantly.
 7. Need help? Report issues on GitHub!
 
-## Commentary
-Security is everyone's responsibility. While Quantum Purse securely erases sensitive data after processing, **password/mnemonic inputting in JS environment doesn't offer much control** and remains a potential attack vector.
-
-Until a proper SPHINCS+ hardware wallet is available for secure key management, follow these best practices to maximize security:
+## A recommended practice
+Security is everyone's responsibility. While Quantum Purse does its job in minimizing sensitive data exposes, **password/mnemonic inputting in JS environment doesn't offer much control** and remains as a weak point. This is in fact an issue for all password-based application. Until a proper SPHINCS+ hardware wallet is available for secure key management, it is recommended to follow this practice to maximize security:
 
 1. Use a dedicated device with minimal software installed to run Quantum Purse.
-2. There's no guarantee your encrypted mnemonic can not be leaked. You have to have a strong enough password if you want to keep the wallet's seed safe.
-3. Wait for the light client to completely sync then disconnect with the internet.
-4. On each transactional activity, there's a button named "Sign & Export". Click it to perform signing off-line and store the transaction object on your computer.
-5. Terminate the application after completing a transaction. Ideally, power off your computer to wipe residual password-related data from RAM.
-6. Open your computer again and use any CKB transaction broadcaster to broadcast your signed transaction to the CKB network.
-7. Never copy sensitive data and remember to protect your machine always.
+2. On each transactional activity, there's a button named "Sign & Export". Wait for the light client to completely sync then disconnect with the internet. Then use "Sign & Export" to perform signing off-line and store the transaction object on your computer.
+3. Terminate the application after completing a transaction. Ideally, power off your computer to wipe residual password-related data from RAM.
+4. Open your computer again and use any CKB transaction broadcaster to broadcast your signed transaction to the CKB network.
+5. Never copy sensitive data as data in clipboards get attacked easilly. Remember to protect/lock your machine always.
