@@ -410,7 +410,7 @@ const StepSecureSRP: React.FC = () => {
       title={"Secure Secret Recovery Phrase"}
       description={
         srp
-          ? "WARNING! Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant [ " + SpxVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + " ] with the mnemonic phrase."
+          ? "WARNING! Never copy or screenshot!\nOnly handwrite to backup your mnemonic phrase! \n Backup too your chosen SPHINCS+ variant [" + SpxVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + "]!"
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process or reset and start again."
       }
       exportSrpHandler={exportSrpHandler}
