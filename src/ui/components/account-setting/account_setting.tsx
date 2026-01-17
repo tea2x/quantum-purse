@@ -78,7 +78,7 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account, onClose }) => 
               value={startingBlock}
               onChange={(e) => setStartingBlock(e.target.value)}
               placeholder={`Valid range: [0, ${syncStatus.tipBlock}]`}
-              style={{ flex: 1 }}
+              style={{ flex: 1, color: "var(--gray-03) !important" }}
             />
             <Button
               type="primary"

@@ -317,7 +317,7 @@ const Send: React.FC = () => {
             <Flex justify="end">
               <Button
                 onClick={() => handleSend(true)}
-                style={{ marginRight: 8, height: "3rem" }}
+                style={{ marginRight: 8, height: "4rem" }}
                 disabled={!submittable || loadingSend}
               >
                 Sign & Export

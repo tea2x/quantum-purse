@@ -30,6 +30,9 @@
           font-size: small;
           font-weight: bold;
         }
+        .ant-input, .ant-btn, .ant-select {
+          height: 4rem;
+        }
       }
 
       .ant-input-number-group-addon {
@@ -44,7 +47,7 @@
 }
 
 .depositButton {
-  height: 3rem;
+  height: 4rem;
   width: 10rem;
   @media (max-width: 768px) {
     width: 100%;

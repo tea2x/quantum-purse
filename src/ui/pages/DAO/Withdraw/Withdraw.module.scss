@@ -27,6 +27,9 @@
           font-size: small;
           font-weight: bold;
         }
+        .ant-input, .ant-btn, .ant-select {
+          height: 4rem;
+        }
       }
 
       .ant-input-number-group-addon {
@@ -42,7 +45,7 @@
 
 .withdrawListContainer {
   overflow-y: auto;
-  max-height: 37rem; // tuned w/o exact calculation, adjust as needed
+  max-height: 36rem; // tuned w/o exact calculation, adjust as needed
   @media (max-width: 768px) {
     max-height: 31rem;
     margin-top: 0;
@@ -109,7 +112,6 @@
 }
 
 .buttons {
-  padding: 2px 3px;
   font-size: smaller;
   border: 0.5px solid var(--teal-2) !important;
   cursor: pointer;

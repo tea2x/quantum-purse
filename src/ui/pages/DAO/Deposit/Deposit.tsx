@@ -316,7 +316,7 @@ const Deposit: React.FC = () => {
             <Flex justify="end">
               <Button
                 onClick={() => handleDeposit(true)}
-                style={{ marginRight: 8, height: "3rem" }}
+                style={{ marginRight: 8, height: "4rem" }}
                 disabled={!submittable || loadingDeposit}
               >
                 Sign & Export
