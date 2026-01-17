@@ -311,15 +311,26 @@ const StepInputSrp: React.FC<BaseStepProps> = ({ form, srpInputRef }) => {
 
     setSrpError('');
 
-    const value = srpInputRef.current.value;
-    if (!value) {
+    if (!srpInputRef.current.value) {
       setSubmittable(false);
       return;
     }
 
-    const words = value.trim().split(/\s+/);
-    if (![36, 54, 72].includes(words.length)) {
-      setSrpError(`Current word count is ${words.length} but expected to be 36, 54 or 72!`);
+    let wordCount = 0;
+    let inWord = false;
+    for (let i = 0; i < srpInputRef?.current?.value?.length; i++) {
+      const char = srpInputRef?.current?.value[i];
+      const isSpace = char === ' ' || char === '\t' || char === '\n' || char === '\r';
+      if (!isSpace && !inWord) {
+        wordCount++;
+        inWord = true;
+      } else if (isSpace) {
+        inWord = false;
+      }
+    }
+
+    if (![36, 54, 72].includes(wordCount)) {
+      setSrpError(`Current word count is ${wordCount} but expected to be 36, 54, or 72!`);
       setSubmittable(false);
       return;
     }
