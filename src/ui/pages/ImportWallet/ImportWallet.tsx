@@ -78,7 +78,7 @@ const ImportWalletProvider: React.FC<{ children: React.ReactNode }> = ({
 export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInputRef, confirmPasswordInputRef }) => {
   const values = Form.useWatch([], form);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
-  const { importWallet: loadingImportWallet, exportSRP: loadingExportSRP } =
+  const { importWallet: loadingImportWallet } =
     useSelector((state: RootState) => state.loading.effects.wallet);
   const { prev } = useContext(ImportWalletContext);
   const parameterSet = Form.useWatch("parameterSet", form);
@@ -190,7 +190,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
             ref={passwordInputRef}
             type={showPassword ? 'text' : 'password'}
             placeholder="Please choose a strong password"
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
             className={styles.passwordInput}
             onChange={handlePasswordChange}
           />
@@ -198,7 +198,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
             type="button"
             className={styles.toggleButton}
             onClick={() => setShowPassword(!showPassword)}
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
             tabIndex={-1}
           >
             {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
@@ -215,7 +215,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
             ref={confirmPasswordInputRef}
             type={showConfirmPassword ? 'text' : 'password'}
             placeholder="Confirm your password"
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
             className={styles.passwordInput}
             onChange={handleConfirmPasswordChange}
           />
@@ -223,7 +223,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
             type="button"
             className={styles.toggleButton}
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
             tabIndex={-1}
           >
             {showConfirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
@@ -274,7 +274,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
         <Form.Item>
           <Button
             onClick={() => prev()}
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
           >
             Back
           </Button>
@@ -283,8 +283,8 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
           <Button
             type="primary"
             onClick={handleImportClick}
-            disabled={!submittable || !passwordsValid || loadingImportWallet || loadingExportSRP}
-            loading={loadingImportWallet || loadingExportSRP}
+            disabled={!submittable || !passwordsValid || loadingImportWallet}
+            loading={loadingImportWallet}
           >
             Import
           </Button>
@@ -416,7 +416,6 @@ const ImportWalletContent: React.FC = () => {
         passwordInputRef.current.value = '';
       if(confirmPasswordInputRef.current)
         confirmPasswordInputRef.current.value = '';
-      dispatch.wallet.resetSRP();
 
       // success, procees to load the wallet
       await dispatch.wallet.init({});
@@ -433,7 +432,7 @@ const ImportWalletContent: React.FC = () => {
   };
 
   const { currentStep } = useContext(ImportWalletContext);
-  const { importWallet: loadingImportWallet, exportSRP: loadingExportSRP } =
+  const { importWallet: loadingImportWallet } =
     useSelector((state: RootState) => state.loading.effects.wallet);
 
   const steps = useMemo(
@@ -442,7 +441,7 @@ const ImportWalletContent: React.FC = () => {
         key: STEP.SRP,
         title: "Import SRP",
         description: "Import your secret recovery phrase",
-        icon: loadingExportSRP ? <LoadingOutlined /> : <LockOutlined />,
+        icon: <LockOutlined />,
         content: <StepInputSrp form={form} srpInputRef={srpInputRef} />,
       },
       {
@@ -453,7 +452,7 @@ const ImportWalletContent: React.FC = () => {
         content: <StepCreatePassword form={form} passwordInputRef={passwordInputRef} confirmPasswordInputRef={confirmPasswordInputRef} />,
       },
     ],
-    [loadingImportWallet, loadingExportSRP]
+    [loadingImportWallet]
   );
 
   return (

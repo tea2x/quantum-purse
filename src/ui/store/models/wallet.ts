@@ -26,7 +26,6 @@ interface IWallet {
     syncedStatus: number;
     startBlock: number;
   };
-  srp: string | undefined;
 }
 
 type StateType = IWallet;
@@ -54,7 +53,6 @@ const initState: StateType = {
     syncedStatus: 0,
     startBlock: 0,
   },
-  srp: undefined,
 };
 
 export const wallet = createModel<RootModel>()({
@@ -80,12 +78,6 @@ export const wallet = createModel<RootModel>()({
         return account;
       });
       return { ...state, accounts };
-    },
-    setSRP(state: StateType, srp: string) {
-      return { ...state, srp };
-    },
-    resetSRP(state: StateType) {
-      return { ...state, srp: undefined };
     },
     reset() {
       return initState;
@@ -206,16 +198,6 @@ export const wallet = createModel<RootModel>()({
       } finally {
         password.fill(0);
         clonedPassword.fill(0);
-      }
-    },
-    async exportSRP({ password }) {
-      let srp: Uint8Array = new Uint8Array(0);
-      try {
-        srp = await quantum.exportSeedPhrase(password);
-        this.setSRP(bytesToUtf8(srp));
-      } finally {
-        password.fill(0);
-        srp.fill(0);
       }
     },
     async getAccountBalance({ spxLockArgs }) {

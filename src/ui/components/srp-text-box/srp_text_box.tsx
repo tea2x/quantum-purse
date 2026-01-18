@@ -1,7 +1,6 @@
 import { Button, Form, notification } from "antd";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useLocation } from "react-router-dom";
 import { Dispatch } from "../../store";
 import { formatError } from "../../utils/methods";
 import styles from "./srp_text_box.module.scss";
@@ -29,7 +28,6 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   onConfirm,
   isCreateWalletPage = false,
 }) => {
-  const location = useLocation();
   const dispatch = useDispatch<Dispatch>();
   const navigate = useNavigate();
   const passwordInputRef = useRef<HTMLInputElement>(null);
@@ -67,11 +65,11 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
     navigate(ROUTES.WELCOME);
   };
 
-  useEffect(() => {
-    return () => {
-      dispatch.wallet.resetSRP();
-    };
-  }, [location]);
+  // useEffect(() => {
+  //   return () => {
+  //     dispatch.wallet.resetSRP();
+  //   };
+  // }, [location]);
 
   return (
     <div className={styles.srpTextBox}>

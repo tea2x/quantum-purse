@@ -58,7 +58,7 @@ const usePasswordValidator = (variant: SpxVariant) => {
     },
     {
       validator: entropyLevelValidator,
-      message: "Warning: weak password! Consider adding more characters to enhance security.",
+      message: "Warning: weak password! Consider passphrases or lengthening it!",
       warningOnly: true,
     },
   ];

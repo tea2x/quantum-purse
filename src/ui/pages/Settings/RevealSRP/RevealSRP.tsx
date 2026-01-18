@@ -1,25 +1,29 @@
-import { useDispatch, useSelector } from "react-redux";
 import { SrpTextBox } from "../../../components";
-import { Dispatch, RootState } from "../../../store";
 import { cx } from "../../../utils/methods";
 import styles from "./RevealSRP.module.scss";
 import QuantumPurse, { SpxVariant } from "../../../../core/quantum_purse";
 import { STORAGE_KEYS } from "../../../utils/constants";
 import { DB } from "../../../../core/db";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { bytesToUtf8 } from "../../../../core/utils";
 
 const RevealSRP: React.FC = () => {
-  const dispatch = useDispatch<Dispatch>();
-  const srp = useSelector((state: RootState) => state.wallet.srp);
-  const exportSrpHandler = async (password: Uint8Array) => {
-    try {
-      await dispatch.wallet.exportSRP({ password })
-    } finally {
-      password.fill(0);
-    }
-  };
-  
+  const srpRef = useRef<Uint8Array | null>(null);
+  const [srpRevealed, setSrpRevealed] = useState(false);
   const [paramSet, setParamSet] = useState<number | null>(null);
+
+  const exportSrpHandler = async (password: Uint8Array) => {
+    srpRef.current = await QuantumPurse.getInstance().exportSeedPhrase(password);
+    setSrpRevealed(true);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (srpRef.current) {
+        srpRef.current.fill(0);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let value: number | null = null;
@@ -36,17 +40,27 @@ const RevealSRP: React.FC = () => {
     }
   }, []);
 
+  const handleConfirm = () => {
+    if (srpRef.current) {
+      srpRef.current.fill(0);
+      srpRef.current = null;
+      setSrpRevealed(false);
+    }
+  };
+
   return (
     <section className={cx(styles.revealSrp, "panel")}>
       {/* <h1>Reveal Secret Recovery Phrase</h1> */}
       <div className={styles.content}>
-        <p>WARNING! Never copy or screenshot! Handwrite is recommended! Backup too your chosen SPHINCS+ variant [{SpxVariant[Number(paramSet)]}] with the mnemonic!</p>
+        <p>
+          WARNING! Never copy or screenshot! Handwrite is recommended! Backup
+          too your chosen SPHINCS+ variant [{SpxVariant[Number(paramSet)]}] with
+          the mnemonic!
+        </p>
         <SrpTextBox
-          value={srp}
+          value={srpRevealed && srpRef.current ? bytesToUtf8(srpRef.current) : ''}
           exportSrpHandler={exportSrpHandler}
-          onConfirm={() => {
-            dispatch.wallet.resetSRP();
-          }}
+          onConfirm={handleConfirm}
           title=""
           description=""
         />
