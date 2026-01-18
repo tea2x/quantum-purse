@@ -187,7 +187,7 @@ const Send: React.FC = () => {
             name="to"
             className={cx("field-to", values?.isSendToMyAccount && "select-my-account")}
             label={
-              <div className="label-with-icon">
+              <div>
                 Send To
                 <Tooltip title="You can send to any address, or send to yourself by selecting an account from your wallet.">
                   <QuestionCircleOutlined style={{ marginLeft: 4 }} />
@@ -252,7 +252,7 @@ const Send: React.FC = () => {
                 className={cx("field-to")}
                 name="amount"
                 label={
-                  <div className="label-with-icon">
+                  <div>
                     Amount
                   </div>
                 }
@@ -292,7 +292,7 @@ const Send: React.FC = () => {
                 name="feeRate"
                 className="field-to"
                 label={
-                  <div className="label-with-icon">
+                  <div>
                     Fee Rate
                     <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
                       <QuestionCircleOutlined style={{ marginLeft: 4 }} />
@@ -313,7 +313,9 @@ const Send: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item>
+          <Form.Item
+            className={cx("button-bar")}
+          >
             <Flex justify="end">
               <Button
                 onClick={() => handleSend(true)}

@@ -3,12 +3,12 @@
     height: 50rem;
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(12px);
+    padding-top: 3.5rem;
     .ant-form {
       background: transparent !important;
     }
     
     .ant-form-item {
-      padding: 1.5rem;
       border: none;
       border-radius: 1rem;
       background: rgba(255, 255, 255, 0.03);
@@ -24,6 +24,7 @@
       }
 
       &.field-to {
+        padding: 1rem 1.5rem 2rem 1.5rem;
         label {
           color: var(--teal-2);
           width: 100%;
@@ -33,6 +34,10 @@
         .ant-input, .ant-btn, .ant-select {
           height: 4rem;
         }
+      }
+
+      &.button-bar {
+        padding: 1.5rem;
       }
 
       .ant-input-number-group-addon {

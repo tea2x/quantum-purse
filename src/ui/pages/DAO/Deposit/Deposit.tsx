@@ -186,7 +186,7 @@ const Deposit: React.FC = () => {
             name="to"
             className={cx("field-to", values?.isDepositToMyAccount && "select-my-account")}
             label={
-              <div className="label-with-icon">
+              <div>
                 Deposit To
                 <Tooltip title="Be careful! Depositing to an address transfers the deposit's ownership too.">
                   <QuestionCircleOutlined style={{ marginLeft: 4 }} />
@@ -250,7 +250,7 @@ const Deposit: React.FC = () => {
                 className={cx("field-to")} //using the same class for style consistency
                 name="amount"
                 label={
-                  <div className="label-with-icon">
+                  <div>
                     Amount
                   </div>
                 }
@@ -291,7 +291,7 @@ const Deposit: React.FC = () => {
                 name="feeRate"
                 className="field-to"
                 label={
-                  <div className="label-with-icon">
+                  <div>
                     Fee Rate
                     <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
                       <QuestionCircleOutlined style={{ marginLeft: 4 }} />
@@ -312,7 +312,9 @@ const Deposit: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item>
+          <Form.Item
+            className={cx("button-bar")}
+          >
             <Flex justify="end">
               <Button
                 onClick={() => handleDeposit(true)}

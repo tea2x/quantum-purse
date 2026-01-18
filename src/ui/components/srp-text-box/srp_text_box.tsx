@@ -34,6 +34,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   const navigate = useNavigate();
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isPasswordEmpty, setIsPasswordEmpty] = useState(true);
 
   const onSubmit = async () => {
     if (!passwordInputRef.current) return;
@@ -50,6 +51,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
       });
     } finally {
       passwordBytes.fill(0);
+      setIsPasswordEmpty(true);
     }
   };
 
@@ -106,6 +108,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
               placeholder="Enter your password"
               disabled={loading}
               className={styles.passwordInput}
+              onChange={(e) => setIsPasswordEmpty(e.target.value.length === 0)}
             />
             <button
               type="button"
@@ -132,7 +135,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
               <Button
                 type="primary"
                 htmlType="submit"
-                loading={loading}
+                disabled={isPasswordEmpty || loading}
               >
                 Reveal SRP
               </Button>

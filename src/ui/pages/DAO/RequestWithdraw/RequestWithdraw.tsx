@@ -234,7 +234,7 @@ const RequestWithdraw: React.FC = () => {
                     <Form.Item
                       name="to"
                       label={
-                        <div className="label-with-icon">
+                        <div>
                           Request To
                           <Tooltip title="Be careful! Making a withdraw request to an address transfers the request's ownership too.">
                             <QuestionCircleOutlined style={{ marginLeft: 4 }} />
@@ -298,7 +298,7 @@ const RequestWithdraw: React.FC = () => {
                       name="feeRate"
                       className="field-to"
                       label={
-                        <div className="label-with-icon">
+                        <div>
                           Fee Rate
                           <Tooltip title="By default fee rate is set at 1500 shannons/kB. Set a custom fee rate if needed.">
                             <QuestionCircleOutlined style={{ marginLeft: 4 }} />
