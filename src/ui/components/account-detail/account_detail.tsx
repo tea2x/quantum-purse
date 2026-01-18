@@ -6,6 +6,7 @@ import { IAccount } from "../../store/models/interface";
 import styles from "./account_detail.module.scss";
 import { Explore, Copy } from "../../components";
 import { message } from "antd";
+import { IS_MAIN_NET } from "../../../core/config";
 
 interface AccountDetailProps {
   account: IAccount;
@@ -58,7 +59,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ account }) => {
           </Flex>
         </Copy>
 
-        {(process.env.MAIN_NET === "false") && (
+        {!IS_MAIN_NET && (
           <div
             onClick={async () => {
               await claimCKB();

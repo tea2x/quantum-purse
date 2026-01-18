@@ -28,6 +28,7 @@ import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { useNavigate } from "react-router-dom";
 import { DB } from "../../../core/db";
 import { utf8ToBytes } from "../../../core/utils";
+import { IS_MAIN_NET } from "../../../core/config";
 
 interface ImportWalletContext {
   currentStep?: WalletStepEnum;
@@ -352,7 +353,7 @@ const StepInputSrp: React.FC<BaseStepProps> = ({ form, srpInputRef }) => {
           rows={9}
           className={styles.srpTextarea}
           onChange={handleSrpChange}
-          onPaste={(e) => e.preventDefault()}
+          onPaste={(e) => IS_MAIN_NET && e.preventDefault()}
         />
         {srpError && <div style={{ color: '#ff4d4f', fontSize: '1.4rem', marginTop: '0.4rem' }}>{srpError}</div>}
       </div>

@@ -1,6 +1,7 @@
 import { Button, Input, Modal } from "antd";
 import React, { useState } from "react";
 import styles from "./delete_wallet_confirm.module.scss";
+import { IS_MAIN_NET } from "../../../core/config";
 
 interface DeleteWalletModalProps {
   isOpen: boolean;
@@ -43,21 +44,29 @@ const DeleteWalletModal: React.FC<DeleteWalletModalProps> = ({
           <Button
             type="primary"
             onClick={handleOk}
-            disabled={!isConfirmed}
+            disabled={IS_MAIN_NET ? !isConfirmed : false}
           >
             OK
           </Button>
         </div>
       }
     >
-      <p style={{ marginTop: '16px', marginBottom: '8px', fontSize: '14px' }}>
-        To confirm, type "<strong>{confirmationText}</strong>"
-      </p>
-      <Input
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onPaste={(e) => e.preventDefault()}
-      />
+      {IS_MAIN_NET ? (
+        <>
+          <p style={{ marginTop: '16px', marginBottom: '8px', fontSize: '14px' }}>
+            To confirm, type "<strong>{confirmationText}</strong>"
+          </p>
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onPaste={(e) => e.preventDefault()}
+          />
+        </>
+      ) : (
+        <p style={{ marginTop: '16px', marginBottom: '8px', fontSize: '14px' }}>
+          Are you sure you want to delete this wallet?
+        </p>
+      )}
     </Modal>
   );
 };

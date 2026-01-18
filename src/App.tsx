@@ -21,13 +21,8 @@ import {
   Accounts,
   Welcome,
 } from "./ui/pages";
-import { ROUTES, STORAGE_KEYS } from "./ui/utils/constants";
-import packageJson from '../package.json';
-import { DB } from "./core/db";
+import { ROUTES } from "./ui/utils/constants";
 import { notification } from "antd";
-import { logger } from './core/logger';
-
-const currentVersion:string|null = packageJson.version;
 
 const App: React.FC = () => {
   useEffect(() => {
