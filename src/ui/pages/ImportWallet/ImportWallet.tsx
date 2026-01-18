@@ -149,7 +149,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
       }
       setPasswordsValid(passwordsMatch && !hasError);
     } else {
-      setPasswordsValid(!hasError);
+      setPasswordsValid(false);
     }
   };
 

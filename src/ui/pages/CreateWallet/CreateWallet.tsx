@@ -198,7 +198,7 @@ export const StepCreatePassword: React.FC = () => {
       }
       setPasswordsValid(passwordsMatch && !hasError);
     } else {
-      setPasswordsValid(!hasError);
+      setPasswordsValid(false);
     }
   };
 
@@ -380,6 +380,7 @@ export const StepCreatePassword: React.FC = () => {
               type="primary"
               disabled={!submittable || !passwordsValid || loadingCreateWallet || loadingExportSRP}
               loading={loadingCreateWallet || loadingExportSRP}
+              style={{color: "var(--black)"}}
             >
               Create
             </Button>
