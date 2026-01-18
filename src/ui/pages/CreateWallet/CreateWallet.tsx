@@ -148,6 +148,13 @@ export const StepCreatePassword: React.FC = () => {
   const [passwordsValid, setPasswordsValid] = useState<boolean>(false);
 
   useEffect(() => {
+    return () => {
+      if (passwordInputRef.current) passwordInputRef.current.value = '';
+      if (confirmPasswordInputRef.current) confirmPasswordInputRef.current.value = '';
+    };
+  }, []);
+
+  useEffect(() => {
     form
       .validateFields({ validateOnly: true })
       .then(() => setSubmittable(true))

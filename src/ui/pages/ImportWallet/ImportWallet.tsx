@@ -385,6 +385,14 @@ const ImportWalletContent: React.FC = () => {
   const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
   const srpInputRef = useRef<HTMLTextAreaElement>(null);
 
+  useEffect(() => {
+    return () => {
+      if (srpInputRef.current) srpInputRef.current.value = '';
+      if (passwordInputRef.current) passwordInputRef.current.value = '';
+      if (confirmPasswordInputRef.current) confirmPasswordInputRef.current.value = '';
+    };
+  }, []);
+
   const onFinish = async ({ parameterSet }: { parameterSet: SpxVariant }) => {
     if (!passwordInputRef.current || !srpInputRef.current || !confirmPasswordInputRef.current) return;
 
