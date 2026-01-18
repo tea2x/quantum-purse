@@ -176,7 +176,7 @@ export const StepCreatePassword: React.FC = () => {
     for (const rule of passwordRules) {
       try {
         if (rule.validator) {
-          await rule.validator({}, passwordInputRef.current.value);
+          await rule.validator({}, utf8ToBytes(passwordInputRef.current.value));
         }
       } catch (error: any) {
         if (rule.warningOnly) {
