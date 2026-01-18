@@ -1,7 +1,6 @@
 import { createModel } from "@rematch/core";
-import { notification } from "antd";
 import QuantumPurse from "../../../core/quantum_purse";
-import { bytesToUtf8, utf8ToBytes } from "../../../core/utils";
+import { bytesToUtf8 } from "../../../core/utils";
 import { FIND_ACCOUNT_THRESHOLD, STORAGE_KEYS } from "../../utils/constants";
 import { RootModel } from "./index";
 import { Hex } from "@ckb-ccc/core";

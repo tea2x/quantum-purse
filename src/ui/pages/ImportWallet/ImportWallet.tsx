@@ -396,22 +396,31 @@ const ImportWalletContent: React.FC = () => {
   const onFinish = async ({ parameterSet }: { parameterSet: SpxVariant }) => {
     if (!passwordInputRef.current || !srpInputRef.current || !confirmPasswordInputRef.current) return;
 
+    QuantumPurse.getInstance().initKeyVault(parameterSet);
+    // store chosen param set to storage, so wallet type retains when refreshed
+    await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+
     let srpBytes: Uint8Array = new Uint8Array(0);
     let passwordBytes: Uint8Array = new Uint8Array(0);
     try {
-      QuantumPurse.getInstance().initKeyVault(parameterSet);
-      
-      // store chosen param set to storage, so wallet type retains when refreshed
-      await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
-
       // Convert to bytes immediately to allow referencing throughout the call stack
+      // if fail, inputs are highly not valid, so no clean up needed -> let users edit inputs again.
       srpBytes = utf8ToBytes(srpInputRef.current.value);
       passwordBytes = utf8ToBytes(passwordInputRef.current.value);
 
+      // if the following line successes, clear the input references. If not, allow to edit inputs again.
       await dispatch.wallet.importWallet({ srp: srpBytes, password: passwordBytes });
+      if(srpInputRef.current)
+        srpInputRef.current.value = '';
+      if(passwordInputRef.current)
+        passwordInputRef.current.value = '';
+      if(confirmPasswordInputRef.current)
+        confirmPasswordInputRef.current.value = '';
+      dispatch.wallet.resetSRP();
+
+      // success, procees to load the wallet
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
-      dispatch.wallet.resetSRP();
     } catch (error) {
       notification.error({
         message: "Import wallet failed!",
@@ -420,12 +429,6 @@ const ImportWalletContent: React.FC = () => {
     } finally {
       srpBytes.fill(0);
       passwordBytes.fill(0);
-      if(srpInputRef.current)
-        srpInputRef.current.value = '';
-      if(passwordInputRef.current)
-        passwordInputRef.current.value = '';
-      if(confirmPasswordInputRef.current)
-        confirmPasswordInputRef.current.value = '';
     }
   };
 
