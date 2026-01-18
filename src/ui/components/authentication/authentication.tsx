@@ -12,7 +12,7 @@ import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { Dispatch } from "../../store";
 import { ROUTES } from "../../utils/constants";
 import styles from "./authentication.module.scss";
-import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
+import QuantumPurse from "../../../core/quantum_purse";
 import { STORAGE_KEYS } from "../../utils/constants";
 import ConfirmDeleteWalletModal from "../../components/delete-wallet-confirm/delete_wallet_confirm";
 import { DB } from "../../../core/db";
@@ -75,13 +75,13 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     };
 
     const closeHandler = () => {
+      if (passwordInputRef.current) {
+        passwordInputRef.current.value = '';
+      }
       setOpen(false);
       setIsForgotPassword(false);
       setShowPassword(false);
       setSubmittable(false);
-      if (passwordInputRef.current) {
-        passwordInputRef.current.value = '';
-      }
       form.resetFields();
     };
 
@@ -93,8 +93,14 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     const onFinish = async () => {
       if (!passwordInputRef.current) return;
 
-      const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
-      passwordInputRef.current.value = '';
+      let passwordBytes: Uint8Array = new Uint8Array(0);
+      try {
+        passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+      } catch (e) {
+        throw e;
+      } finally {
+        passwordInputRef.current.value = '';
+      }
       
       await authenCallback(passwordBytes);
       form.resetFields();

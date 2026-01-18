@@ -222,28 +222,26 @@ export const StepCreatePassword: React.FC = () => {
   };
 
   const onFinish = async (formValues: any) => {
-    const parameterSet = formValues.parameterSet;
+    if (!passwordInputRef.current || !confirmPasswordInputRef.current) return;
 
-    if (!passwordInputRef.current) return;
-
-    if (parameterSet) {
-      QuantumPurse.getInstance().initKeyVault(parameterSet);
-    }
-    // store chosen param set to storage, so wallet type retains when refreshed
-    await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
-
-    // Convert to bytes immediately to allow referencing throughout the call stack
-    const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
-
-    // each function call to key-vault clears the password bytes buffer, here it is firstly
-    // used to create the wallet then to export the SRP. So clone password for the second call
-    const clonedPasswordBytes = passwordBytes.slice();
-
-    // Clear the inputs immediately after conversion
-    passwordInputRef.current.value = '';
-    confirmPasswordInputRef.current!.value = '';
+    let passwordBytes: Uint8Array = new Uint8Array(0);
+    let clonedPasswordBytes: Uint8Array = new Uint8Array(0);
 
     try {
+      const parameterSet = formValues.parameterSet;
+
+      if (parameterSet) {
+        QuantumPurse.getInstance().initKeyVault(parameterSet);
+        // store chosen param set to storage, so wallet type retains when refreshed
+        await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+      }
+
+      // Convert to bytes immediately to allow referencing throughout the call stack
+      // each function call to key-vault clears the password bytes buffer, here it is firstly
+      // used to create the wallet then to export the SRP. So clone password for the second call
+      passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+      clonedPasswordBytes = passwordBytes.slice();
+
       await dispatch.wallet
         .createWallet({ password: passwordBytes })
         .then(async () => {
@@ -261,6 +259,8 @@ export const StepCreatePassword: React.FC = () => {
     } finally {
       passwordBytes.fill(0);
       clonedPasswordBytes.fill(0);
+      passwordInputRef.current.value = '';
+      confirmPasswordInputRef.current.value = '';
     }
   };
 

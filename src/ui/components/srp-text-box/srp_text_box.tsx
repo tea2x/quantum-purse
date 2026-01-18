@@ -39,8 +39,14 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   const onSubmit = async () => {
     if (!passwordInputRef.current) return;
 
-    const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
-    passwordInputRef.current.value = '';
+    let passwordBytes: Uint8Array = new Uint8Array(0);
+    try {
+      passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+    } catch (e) {
+      throw e;
+    } finally {
+      passwordInputRef.current.value = '';
+    }
 
     try {
       await exportSrpHandler(passwordBytes);

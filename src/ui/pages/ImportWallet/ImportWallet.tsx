@@ -385,25 +385,20 @@ const ImportWalletContent: React.FC = () => {
   const srpInputRef = useRef<HTMLTextAreaElement>(null);
 
   const onFinish = async ({ parameterSet }: { parameterSet: SpxVariant }) => {
-    if (!passwordInputRef.current || !srpInputRef.current) return;
+    if (!passwordInputRef.current || !srpInputRef.current || !confirmPasswordInputRef.current) return;
 
-    QuantumPurse.getInstance().initKeyVault(parameterSet);
-    
-    // store chosen param set to storage, so wallet type retains when refreshed
-    await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
-
-    // Convert to bytes immediately to allow referencing throughout the call stack
-    const srpBytes = utf8ToBytes(srpInputRef.current.value);
-    const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
-
-    // Clear the inputs immediately after conversion
-    srpInputRef.current.value = '';
-    passwordInputRef.current.value = '';
-    if (confirmPasswordInputRef.current) {
-      confirmPasswordInputRef.current.value = '';
-    }
-
+    let srpBytes: Uint8Array = new Uint8Array(0);
+    let passwordBytes: Uint8Array = new Uint8Array(0);
     try {
+      QuantumPurse.getInstance().initKeyVault(parameterSet);
+      
+      // store chosen param set to storage, so wallet type retains when refreshed
+      await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+
+      // Convert to bytes immediately to allow referencing throughout the call stack
+      srpBytes = utf8ToBytes(srpInputRef.current.value);
+      passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+
       await dispatch.wallet.importWallet({ srp: srpBytes, password: passwordBytes });
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
@@ -416,6 +411,9 @@ const ImportWalletContent: React.FC = () => {
     } finally {
       srpBytes.fill(0);
       passwordBytes.fill(0);
+      srpInputRef.current.value = '';
+      passwordInputRef.current.value = '';
+      confirmPasswordInputRef.current.value = '';
     }
   };
 
