@@ -45,7 +45,8 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
     } catch (e) {
       throw e;
     } finally {
-      passwordInputRef.current.value = '';
+      if(passwordInputRef.current)
+        passwordInputRef.current.value = '';
     }
 
     try {

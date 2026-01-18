@@ -259,8 +259,10 @@ export const StepCreatePassword: React.FC = () => {
     } finally {
       passwordBytes.fill(0);
       clonedPasswordBytes.fill(0);
-      passwordInputRef.current.value = '';
-      confirmPasswordInputRef.current.value = '';
+      if(passwordInputRef.current)
+        passwordInputRef.current.value = '';
+      if(confirmPasswordInputRef.current)
+        confirmPasswordInputRef.current.value = '';
     }
   };
 

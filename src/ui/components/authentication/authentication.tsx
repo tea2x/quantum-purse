@@ -75,9 +75,8 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
     };
 
     const closeHandler = () => {
-      if (passwordInputRef.current) {
+      if (passwordInputRef.current)
         passwordInputRef.current.value = '';
-      }
       setOpen(false);
       setIsForgotPassword(false);
       setShowPassword(false);
@@ -99,7 +98,8 @@ const Authentication = React.forwardRef<AuthenticationRef, AuthenticationProps>(
       } catch (e) {
         throw e;
       } finally {
-        passwordInputRef.current.value = '';
+        if(passwordInputRef.current)
+          passwordInputRef.current.value = '';
       }
       
       await authenCallback(passwordBytes);

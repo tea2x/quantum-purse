@@ -412,9 +412,12 @@ const ImportWalletContent: React.FC = () => {
     } finally {
       srpBytes.fill(0);
       passwordBytes.fill(0);
-      srpInputRef.current.value = '';
-      passwordInputRef.current.value = '';
-      confirmPasswordInputRef.current.value = '';
+      if(srpInputRef.current)
+        srpInputRef.current.value = '';
+      if(passwordInputRef.current)
+        passwordInputRef.current.value = '';
+      if(confirmPasswordInputRef.current)
+        confirmPasswordInputRef.current.value = '';
     }
   };
 
