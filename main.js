@@ -56,7 +56,7 @@ function createWindow() {
         },
     });
 
-    mainWindow.setMinimumSize(400, 700);
+    mainWindow.setMinimumSize(910, 700);
     mainWindow.setMaximumSize(910, 700);
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
 
