@@ -44,8 +44,8 @@ const RevealSRP: React.FC = () => {
     if (srpRef.current) {
       srpRef.current.fill(0);
       srpRef.current = null;
-      setSrpRevealed(false);
     }
+    setSrpRevealed(false);
   };
 
   return (

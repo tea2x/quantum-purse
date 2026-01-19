@@ -83,6 +83,7 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       if (srpRef.current) {
         srpRef.current.fill(0);
+        srpRef.current = null;
       }
     };
   }, []);
@@ -92,10 +93,6 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
       await DB.removeItem(STORAGE_KEYS.WALLET_STEP);
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
-      if (srpRef.current) {
-        srpRef.current.fill(0);
-        srpRef.current = null;
-      }
     } catch (error) {
       notification.error({
         message: "Wallet initialization failed!",
@@ -177,8 +174,10 @@ export const StepCreatePassword: React.FC = () => {
 
   useEffect(() => {
     return () => {
-      if (passwordInputRef.current) passwordInputRef.current.value = '';
-      if (confirmPasswordInputRef.current) confirmPasswordInputRef.current.value = '';
+      if (passwordInputRef.current)
+        passwordInputRef.current.value = '';
+      if (confirmPasswordInputRef.current)
+        confirmPasswordInputRef.current.value = '';
     };
   }, []);
 
@@ -439,8 +438,8 @@ const StepSecureSRP: React.FC = () => {
     if (srpRef.current) {
       srpRef.current.fill(0);
       srpRef.current = null;
-      setSrpRevealed(false);
     }
+    setSrpRevealed(false);
     done();
   };
 

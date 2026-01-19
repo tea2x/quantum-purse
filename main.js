@@ -131,7 +131,7 @@ app.whenReady().then(async () => {
         responseHeaders['Cross-Origin-Opener-Policy'] = ['same-origin'];
         responseHeaders['Cross-Origin-Embedder-Policy'] = ['require-corp'];
 
-        // for packaged app - meaning mainnet only - only allow secure connections
+        // for packaged app - containing mainnet build - only allow secure connections
         const connectSrc = app.isPackaged 
             ? "connect-src 'self' wss:; "
             : "connect-src 'self' https://ckb-faucet-proxy.vercel.app ws: wss:; ";
