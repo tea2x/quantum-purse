@@ -27,19 +27,19 @@ const ParamsetSelector: React.FC = () => {
         size="large"
         placeholder="Select a SPHINCS+ variant"
       >
-        <Select.OptGroup label="256-bit">
+        <Select.OptGroup label="256-bit | 72-word mnemonic">
           <Select.Option value={SpxVariant.Sha2256S}>SHA2_256s</Select.Option>
           <Select.Option value={SpxVariant.Sha2256F}>SHA2_256f</Select.Option>
           <Select.Option value={SpxVariant.Shake256S}>SHAKE_256s</Select.Option>
           <Select.Option value={SpxVariant.Shake256F}>SHAKE_256f</Select.Option>
         </Select.OptGroup>
-        <Select.OptGroup label="192-bit">
+        <Select.OptGroup label="192-bit | 54-word mnemonic">
           <Select.Option value={SpxVariant.Sha2192S}>SHA2_192s</Select.Option>
           <Select.Option value={SpxVariant.Sha2192F}>SHA2_192f</Select.Option>
           <Select.Option value={SpxVariant.Shake192S}>SHAKE_192s</Select.Option>
           <Select.Option value={SpxVariant.Shake192F}>SHAKE_192f</Select.Option>
         </Select.OptGroup>
-        <Select.OptGroup label="128-bit">
+        <Select.OptGroup label="128-bit | 36-word mnemonic">
           <Select.Option value={SpxVariant.Sha2128S}>SHA2_128s</Select.Option>
           <Select.Option value={SpxVariant.Sha2128F}>SHA2_128f</Select.Option>
           <Select.Option value={SpxVariant.Shake128S}>SHAKE_128s</Select.Option>

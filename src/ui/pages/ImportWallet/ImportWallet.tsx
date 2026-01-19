@@ -5,9 +5,7 @@ import {
   Flex,
   Form,
   FormInstance,
-  Input,
   notification,
-  // Steps,
   Tabs,
 } from "antd";
 import React, {
@@ -30,6 +28,7 @@ import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { useNavigate } from "react-router-dom";
 import { DB } from "../../../core/db";
 import { utf8ToBytes } from "../../../core/utils";
+import { IS_MAIN_NET } from "../../../core/config";
 
 interface ImportWalletContext {
   currentStep?: WalletStepEnum;
@@ -79,7 +78,7 @@ const ImportWalletProvider: React.FC<{ children: React.ReactNode }> = ({
 export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInputRef, confirmPasswordInputRef }) => {
   const values = Form.useWatch([], form);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
-  const { importWallet: loadingImportWallet, exportSRP: loadingExportSRP } =
+  const { importWallet: loadingImportWallet } =
     useSelector((state: RootState) => state.loading.effects.wallet);
   const { prev } = useContext(ImportWalletContext);
   const parameterSet = Form.useWatch("parameterSet", form);
@@ -108,6 +107,10 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
     validate();
   }, [form, values]);
 
+  useEffect(() => {
+    handlePasswordChange();
+  }, [parameterSet]);
+
   const handlePasswordChange = async () => {
     if (!passwordInputRef?.current) return;
 
@@ -124,7 +127,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
     for (const rule of passwordRules) {
       try {
         if (rule.validator) {
-          await rule.validator({}, passwordInputRef.current.value);
+          await rule.validator({}, utf8ToBytes(passwordInputRef.current.value));
         }
       } catch (error: any) {
         if (rule.warningOnly) {
@@ -146,7 +149,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
       }
       setPasswordsValid(passwordsMatch && !hasError);
     } else {
-      setPasswordsValid(!hasError);
+      setPasswordsValid(false);
     }
   };
 
@@ -187,7 +190,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
             ref={passwordInputRef}
             type={showPassword ? 'text' : 'password'}
             placeholder="Please choose a strong password"
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
             className={styles.passwordInput}
             onChange={handlePasswordChange}
           />
@@ -195,7 +198,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
             type="button"
             className={styles.toggleButton}
             onClick={() => setShowPassword(!showPassword)}
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
             tabIndex={-1}
           >
             {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
@@ -212,7 +215,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
             ref={confirmPasswordInputRef}
             type={showConfirmPassword ? 'text' : 'password'}
             placeholder="Confirm your password"
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
             className={styles.passwordInput}
             onChange={handleConfirmPasswordChange}
           />
@@ -220,7 +223,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
             type="button"
             className={styles.toggleButton}
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
             tabIndex={-1}
           >
             {showConfirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
@@ -271,7 +274,7 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
         <Form.Item>
           <Button
             onClick={() => prev()}
-            disabled={loadingImportWallet || loadingExportSRP}
+            disabled={loadingImportWallet}
           >
             Back
           </Button>
@@ -280,8 +283,8 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
           <Button
             type="primary"
             onClick={handleImportClick}
-            disabled={!submittable || !passwordsValid || loadingImportWallet || loadingExportSRP}
-            loading={loadingImportWallet || loadingExportSRP}
+            disabled={!submittable || !passwordsValid || loadingImportWallet}
+            loading={loadingImportWallet}
           >
             Import
           </Button>
@@ -309,15 +312,26 @@ const StepInputSrp: React.FC<BaseStepProps> = ({ form, srpInputRef }) => {
 
     setSrpError('');
 
-    const value = srpInputRef.current.value;
-    if (!value) {
+    if (!srpInputRef.current.value) {
       setSubmittable(false);
       return;
     }
 
-    const words = value.trim().split(/\s+/);
-    if (![36, 54, 72].includes(words.length)) {
-      setSrpError(`Current word count is ${words.length} but expected to be 36, 54 or 72!`);
+    let wordCount = 0;
+    let inWord = false;
+    for (let i = 0; i < srpInputRef?.current?.value?.length; i++) {
+      const char = srpInputRef?.current?.value[i];
+      const isSpace = char === ' ' || char === '\t' || char === '\n' || char === '\r';
+      if (!isSpace && !inWord) {
+        wordCount++;
+        inWord = true;
+      } else if (isSpace) {
+        inWord = false;
+      }
+    }
+
+    if (![36, 54, 72].includes(wordCount)) {
+      setSrpError(`Current word count is ${wordCount} but expected to be 36, 54, or 72!`);
       setSubmittable(false);
       return;
     }
@@ -339,7 +353,7 @@ const StepInputSrp: React.FC<BaseStepProps> = ({ form, srpInputRef }) => {
           rows={9}
           className={styles.srpTextarea}
           onChange={handleSrpChange}
-          onPaste={(e) => e.preventDefault()}
+          onPaste={(e) => IS_MAIN_NET && e.preventDefault()}
         />
         {srpError && <div style={{ color: '#ff4d4f', fontSize: '1.4rem', marginTop: '0.4rem' }}>{srpError}</div>}
       </div>
@@ -371,30 +385,41 @@ const ImportWalletContent: React.FC = () => {
   const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
   const srpInputRef = useRef<HTMLTextAreaElement>(null);
 
+  useEffect(() => {
+    return () => {
+      if (srpInputRef.current) srpInputRef.current.value = '';
+      if (passwordInputRef.current) passwordInputRef.current.value = '';
+      if (confirmPasswordInputRef.current) confirmPasswordInputRef.current.value = '';
+    };
+  }, []);
+
   const onFinish = async ({ parameterSet }: { parameterSet: SpxVariant }) => {
-    if (!passwordInputRef.current || !srpInputRef.current) return;
+    if (!passwordInputRef.current || !srpInputRef.current || !confirmPasswordInputRef.current) return;
 
     QuantumPurse.getInstance().initKeyVault(parameterSet);
-    
     // store chosen param set to storage, so wallet type retains when refreshed
     await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
 
-    // Convert to bytes immediately to allow referencing throughout the call stack
-    const srpBytes = utf8ToBytes(srpInputRef.current.value);
-    const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
-
-    // Clear the inputs immediately after conversion
-    srpInputRef.current.value = '';
-    passwordInputRef.current.value = '';
-    if (confirmPasswordInputRef.current) {
-      confirmPasswordInputRef.current.value = '';
-    }
-
+    let srpBytes: Uint8Array = new Uint8Array(0);
+    let passwordBytes: Uint8Array = new Uint8Array(0);
     try {
+      // Convert to bytes immediately to allow referencing throughout the call stack
+      // if fail, inputs are highly not valid, so no clean up needed -> let users edit inputs again.
+      srpBytes = utf8ToBytes(srpInputRef.current.value);
+      passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+
+      // if the following line successes, clear the input references. If not, allow to edit inputs again.
       await dispatch.wallet.importWallet({ srp: srpBytes, password: passwordBytes });
+      if(srpInputRef.current)
+        srpInputRef.current.value = '';
+      if(passwordInputRef.current)
+        passwordInputRef.current.value = '';
+      if(confirmPasswordInputRef.current)
+        confirmPasswordInputRef.current.value = '';
+
+      // success, procees to load the wallet
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
-      dispatch.wallet.resetSRP();
     } catch (error) {
       notification.error({
         message: "Import wallet failed!",
@@ -407,7 +432,7 @@ const ImportWalletContent: React.FC = () => {
   };
 
   const { currentStep } = useContext(ImportWalletContext);
-  const { importWallet: loadingImportWallet, exportSRP: loadingExportSRP } =
+  const { importWallet: loadingImportWallet } =
     useSelector((state: RootState) => state.loading.effects.wallet);
 
   const steps = useMemo(
@@ -416,7 +441,7 @@ const ImportWalletContent: React.FC = () => {
         key: STEP.SRP,
         title: "Import SRP",
         description: "Import your secret recovery phrase",
-        icon: loadingExportSRP ? <LoadingOutlined /> : <LockOutlined />,
+        icon: <LockOutlined />,
         content: <StepInputSrp form={form} srpInputRef={srpInputRef} />,
       },
       {
@@ -427,7 +452,7 @@ const ImportWalletContent: React.FC = () => {
         content: <StepCreatePassword form={form} passwordInputRef={passwordInputRef} confirmPasswordInputRef={confirmPasswordInputRef} />,
       },
     ],
-    [loadingImportWallet, loadingExportSRP]
+    [loadingImportWallet]
   );
 
   return (

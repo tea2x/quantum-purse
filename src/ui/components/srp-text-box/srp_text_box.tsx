@@ -1,15 +1,11 @@
 import { Button, Form, notification } from "antd";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useLocation } from "react-router-dom";
 import { Dispatch } from "../../store";
-import usePasswordValidator from "../../hooks/usePasswordValidator";
 import { formatError } from "../../utils/methods";
 import styles from "./srp_text_box.module.scss";
-import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
-import { STORAGE_KEYS, ROUTES } from "../../utils/constants";
+import { ROUTES } from "../../utils/constants";
 import { useNavigate } from "react-router-dom";
-import { DB } from "../../../core/db";
 import { utf8ToBytes } from "../../../core/utils";
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
@@ -32,35 +28,24 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
   onConfirm,
   isCreateWalletPage = false,
 }) => {
-  const location = useLocation();
   const dispatch = useDispatch<Dispatch>();
   const navigate = useNavigate();
-  const [paramSet, setParamSet] = useState<number | null>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    let value: number | null = null;
-    try {
-      value = QuantumPurse.getInstance().getSphincsPlusParamSet();
-      setParamSet(value);
-    } catch (e) {
-      (async () => {
-        const paramId = await DB.getItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET);
-        if (paramId !== null) {
-          setParamSet(Number(paramId));
-        }
-      })();
-    }
-  }, []);
-
-  const { rules: passwordRules } = usePasswordValidator(paramSet ?? 0);
+  const [isPasswordEmpty, setIsPasswordEmpty] = useState(true);
 
   const onSubmit = async () => {
     if (!passwordInputRef.current) return;
 
-    const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
-    passwordInputRef.current.value = '';
+    let passwordBytes: Uint8Array = new Uint8Array(0);
+    try {
+      passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+    } catch (e) {
+      throw e;
+    } finally {
+      if(passwordInputRef.current)
+        passwordInputRef.current.value = '';
+    }
 
     try {
       await exportSrpHandler(passwordBytes);
@@ -71,6 +56,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
       });
     } finally {
       passwordBytes.fill(0);
+      setIsPasswordEmpty(true);
     }
   };
 
@@ -79,11 +65,11 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
     navigate(ROUTES.WELCOME);
   };
 
-  useEffect(() => {
-    return () => {
-      dispatch.wallet.resetSRP();
-    };
-  }, [location]);
+  // useEffect(() => {
+  //   return () => {
+  //     dispatch.wallet.resetSRP();
+  //   };
+  // }, [location]);
 
   return (
     <div className={styles.srpTextBox}>
@@ -93,10 +79,13 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
         <>
           <div>
             <div
-              className={styles.textBox}
+              className={styles.srpArea}
               onCopy={(e) => e.preventDefault()}
             >
-              <p className="srp">{value}</p>
+              <span className={styles.revealIcon}><EyeOutlined /></span>
+              <div className={styles.textBox}>
+                <p className="srp">{value}</p>
+              </div>
             </div>
           </div>
           <div style={{ display: "flex", gap: "8px", width: "fit-content", margin: "0 auto" }}>
@@ -124,6 +113,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
               placeholder="Enter your password"
               disabled={loading}
               className={styles.passwordInput}
+              onChange={(e) => setIsPasswordEmpty(e.target.value.length === 0)}
             />
             <button
               type="button"
@@ -150,7 +140,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
               <Button
                 type="primary"
                 htmlType="submit"
-                loading={loading}
+                disabled={isPasswordEmpty || loading}
               >
                 Reveal SRP
               </Button>

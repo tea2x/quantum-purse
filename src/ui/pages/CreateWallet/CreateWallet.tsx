@@ -1,5 +1,5 @@
 import { KeyOutlined, LoadingOutlined, LockOutlined, EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Flex, Form, notification, Steps } from "antd";
+import { Button, Checkbox, Flex, Form, notification } from "antd";
 import React, {
   createContext,
   useContext,
@@ -26,15 +26,24 @@ import ParamSetSelectorForm from "../../components/sphincs-param-set/param_selec
 import QuantumPurse, { SpxVariant } from "../../../core/quantum_purse";
 import { useNavigate } from "react-router-dom";
 import { DB } from "../../../core/db";
-import { utf8ToBytes } from "../../../core/utils";
+import { bytesToUtf8, utf8ToBytes } from "../../../core/utils";
 
-const CreateWalletContext = createContext<CreateWalletContextType>({
+interface ExtendedCreateWalletContextType extends CreateWalletContextType {
+  srpRef: React.RefObject<Uint8Array | null>;
+  srpRevealed: boolean;
+  setSrpRevealed: (value: boolean) => void;
+}
+
+const CreateWalletContext = createContext<ExtendedCreateWalletContextType>({
   currentStep: WALLET_STEP.PASSWORD,
   setCurrentStep: () => {},
   next: () => {},
   prev: () => {},
   done: () => {},
   steps: [],
+  srpRef: { current: null },
+  srpRevealed: false,
+  setSrpRevealed: () => {},
 });
 
 const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -45,13 +54,18 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
     location.state?.step || WALLET_STEP.PASSWORD
   );
   const dispatch = useDispatch<Dispatch>();
-  const { createWallet: loadingCreateWallet, exportSRP: loadingExportSRP } =
+  const { createWallet: loadingCreateWallet } =
     useSelector((state: RootState) => state.loading.effects.wallet);
+  
+  const srpRef = useRef<Uint8Array | null>(null);
+  const [srpRevealed, setSrpRevealed] = useState(false);
+
   const next = () => {
     const nextStepIndex =
       steps.findIndex((step) => step.key === currentStep) + 1;
     setCurrentStep(steps[nextStepIndex].key);
   };
+  
   const prev = () => {
     const prevStepIndex =
       steps.findIndex((step) => step.key === currentStep) - 1;
@@ -64,12 +78,21 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [location.state?.step]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (srpRef.current) {
+        srpRef.current.fill(0);
+        srpRef.current = null;
+      }
+    };
+  }, []);
+
   const done = async () => {
     try {
       await DB.removeItem(STORAGE_KEYS.WALLET_STEP);
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
-      dispatch.wallet.resetSRP();
     } catch (error) {
       notification.error({
         message: "Wallet initialization failed!",
@@ -91,11 +114,11 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
         key: WALLET_STEP.SRP,
         title: "Secure Secret Recovery Phrase",
         description: "Back up your SPHINCS+ variant and Mnemonic Seed Phrase",
-        icon: loadingExportSRP ? <LoadingOutlined /> : <LockOutlined />,
+        icon: <LockOutlined />,
         content: <StepSecureSRP />,
       },
     ],
-    [loadingCreateWallet, loadingExportSRP]
+    [loadingCreateWallet]
   );
 
   return (
@@ -107,6 +130,9 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
         next,
         prev,
         done,
+        srpRef,
+        srpRevealed,
+        setSrpRevealed,
       }}
     >
       {children}
@@ -120,7 +146,6 @@ const CreateWalletContent: React.FC = () => {
   return (
     <section className={cx(styles.createWallet, "panel")}>
       <h1>Create A New Wallet</h1>
-      {/* <Steps current={currentStep} items={steps} /> */}
       <div>{steps.find((step) => step.key === currentStep)?.content}</div>
     </section>
   );
@@ -128,11 +153,11 @@ const CreateWalletContent: React.FC = () => {
 
 export const StepCreatePassword: React.FC = () => {
   const [form] = Form.useForm();
-  const { next } = useContext(CreateWalletContext);
+  const { next, srpRef, setSrpRevealed } = useContext(CreateWalletContext);
   const values = Form.useWatch([], form);
   const dispatch = useDispatch<Dispatch>();
   const [submittable, setSubmittable] = React.useState<boolean>(false);
-  const { createWallet: loadingCreateWallet, exportSRP: loadingExportSRP } =
+  const { createWallet: loadingCreateWallet } =
     useSelector((state: RootState) => state.loading.effects.wallet);
   const parameterSet = Form.useWatch('parameterSet', form);
   const { rules: passwordRules } = usePasswordValidator(parameterSet);
@@ -148,11 +173,24 @@ export const StepCreatePassword: React.FC = () => {
   const [passwordsValid, setPasswordsValid] = useState<boolean>(false);
 
   useEffect(() => {
+    return () => {
+      if (passwordInputRef.current)
+        passwordInputRef.current.value = '';
+      if (confirmPasswordInputRef.current)
+        confirmPasswordInputRef.current.value = '';
+    };
+  }, []);
+
+  useEffect(() => {
     form
       .validateFields({ validateOnly: true })
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
   }, [form, values]);
+
+  useEffect(() => {
+    handlePasswordChange();
+  }, [parameterSet]);
 
   const handlePasswordChange = async () => {
     if (!passwordInputRef.current) return;
@@ -172,7 +210,7 @@ export const StepCreatePassword: React.FC = () => {
     for (const rule of passwordRules) {
       try {
         if (rule.validator) {
-          await rule.validator({}, passwordInputRef.current.value);
+          await rule.validator({}, utf8ToBytes(passwordInputRef.current.value));
         }
       } catch (error: any) {
         if (rule.warningOnly) {
@@ -194,7 +232,7 @@ export const StepCreatePassword: React.FC = () => {
       }
       setPasswordsValid(passwordsMatch && !hasError);
     } else {
-      setPasswordsValid(!hasError);
+      setPasswordsValid(false);
     }
   };
 
@@ -218,37 +256,32 @@ export const StepCreatePassword: React.FC = () => {
   };
 
   const onFinish = async (formValues: any) => {
-    const parameterSet = formValues.parameterSet;
+    if (!passwordInputRef.current || !confirmPasswordInputRef.current) return;
 
-    if (!passwordInputRef.current) return;
-
-    if (parameterSet) {
-      QuantumPurse.getInstance().initKeyVault(parameterSet);
-    }
-    // store chosen param set to storage, so wallet type retains when refreshed
-    await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
-
-    // Convert to bytes immediately to allow referencing throughout the call stack
-    const passwordBytes = utf8ToBytes(passwordInputRef.current.value);
-
-    // each function call to key-vault clears the password bytes buffer, here it is firstly
-    // used to create the wallet then to export the SRP. So clone password for the second call
-    const clonedPasswordBytes = passwordBytes.slice();
-
-    // Clear the inputs immediately after conversion
-    passwordInputRef.current.value = '';
-    confirmPasswordInputRef.current!.value = '';
+    let passwordBytes: Uint8Array = new Uint8Array(0);
+    let clonedPasswordBytes: Uint8Array = new Uint8Array(0);
 
     try {
-      await dispatch.wallet
-        .createWallet({ password: passwordBytes })
-        .then(async () => {
-          await dispatch.wallet.exportSRP({ password: clonedPasswordBytes });
-        })
-        .then(async () => {
-          next();
-          await DB.setItem(STORAGE_KEYS.WALLET_STEP, WALLET_STEP.SRP.toString());
-        });
+      const parameterSet = formValues.parameterSet;
+
+      if (parameterSet) {
+        QuantumPurse.getInstance().initKeyVault(parameterSet);
+        // store chosen param set to storage, so wallet type retains when refreshed
+        await DB.setItem(STORAGE_KEYS.SPHINCS_PLUS_PARAM_SET, parameterSet.toString());
+      }
+
+      // Convert to bytes immediately to allow referencing throughout the call stack
+      // each function call to key-vault clears the password bytes buffer, here it is firstly
+      // used to create the wallet then to export the SRP. So clone password for the second call
+      passwordBytes = utf8ToBytes(passwordInputRef.current.value);
+      clonedPasswordBytes = passwordBytes.slice();
+
+      await dispatch.wallet.createWallet({ password: passwordBytes });
+      srpRef.current = await QuantumPurse.getInstance().exportSeedPhrase(clonedPasswordBytes);
+      setSrpRevealed(true);
+      next();
+      await DB.setItem(STORAGE_KEYS.WALLET_STEP, WALLET_STEP.SRP.toString());
+
     } catch (error) {
       notification.error({
         message: "Wallet creation failed!",
@@ -257,6 +290,10 @@ export const StepCreatePassword: React.FC = () => {
     } finally {
       passwordBytes.fill(0);
       clonedPasswordBytes.fill(0);
+      if(passwordInputRef.current)
+        passwordInputRef.current.value = '';
+      if(confirmPasswordInputRef.current)
+        confirmPasswordInputRef.current.value = '';
     }
   };
 
@@ -279,7 +316,7 @@ export const StepCreatePassword: React.FC = () => {
               ref={passwordInputRef}
               type={showPassword ? 'text' : 'password'}
               placeholder="Please choose a strong password"
-              disabled={loadingCreateWallet || loadingExportSRP}
+              disabled={loadingCreateWallet}
               className={styles.passwordInput}
               onChange={handlePasswordChange}
             />
@@ -287,7 +324,7 @@ export const StepCreatePassword: React.FC = () => {
               type="button"
               className={styles.toggleButton}
               onClick={() => setShowPassword(!showPassword)}
-              disabled={loadingCreateWallet || loadingExportSRP}
+              disabled={loadingCreateWallet}
               tabIndex={-1}
             >
               {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
@@ -304,7 +341,7 @@ export const StepCreatePassword: React.FC = () => {
               ref={confirmPasswordInputRef}
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="Confirm your password"
-              disabled={loadingCreateWallet || loadingExportSRP}
+              disabled={loadingCreateWallet}
               className={styles.passwordInput}
               onChange={handleConfirmPasswordChange}
             />
@@ -312,7 +349,7 @@ export const StepCreatePassword: React.FC = () => {
               type="button"
               className={styles.toggleButton}
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              disabled={loadingCreateWallet || loadingExportSRP}
+              disabled={loadingCreateWallet}
               tabIndex={-1}
             >
               {showConfirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
@@ -363,7 +400,7 @@ export const StepCreatePassword: React.FC = () => {
           <Form.Item>
             <Button
               onClick={() => navigate(ROUTES.WELCOME)}
-              disabled={loadingCreateWallet || loadingExportSRP}
+              disabled={loadingCreateWallet}
             >
               Back
             </Button>
@@ -372,8 +409,9 @@ export const StepCreatePassword: React.FC = () => {
             <Button
               htmlType="submit"
               type="primary"
-              disabled={!submittable || !passwordsValid || loadingCreateWallet || loadingExportSRP}
-              loading={loadingCreateWallet || loadingExportSRP}
+              disabled={!submittable || !passwordsValid || loadingCreateWallet}
+              loading={loadingCreateWallet}
+              style={{color: "var(--black)"}}
             >
               Create
             </Button>
@@ -385,35 +423,37 @@ export const StepCreatePassword: React.FC = () => {
 };
 
 const StepSecureSRP: React.FC = () => {
-  const { done } = useContext(CreateWalletContext);
-  const srp = useSelector((state: RootState) => state.wallet.srp);
-  const dispatch = useDispatch<Dispatch>();
-  const { exportSRP: loadingExportSRP } = useSelector(
-    (state: RootState) => state.loading.effects.wallet
-  );
+  const { done, srpRef, srpRevealed, setSrpRevealed } = useContext(CreateWalletContext);
 
   const exportSrpHandler = async (password: Uint8Array) => {
     try {
-      await dispatch.wallet.exportSRP({ password });
+      srpRef.current = await QuantumPurse.getInstance().exportSeedPhrase(password);
+      setSrpRevealed(true);
     } finally {
       password.fill(0);
     }
   };
 
+  const handleConfirm = () => {
+    if (srpRef.current) {
+      srpRef.current.fill(0);
+      srpRef.current = null;
+    }
+    setSrpRevealed(false);
+    done();
+  };
+
   return (
     <SrpTextBox
-      value={srp}
+      value={srpRevealed && srpRef.current ? bytesToUtf8(srpRef.current) : ''}
       title={"Secure Secret Recovery Phrase"}
       description={
-        srp
-          ? "WARNING! Never copy or screenshot! Only handwrite to backup your chosen SPHINCS+ variant [ " + SpxVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + " ] with the mnemonic phrase."
+        srpRef.current
+          ? "WARNING! Never copy or screenshot!\nOnly handwrite to backup your mnemonic phrase! \n Backup too your chosen SPHINCS+ variant [" + SpxVariant[Number(QuantumPurse.getInstance().getSphincsPlusParamSet())] + "]!"
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process or reset and start again."
       }
       exportSrpHandler={exportSrpHandler}
-      onConfirm={() => {
-        done();
-      }}
-      loading={loadingExportSRP}
+      onConfirm={handleConfirm}
       isCreateWalletPage={true}
     />
   );
