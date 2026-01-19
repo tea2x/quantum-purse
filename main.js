@@ -108,13 +108,6 @@ app.whenReady().then(async () => {
                         fs.rmSync(itemPath, { recursive: true, force: true });
                     }
                 });
-
-                await dialog.showMessageBox({
-                    type: 'info',
-                    title: 'Data Deleted',
-                    message: 'Pre-release/testnet data has been cleaned up.\n\nYou can now create a new mainnet wallet.',
-                    buttons: ['OK']
-                });
             } catch (error) {
                 await dialog.showMessageBox({
                     type: 'error',
