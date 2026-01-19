@@ -116,6 +116,13 @@ app.whenReady().then(async () => {
                     buttons: ['OK']
                 });
             }
+        } else if (result.response === 1) {
+            await dialog.showMessageBox({
+                type: 'warning',
+                title: 'Warning!',
+                message: 'If you choose to eject later, do remember to eject before receiving mainnet assets!',
+                buttons: ['OK']
+            });
         }
     }
 
