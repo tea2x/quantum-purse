@@ -98,6 +98,12 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
         message: "Wallet initialization failed!",
         description: formatError(error),
       });
+    } finally {
+      if (srpRef.current) {
+        srpRef.current.fill(0);
+        srpRef.current = null;
+      }
+      setSrpRevealed(false);
     }
   };
 
@@ -434,15 +440,6 @@ const StepSecureSRP: React.FC = () => {
     }
   };
 
-  const handleConfirm = () => {
-    if (srpRef.current) {
-      srpRef.current.fill(0);
-      srpRef.current = null;
-    }
-    setSrpRevealed(false);
-    done();
-  };
-
   return (
     <SrpTextBox
       value={srpRevealed && srpRef.current ? bytesToUtf8(srpRef.current) : ''}
@@ -453,7 +450,7 @@ const StepSecureSRP: React.FC = () => {
           : "Your wallet creation process has been interrupted. Please enter your password to reveal your SRP then follow through the process or reset and start again."
       }
       exportSrpHandler={exportSrpHandler}
-      onConfirm={handleConfirm}
+      onConfirm={done}
       isCreateWalletPage={true}
     />
   );
