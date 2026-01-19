@@ -3,7 +3,6 @@
 
   .feeRateContainer {
     display: flex;
-    height: 4rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 0.5rem;
     overflow: hidden;
@@ -11,7 +10,7 @@
 
   .feeOption {
     flex: 1;
-    height: 4rem;
+    height: 3rem;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -57,7 +56,7 @@
 
   .customInputField {
     width: 100%;
-    height: 4rem;
+    height: 3.2rem;
     border: 0.5px solid rgba(255, 255, 255, 0.7);
     border-radius: 0.5rem;
     color: var(--black);
