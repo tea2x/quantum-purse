@@ -24,7 +24,7 @@ import {
 import { ROUTES, STORAGE_KEYS } from "./ui/utils/constants";
 import { DB } from "./core/db";
 import packageJson from '../package.json';
-import { notification, Modal } from "antd";
+import { Modal } from "antd";
 import { logger } from './core/logger';
 
 const currentVersion:string|null = packageJson.version;
@@ -45,10 +45,16 @@ const App: React.FC = () => {
 
     // wasm panic, not catchable in js along with other expected errors
     if (typeof Atomics.waitAsync !== "function") {
-      notification.error({
-        message: "Unsupported browser",
-        description:
-          "Your browser does not support Atomics.waitAsync which CKB light client depends on.",
+      Modal.error({
+        title: 'Unsupported Browser',
+        content: (
+          <div>
+            <p>
+              Your browser does not support Atomics.waitAsync which CKB light client depends on.
+            </p>
+          </div>
+        ),
+        centered: true,
       });
     }
 

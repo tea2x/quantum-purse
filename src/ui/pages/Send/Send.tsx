@@ -3,11 +3,11 @@ import {
   Flex,
   Form,
   Input,
-  notification,
   Tooltip,
   Row,
   Col,
-  Space
+  Space,
+  Modal
 } from "antd";
 import {
   QuestionCircleOutlined,
@@ -145,24 +145,48 @@ const Send: React.FC = () => {
         const tx = isSendMax
           ? await dispatch.wallet.sendAll({ to: values.to, feeRate, signOffline: true })
           : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate , signOffline: true });
-        notification.success({ message: "Transaction is signed successfully" });
-        download(tx);
+        Modal.success({
+          title: 'Signed Transaciton Successfully',
+          content: (
+            <div>
+              <p>You can now save the signed transaction file and broadcast it later using a CKB node or explorer.</p>
+            </div>
+          ),
+          onOk: () => {
+            download(tx);
+          },
+          centered: true,
+        });
       } else {
         const txId = isSendMax
           ? await dispatch.wallet.sendAll({ to: values.to, feeRate })
           : await dispatch.wallet.send({ to: values.to, amount: values.amount, feeRate });
-        notification.success({
-          message: "Send successful",
-          description: (
-            <div> <p> <Explore.Transaction txId={txId as string} /> </p> </div>
+
+        Modal.success({
+          title: 'Transfer Successful',
+          content: (
+            <div>
+              <p>Your transaction has been successfully broadcast!</p>
+              <p>
+                <Explore.Transaction txId={txId as string} />
+              </p>
+            </div>
           ),
+          centered: true,
         });
       }
     } catch (error) {
-      notification.error({
-        message: "Send transaction failed",
-        description: formatError(error),
+
+      Modal.error({
+        title: 'Tranfer Transaction Failed',
+        content: (
+          <div>
+            <p>{formatError(error)}</p>
+          </div>
+        ),
+        centered: true,
       });
+      
     } finally {
       form.resetFields();
       setIsAuthenticating(false);

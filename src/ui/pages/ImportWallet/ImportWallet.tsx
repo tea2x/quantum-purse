@@ -5,7 +5,7 @@ import {
   Flex,
   Form,
   FormInstance,
-  notification,
+  Modal,
   Tabs,
 } from "antd";
 import React, {
@@ -421,10 +421,18 @@ const ImportWalletContent: React.FC = () => {
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
     } catch (error) {
-      notification.error({
-        message: "Import wallet failed!",
-        description: formatError(error),
+
+      Modal.error({
+        title: 'Import Wallet Failed',
+        content: (
+          <div>
+            <p>{formatError(error)}</p>
+          </div>
+        ),
+        centered: true,
       });
+      return;
+
     } finally {
       srpBytes.fill(0);
       passwordBytes.fill(0);

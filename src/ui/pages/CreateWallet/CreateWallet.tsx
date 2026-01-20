@@ -1,5 +1,5 @@
 import { KeyOutlined, LoadingOutlined, LockOutlined, EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Flex, Form, notification } from "antd";
+import { Button, Checkbox, Flex, Form, Modal } from "antd";
 import React, {
   createContext,
   useContext,
@@ -94,9 +94,14 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
       await dispatch.wallet.init({});
       await dispatch.wallet.loadCurrentAccount({});
     } catch (error) {
-      notification.error({
-        message: "Wallet initialization failed!",
-        description: formatError(error),
+      Modal.error({
+        title: 'Wallet Initialization Failed',
+        content: (
+          <div>
+            <p>{formatError(error)}</p>
+          </div>
+        ),
+        centered: true,
       });
     } finally {
       if (srpRef.current) {
@@ -289,9 +294,14 @@ export const StepCreatePassword: React.FC = () => {
       await DB.setItem(STORAGE_KEYS.WALLET_STEP, WALLET_STEP.SRP.toString());
 
     } catch (error) {
-      notification.error({
-        message: "Wallet creation failed!",
-        description: formatError(error),
+      Modal.error({
+        title: 'Wallet Creation Failed',
+        content: (
+          <div>
+            <p>{formatError(error)}</p>
+          </div>
+        ),
+        centered: true,
       });
     } finally {
       passwordBytes.fill(0);

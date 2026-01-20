@@ -3,7 +3,7 @@ import {
   Flex,
   Form,
   Input,
-  notification,
+  Modal,
   Tooltip,
   Row,
   Col,
@@ -145,22 +145,50 @@ const Deposit: React.FC = () => {
         const tx = isDepositMax
           ? await dispatch.wallet.depositAll({ to: values.to, feeRate, signOffline: true })
           : await dispatch.wallet.deposit({ to: values.to, amount: values.amount, feeRate , signOffline: true });
-        notification.success({ message: "Transaction is signed successfully" });
-        download(tx);
+
+        Modal.success({
+          title: 'Signed Transaction Successfully',
+          content: (
+            <div>
+              <p>You can now save the signed transaction file and broadcast it later using a CKB node or explorer.</p>
+            </div>
+          ),
+          onOk: () => {
+            download(tx);
+          },
+          centered: true,
+        });
+
       } else {
         const txId = isDepositMax
           ? await dispatch.wallet.depositAll({to: values.to, feeRate})
           : await dispatch.wallet.deposit({to: values.to, amount: values.amount, feeRate});
-        notification.success({
-          message: "Deposit successful",
-          description: ( <div> <p> <Explore.Transaction txId={txId as string} /> </p> </div> ),
+          
+        Modal.success({
+          title: 'Deposit Successful',
+          content: (
+            <div>
+              <p>Your transaction has been successfully broadcast!</p>
+              <p>
+                <Explore.Transaction txId={txId as string} />
+              </p>
+            </div>
+          ),
+          centered: true,
         });
       }
     } catch (error) {
-      notification.error({
-        message: "Deposit transaction failed",
-        description: formatError(error),
+
+      Modal.error({
+        title: 'Deposit Transaction Failed',
+        content: (
+          <div>
+            <p>{formatError(error)}</p>
+          </div>
+        ),
+        centered: true,
       });
+
     } finally {
       form.resetFields();
       setIsAuthenticating(false);

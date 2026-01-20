@@ -1,8 +1,8 @@
-import { notification } from "antd";
+import { Modal } from "antd";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Footer, Header } from "../components";
+import { Header } from "../components";
 import { Dispatch, RootState } from "../store";
 import { ROUTES } from "../utils/constants";
 import { cx } from "../utils/methods";
@@ -27,9 +27,14 @@ const Layout: React.FC<AuthLayoutProps> = ({
         await dispatch.wallet.loadCurrentAccount({});
       } catch (error: any) {
         if (error.message && error.message.includes("SharedArrayBuffer is not defined")) {
-          notification.error({
-            message: "Insecure browser context",
-            description: "You are accessing this site from an insecure context. Try localhost or https!",
+          Modal.error({
+            title: 'Insecure Browser Context',
+            content: (
+              <div>
+                <p>You are accessing this site from an insecure context. Try localhost or https!</p>
+              </div>
+            ),
+            centered: true,
           });
         } else if (error.message && error.message.includes("WALLET_NOT_READY")) {
           const errorInfo = JSON.parse(error.message);
@@ -39,9 +44,14 @@ const Layout: React.FC<AuthLayoutProps> = ({
                 step: Number(errorInfo.step),
               },
             });
-            notification.info({
-              message: errorInfo.message,
-              description: "Please finish the wallet creation process!",
+            Modal.info({
+              title: 'Wallet Not Ready',
+              content: (
+                <div>
+                  <p>Please finish the wallet creation process!</p>
+                </div>
+              ),
+              centered: true,
             });
           }
         } else {

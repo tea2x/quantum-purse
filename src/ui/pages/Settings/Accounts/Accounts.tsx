@@ -4,7 +4,7 @@ import {
   Empty,
   Flex,
   Input,
-  notification,
+  Modal,
   Spin,
 } from "antd";
 import React, { useRef } from "react";
@@ -37,9 +37,14 @@ const Accounts: React.FC = () => {
     try {
       await dispatch.wallet.createAccount({ password });
     } catch (error) {
-      notification.error({
-        message: "Failed to create account",
-        description: formatError(error),
+      Modal.error({
+        title: 'Failed to Create Account',
+        content: (
+          <div>
+            <p>{formatError(error)}</p>
+          </div>
+        ),
+        centered: true,
       });
     } finally {
       password.fill(0);

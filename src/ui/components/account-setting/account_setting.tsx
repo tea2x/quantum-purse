@@ -4,7 +4,7 @@ import Copy from "../copy/copy";
 import { IAccount } from "../../store/models/interface";
 import { shortenAddress } from "../../utils/methods";
 import styles from "./account_setting.module.scss";
-import { Button, Flex, Form, Input, notification } from "antd";
+import { Button, Flex, Form, Input, Modal } from "antd";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import QuantumPurse from "../../../core/quantum_purse";
@@ -45,13 +45,19 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account, onClose }) => 
       if (onClose) {
         onClose();
       }
-      notification.success({
-        message: "Starting block set successfully",
+      Modal.success({
+        title: 'Starting Block Set Successfully',
+        centered: true,
       });
     } catch (error) {
-      notification.error({
-        message: "Failed to set starting block",
-        description: formatError(error),
+      Modal.error({
+        title: 'Failed to Set Starting Block',
+        content: (
+          <div>
+            <p>{formatError(error)}</p>
+          </div>
+        ),
+        centered: true,
       });
     } finally {
       setIsSettingBlock(false);

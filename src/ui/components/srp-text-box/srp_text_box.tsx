@@ -1,4 +1,4 @@
-import { Button, Form, notification } from "antd";
+import { Button, Form, Modal } from "antd";
 import React, { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../store";
@@ -50,9 +50,14 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
     try {
       await exportSrpHandler(passwordBytes);
     } catch (error) {
-      notification.error({
-        message: "Failed to reveal SRP",
-        description: formatError(error),
+      Modal.error({
+        title: 'Failed to Reveal SRP',
+        content: (
+          <div>
+            <p>{formatError(error)}</p>
+          </div>
+        ),
+        centered: true,
       });
     } finally {
       passwordBytes.fill(0);
