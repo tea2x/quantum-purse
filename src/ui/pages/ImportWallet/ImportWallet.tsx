@@ -184,7 +184,15 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
       <ParamSetSelector />
 
       <div style={{ marginBottom: '1.6rem' }}>
-        <label style={{ color: 'var(--gray-01)', marginBottom: '0.8rem', display: 'block' }}>Password</label>
+        <label
+          style={{
+            color: 'var(--gray-01)',
+            marginBottom: '0.8rem',
+            display: 'block',
+          }}
+        >
+          <span style={{ color: '#ff4d4f' }}>*</span> Password
+        </label>
         <div className={styles.passwordWrapper}>
           <input
             ref={passwordInputRef}
@@ -209,7 +217,15 @@ export const StepCreatePassword: React.FC<BaseStepProps> = ({ form, passwordInpu
       </div>
 
       <div style={{ marginBottom: '1.6rem' }}>
-        <label style={{ color: 'var(--gray-01)', marginBottom: '0.8rem', display: 'block' }}>Confirm password</label>
+          <label
+            style={{
+              color: 'var(--gray-01)',
+              marginBottom: '0.8rem',
+              display: 'block',
+            }}
+          >
+            <span style={{ color: '#ff4d4f' }}>*</span> Confirm Password
+          </label>
         <div className={styles.passwordWrapper}>
           <input
             ref={confirmPasswordInputRef}

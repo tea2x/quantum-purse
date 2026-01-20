@@ -212,7 +212,7 @@ const Deposit: React.FC = () => {
         <Form layout="vertical" form={form}>
           <Form.Item
             name="to"
-            className={cx("field-to", values?.isDepositToMyAccount && "select-my-account")}
+            className={cx("item-wrapper-with-label", values?.isDepositToMyAccount && "select-my-account")}
             label={
               <div>
                 Deposit To
@@ -241,7 +241,6 @@ const Deposit: React.FC = () => {
                 <Input
                   value={values?.to}
                   placeholder="Input the destination address"
-                  style={{ backgroundColor: "var(--gray-light)" }}
                 />
                 {/* <Button
                   onClick={() => setScannerUp(true)}
@@ -275,7 +274,7 @@ const Deposit: React.FC = () => {
           <Row gutter={14}>
             <Col xs={24} sm={14}>
               <Form.Item
-                className={cx("field-to")} //using the same class for style consistency
+                className={cx("item-wrapper-with-label")} //using the same class for style consistency
                 name="amount"
                 label={
                   <div>
@@ -317,7 +316,7 @@ const Deposit: React.FC = () => {
             <Col xs={24} sm={10}>
               <Form.Item
                 name="feeRate"
-                className="field-to"
+                className="item-wrapper-with-label"
                 label={
                   <div>
                     Fee Rate
@@ -341,18 +340,27 @@ const Deposit: React.FC = () => {
           </Row>
 
           <Form.Item
-            className={cx("button-bar")}
+            className="item-wrapper-with-label"
+            label={
+              <div>
+                Commands
+                <Tooltip title="Sign & Export allows you to sign the transaction and save it as a file for later broadcasting. Send will sign and broadcast the transaction immediately.">
+                  <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                </Tooltip>
+              </div>
+            }
           >
-            <Flex justify="end">
+            <Flex style={{gap: "0.5rem"}}>
               <Button
                 onClick={() => handleDeposit(true)}
                 style={{ marginRight: 8, height: "3rem" }}
                 disabled={!submittable || loadingDeposit}
+                className={styles.depositButton}
               >
                 Sign & Export
               </Button>
               <Button
-                type="primary"
+                // type="primary"
                 onClick={() => handleDeposit(false)}
                 disabled={!submittable || loadingDeposit}
                 loading={loadingDeposit}

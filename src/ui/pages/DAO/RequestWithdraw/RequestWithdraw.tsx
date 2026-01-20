@@ -278,7 +278,7 @@ const RequestWithdraw: React.FC = () => {
                           },
                         },
                       ]}
-                      className={cx("field-to", isRequestToMyAccount && "select-my-account")}
+                      className={cx("item-wrapper-with-label", isRequestToMyAccount && "select-my-account")}
                     >
                       {!isRequestToMyAccount ? (
                         <Space.Compact style={{ display: "flex" }}>
@@ -319,7 +319,7 @@ const RequestWithdraw: React.FC = () => {
                   <Col xs={24} sm={10}>
                     <Form.Item
                       name="feeRate"
-                      className="field-to"
+                      className="item-wrapper-with-label"
                       label={
                         <div>
                           Fee Rate

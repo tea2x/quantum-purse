@@ -300,7 +300,7 @@ const Withdraw: React.FC = () => {
                           },
                         },
                       ]}
-                      className={cx("field-to", isWithdrawToMyAccount && "select-my-account")}
+                      className={cx("item-wrapper-with-label", isWithdrawToMyAccount && "select-my-account")}
                     >
                       {!isWithdrawToMyAccount ? (
                         <Space.Compact style={{ display: "flex" }}>
@@ -342,7 +342,7 @@ const Withdraw: React.FC = () => {
                   <Col xs={24} sm={10}>
                     <Form.Item
                       name="feeRate"
-                      className="field-to"
+                      className="item-wrapper-with-label"
                       label={
                         <div>
                           Fee Rate

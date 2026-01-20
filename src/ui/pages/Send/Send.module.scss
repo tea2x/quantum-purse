@@ -23,7 +23,7 @@
         }
       }
 
-      &.field-to {
+      &.item-wrapper-with-label {
         padding: 1rem 1.5rem 2rem 1.5rem;
         label {
           color: var(--teal-2);
@@ -31,10 +31,6 @@
           font-size: small;
           font-weight: bold;
         }
-      }
-
-      &.button-bar {
-        padding: 1.5rem;
       }
 
       .ant-input-number-group-addon {
@@ -50,8 +46,23 @@
 
 .sendButton {
   height: 3rem;
-  width: 10rem;
-  @media (max-width: 768px) {
-    width: 100%;
+  width: 100%;
+  border: 0.5px solid var(--gray-01) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   }
+
+  &:active {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transform: translateY(1px);
+  }
+}
+
+
+button.sendButton:not([disabled]):not(.ant-btn-loading) {
+  background: var(--teal-1) !important;
+  border: 0.5px solid var(--black) !important;
 }
