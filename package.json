@@ -87,7 +87,6 @@
   },
   "dependencies": {
     "@ant-design/icons": "6.1.0",
-    "@ant-design/v5-patch-for-react-19": "1.0.3",
     "@ckb-ccc/core": "npm:ckb-ccc-core-light-client-js-patch@1.12.3",
     "@nervosnetwork/ckb-light-client-js": "0.5.4",
     "@rematch/core": "2.2.0",
