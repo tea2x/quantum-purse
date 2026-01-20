@@ -310,7 +310,7 @@ export const StepCreatePassword: React.FC = () => {
         form={form} 
         layout="vertical" 
         onFinish={onFinish}
-        initialValues={{ parameterSet: SpxVariant.Sha2256S }}
+        initialValues={{ parameterSet: SpxVariant.Sha2128S }}
       >
         
         <ParamSetSelectorForm />
