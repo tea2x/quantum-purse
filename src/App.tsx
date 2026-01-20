@@ -24,13 +24,24 @@ import {
 import { ROUTES, STORAGE_KEYS } from "./ui/utils/constants";
 import { DB } from "./core/db";
 import packageJson from '../package.json';
-import { notification } from "antd";
+import { notification, Modal } from "antd";
 import { logger } from './core/logger';
 
 const currentVersion:string|null = packageJson.version;
 
 const App: React.FC = () => {
   useEffect(() => {
+    Modal.info({
+      title: 'Important Notice',
+      content: (
+        <div>
+          <p>Only send CKB to this wallet! 
+            And be sure to have your client sync finalized before making any transactions!
+          </p>
+        </div>
+      ),
+      centered: true,
+    });
 
     // wasm panic, not catchable in js along with other expected errors
     if (typeof Atomics.waitAsync !== "function") {
@@ -84,7 +95,8 @@ const App: React.FC = () => {
       }
 
       // set current version after check
-      (currentVersion !== previousVersion) && localStorage.setItem('appVersion', currentVersion);
+      if (currentVersion !== previousVersion)
+        localStorage.setItem('appVersion', currentVersion);
     };
 
     prepareMainnetLaunch();

@@ -1,4 +1,4 @@
-import { Button, Grid, Tooltip, Alert } from "antd";
+import { Button, Grid, Tooltip } from "antd";
 import { MenuOutlined } from "@ant-design/icons";
 import React, { useContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -23,7 +23,6 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
   const [isUpdatingBalance, setIsUpdatingBalance] = useState(false);
   const [isUpdatingBlocks, setIsUpdatingBlockInfo] = useState(false);
   const [isUpdatingPeers, setIsUpdatingNodeInfo] = useState(false);
-  const [showWarning, setShowWarning] = useState(true);
 
   const screens = useBreakpoint();
   const location = useLocation();
@@ -92,15 +91,6 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
 
   return (
     <div>
-      {showWarning && (
-        <Alert
-          closable
-          type="info"
-          message="Only send CKB to this wallet and be sure to have your client sync finalized before making any transactions!"
-          onClose={() => setShowWarning(false)}
-          banner={true}
-        />
-      )}
       <header className={cx(styles.header, className)} {...rest}>
         <>
           <div className={cx(styles.statusSection, isUpdatingBalance && styles.updating)}>
@@ -247,7 +237,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...rest }) => {
                     animationBegin={20}
                     stroke="none"
                   >
-                    <Cell fill="#f9652f" />
+                    <Cell fill="#9C27B0" />
                     <Cell fill="#444" />
                     <Label
                       value="P2P"
