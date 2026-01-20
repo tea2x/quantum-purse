@@ -58,7 +58,7 @@ Due to the larger size of the [quantum resistant lock script](https://github.com
 
 Quantum Purse is a true light wallet. It runs its own [CKB light client node](https://github.com/nervosnetwork/ckb-light-client) and connects directly to the CKB network without middle RPC enpoints. The [demo website](https://quantum-purse.vercel.app/) is also powered by the Light Client protocol - effectively making it one of the first true blockchain clients that can even run on mobiles. The light client sync status such as peers connected and sync percentage are displayed on the right side of the app's header:
 
-<img width="615" height="143" alt="header" src="https://github.com/user-attachments/assets/64b94b62-8c3c-4668-8f58-c1e8d08917f1" />
+<img width="577" height="122" alt="Screenshot 2026-01-21 at 12 16 38 AM" src="https://github.com/user-attachments/assets/8139a55e-e61e-42d1-99e6-c8b78ea88501" />
 
 **Important:**
 - It takes 5-10 seconds to establish connections to other nodes.
