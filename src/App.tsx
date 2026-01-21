@@ -26,23 +26,31 @@ import { DB } from "./core/db";
 import packageJson from '../package.json';
 import { Modal } from "antd";
 import { logger } from './core/logger';
+import { useSelector } from "react-redux";
+import { RootState } from "./ui/store";
 
 const currentVersion:string|null = packageJson.version;
 
 const App: React.FC = () => {
-  useEffect(() => {
-    Modal.info({
-      title: 'Important Notice',
-      content: (
-        <div>
-          <p>Only send CKB to this wallet! 
-            And be sure to have your client sync finalized before making any transactions!
-          </p>
-        </div>
-      ),
-      centered: true,
-    });
+  const isWalletActive = useSelector((state: RootState) => state.wallet.active);
 
+  useEffect(() => {
+    {isWalletActive && (
+      Modal.info({
+        title: 'Important Notice',
+        content: (
+          <div>
+            <p>Only send CKB to this wallet! 
+              And be sure to have your client sync finalized before making any transactions!
+            </p>
+          </div>
+        ),
+        centered: true,
+      })
+    )}
+  }, [isWalletActive]);
+
+  useEffect(() => {
     // wasm panic, not catchable in js along with other expected errors
     if (typeof Atomics.waitAsync !== "function") {
       Modal.error({
@@ -106,7 +114,7 @@ const App: React.FC = () => {
     };
 
     prepareMainnetLaunch();
-  }, []);
+  }, [isWalletActive]);
 
   return (
     <Router basename={"/"}>

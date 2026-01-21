@@ -15,6 +15,7 @@ interface IAccount {
 
 interface IWallet {
   active: boolean;
+  initialized: boolean;
   current: IAccount;
   accounts: IAccount[];
   syncStatus: {
@@ -32,10 +33,10 @@ type StateType = IWallet;
 let isInitializing = false;
 export let quantum: QuantumPurse;
 let syncStatusListener: ((status: any) => void) | null = null;
-const walletStep = await DB.getItem(STORAGE_KEYS.WALLET_STEP);
 
 const initState: StateType = {
   active: false,
+  initialized: false,
   current: {
     name: "",
     address: "",
@@ -77,6 +78,9 @@ export const wallet = createModel<RootModel>()({
         return account;
       });
       return { ...state, accounts };
+    },
+    setInitialized(state: StateType, initialized: boolean) {
+      return { ...state, initialized };
     },
     reset() {
       return initState;
@@ -146,6 +150,7 @@ export const wallet = createModel<RootModel>()({
         this.setActive(false);
         throw error;
       } finally {
+        this.setInitialized(true);
         isInitializing = false;
       }
     },
