@@ -53,6 +53,7 @@
 
   &:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    color: var(--black) !important;
   }
 
   &:active {
@@ -61,8 +62,7 @@
   }
 }
 
-
 button.sendButton:not([disabled]):not(.ant-btn-loading) {
-  background: var(--teal-1) !important;
+  background: var(--teal-2) !important;
   border: 0.5px solid var(--black) !important;
 }
