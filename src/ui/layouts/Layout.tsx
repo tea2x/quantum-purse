@@ -7,7 +7,6 @@ import { Dispatch, RootState } from "../store";
 import { ROUTES } from "../utils/constants";
 import { cx } from "../utils/methods";
 import styles from "./Layout.module.scss";
-import { useLocation } from "react-router-dom";
 import { logger } from '../../core/logger';
 type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -83,7 +82,7 @@ const Layout: React.FC<AuthLayoutProps> = ({
 
   return (
     <div className={cx(styles.layout, className)} {...rest}>
-      {!["/welcome", "/create-wallet", "/import-wallet"].includes(useLocation().pathname) && <Header />}
+      {wallet.active && <Header />}
       <div className="container">{children}</div>
       {/* <Footer /> */}
     </div>

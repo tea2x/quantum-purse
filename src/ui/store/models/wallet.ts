@@ -1,6 +1,5 @@
 import { createModel } from "@rematch/core";
 import QuantumPurse from "../../../core/quantum_purse";
-import { bytesToUtf8 } from "../../../core/utils";
 import { FIND_ACCOUNT_THRESHOLD, STORAGE_KEYS } from "../../utils/constants";
 import { RootModel } from "./index";
 import { Hex } from "@ckb-ccc/core";
@@ -36,7 +35,7 @@ let syncStatusListener: ((status: any) => void) | null = null;
 const walletStep = await DB.getItem(STORAGE_KEYS.WALLET_STEP);
 
 const initState: StateType = {
-  active: !walletStep,
+  active: false,
   current: {
     name: "",
     address: "",
