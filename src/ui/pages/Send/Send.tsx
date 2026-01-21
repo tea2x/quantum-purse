@@ -269,8 +269,8 @@ const Send: React.FC = () => {
             )}
           </Form.Item>
 
-          <Row gutter={14}>
-            <Col xs={24} sm={14}>
+          <Row gutter={10}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 className={cx("item-wrapper-with-label")}
                 name="amount"
@@ -310,7 +310,7 @@ const Send: React.FC = () => {
                 </Space.Compact>
               </Form.Item>
             </Col>
-            <Col xs={24} sm={10}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="feeRate"
                 className="item-wrapper-with-label"

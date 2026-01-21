@@ -77,13 +77,11 @@ When you import your seed phrase into Quantum Purse, it automatically restores y
 
 **Important:** Currently, recovering wallet on a newly setup Quantum Purse will result in only the first account being created because Light Client is too slow for this process. In such case, create accounts, determine starting block via ckb explorer then set starting blocks manually via each account's context menu.
 
-## How to use
+## Pre-built binaries
 
-Quantum Purse offers pre-built binaries for macOS, Windows and Linux but if you want to tweak it your way it's also possible. Choose one of the following:
+Quantum Purse offers pre-built binaries for macOS, Windows and Linux. Download Quantum Purse in the [release page](https://github.com/tea2x/quantum-purse/releases).
 
-1. Download Quantum Purse in the [release page](https://github.com/tea2x/quantum-purse/releases).
-2. Clone and refer to [Building from source](#build-from-source) then use the binary in `build/` folder.
-3. For development purposes, serve it locally with webpack via `npm run start:web`. You can find other ways to serve the built `dist/` folder locally too.
+Notice: These are not reproducible builds due to the nature of Electron app build and app signing. Perhaps Quantum Purse Version 2 with a different architecture will allow for this.
 
 ## Build from source
 ###### <u>Dependencies</u>
