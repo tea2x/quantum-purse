@@ -426,12 +426,11 @@ const ImportWalletContent: React.FC = () => {
 
       // if the following line successes, clear the input references. If not, allow to edit inputs again.
       await dispatch.wallet.importWallet({ srp: srpBytes, password: passwordBytes });
-      if(srpInputRef.current)
-        srpInputRef.current.value = '';
-      if(passwordInputRef.current)
-        passwordInputRef.current.value = '';
-      if(confirmPasswordInputRef.current)
-        confirmPasswordInputRef.current.value = '';
+
+      // input cleaning. Either success or throw.
+      srpInputRef.current.value = '';
+      passwordInputRef.current.value = '';
+      confirmPasswordInputRef.current.value = '';
 
       // success, procees to load the wallet
       await dispatch.wallet.init({});
