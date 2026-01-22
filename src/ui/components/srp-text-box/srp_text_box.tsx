@@ -70,6 +70,7 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
 
   const handleReset = async () => {
     await dispatch.wallet.ejectWallet();
+    await dispatch.wallet.setInitialized(true);
     navigate(ROUTES.WELCOME);
   };
 
