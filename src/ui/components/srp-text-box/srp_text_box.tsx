@@ -58,6 +58,9 @@ const SrpTextBox: React.FC<SrpTextBoxProps> = ({
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
     } finally {
       passwordBytes.fill(0);

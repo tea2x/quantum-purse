@@ -157,6 +157,9 @@ const Deposit: React.FC = () => {
             download(tx);
           },
           centered: true,
+          style: { transform: 'scale(0.9)' },
+          transitionName: '',
+          maskTransitionName: '',
         });
 
       } else {
@@ -175,6 +178,9 @@ const Deposit: React.FC = () => {
             </div>
           ),
           centered: true,
+          style: { transform: 'scale(0.9)' },
+          transitionName: '',
+          maskTransitionName: '',
         });
       }
     } catch (error) {
@@ -187,6 +193,9 @@ const Deposit: React.FC = () => {
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
 
     } finally {

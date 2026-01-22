@@ -34,6 +34,9 @@ const Layout: React.FC<AuthLayoutProps> = ({
               </div>
             ),
             centered: true,
+            style: { transform: 'scale(0.9)' },
+            transitionName: '',
+            maskTransitionName: '',
           });
         } else if (error.message && error.message.includes("WALLET_NOT_READY")) {
           const errorInfo = JSON.parse(error.message);
@@ -51,6 +54,9 @@ const Layout: React.FC<AuthLayoutProps> = ({
                 </div>
               ),
               centered: true,
+              style: { transform: 'scale(0.9)' },
+              transitionName: '',
+              maskTransitionName: '',
             });
           }
         } else {

@@ -102,6 +102,9 @@ const CreateWalletProvider: React.FC<{ children: React.ReactNode }> = ({
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
     } finally {
       if (srpRef.current) {
@@ -306,6 +309,9 @@ export const StepCreatePassword: React.FC = () => {
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
     } finally {
       passwordBytes.fill(0);

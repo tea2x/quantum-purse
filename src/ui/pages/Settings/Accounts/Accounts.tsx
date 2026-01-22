@@ -45,6 +45,9 @@ const Accounts: React.FC = () => {
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
     } finally {
       password.fill(0);

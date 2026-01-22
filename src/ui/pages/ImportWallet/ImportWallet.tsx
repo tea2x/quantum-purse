@@ -445,6 +445,9 @@ const ImportWalletContent: React.FC = () => {
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
       return;
 

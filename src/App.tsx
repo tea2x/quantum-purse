@@ -46,6 +46,9 @@ const App: React.FC = () => {
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       })
     )}
   }, [isWalletActive]);
@@ -63,6 +66,9 @@ const App: React.FC = () => {
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
     }
 

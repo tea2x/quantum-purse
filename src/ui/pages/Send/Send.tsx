@@ -156,6 +156,9 @@ const Send: React.FC = () => {
             download(tx);
           },
           centered: true,
+          style: { transform: 'scale(0.9)' },
+          transitionName: '',
+          maskTransitionName: '',
         });
       } else {
         const txId = isSendMax
@@ -173,6 +176,9 @@ const Send: React.FC = () => {
             </div>
           ),
           centered: true,
+          style: { transform: 'scale(0.9)' },
+          transitionName: '',
+          maskTransitionName: '',
         });
       }
     } catch (error) {
@@ -185,6 +191,9 @@ const Send: React.FC = () => {
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
 
     } finally {

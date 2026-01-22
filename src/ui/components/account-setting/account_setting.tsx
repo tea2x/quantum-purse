@@ -48,6 +48,9 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account, onClose }) => 
       Modal.success({
         title: 'Starting Block Set Successfully',
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
     } catch (error) {
       Modal.error({
@@ -58,6 +61,9 @@ const AccountSetting: React.FC<AccountSettingProps> = ({ account, onClose }) => 
           </div>
         ),
         centered: true,
+        style: { transform: 'scale(0.9)' },
+        transitionName: '',
+        maskTransitionName: '',
       });
     } finally {
       setIsSettingBlock(false);
