@@ -287,6 +287,10 @@ export const StepCreatePassword: React.FC = () => {
       passwordBytes = utf8ToBytes(passwordInputRef.current.value);
       clonedPasswordBytes = passwordBytes.slice();
 
+      // input cleaning. Either success or throw.
+      passwordInputRef.current.value = '';
+      confirmPasswordInputRef.current.value = '';
+
       await dispatch.wallet.createWallet({ password: passwordBytes });
       srpRef.current = await QuantumPurse.getInstance().exportSeedPhrase(clonedPasswordBytes);
       setSrpRevealed(true);
