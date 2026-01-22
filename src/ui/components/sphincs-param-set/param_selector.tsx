@@ -2,10 +2,12 @@ import { Form, Select, Tooltip } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { SpxVariant } from "../../../core/quantum_purse";
 import { useLocation } from "react-router-dom";
+import styles from './param_selector.module.scss';
 
 const ParamsetSelector: React.FC = () => {
   return (
     <Form.Item
+      className={styles.paramsetSelector}
       label={
         <span style={{ color: 'var(--gray-01)' }}>
           Wallet Type
