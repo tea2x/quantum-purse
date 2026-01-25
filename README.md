@@ -81,7 +81,7 @@ When you import your seed phrase into Quantum Purse, it automatically restores y
 
 Quantum Purse offers pre-built binaries for macOS, Windows and Linux. Download Quantum Purse in the [release page](https://github.com/tea2x/quantum-purse/releases).
 
-Notice: These are not reproducible builds due to the nature of Electron app build and app signing. As a result, in a post-quantum threat model, the build hash and GitHub commit alone cannot be used to independently verify the binary’s integrity. Verification must instead rely on building the application directly from the source code provided below. A future architecture—potentially Quantum Purse v2—may enable reproducible builds and stronger verifiability.
+**Notice:** These are not reproducible builds due to the nature of Electron app build and app signing. As a result, in a post-quantum threat model, the build hash and GitHub commit alone cannot be used to independently verify the binary’s integrity. Verification must instead rely on building the application directly from the source code detailed in below section. A future Quantum Purse v2 with a different architecture may enable reproducible builds and stronger verifiability.
 
 ## Build from source
 ###### <u>Dependencies</u>
