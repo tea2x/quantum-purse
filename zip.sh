@@ -19,11 +19,18 @@ mv build/ zips/win-x64
 
 cd zips/
 
+# Windows
 zip -r Quantum-Purse-$VERSION-windows-x64-installer.zip win-x64
 zip -r Quantum-Purse-$VERSION-windows-x64-portable.zip win-x64/win-unpacked
+
+# macOS ARM
 zip Quantum-Purse-$VERSION-macOS-ARM-installer.zip mac-arm/Quantum\ Purse-*-arm64.dmg
-zip -r Quantum-Purse-$VERSION-macOS-ARM-portable.zip mac-arm/mac-arm64/
+ditto -c -k --sequesterRsrc --keepParent mac-arm/mac-arm64/ Quantum-Purse-$VERSION-macOS-ARM-portable.zip
+
+# macOS x64
 zip Quantum-Purse-$VERSION-macOS-x64-installer.zip mac-x64/Quantum\ Purse-*.dmg
-zip -r Quantum-Purse-$VERSION-macOS-x64-portable.zip mac-x64/mac/
+ditto -c -k --sequesterRsrc --keepParent mac-x64/mac/ Quantum-Purse-$VERSION-macOS-x64-portable.zip
+
+# Linux
 zip Quantum-Purse-$VERSION-linux-x64-installer.zip linux-x64/Quantum\ Purse-*.AppImage
 zip -r Quantum-Purse-$VERSION-linux-x64-portable.zip linux-x64/linux-unpacked/
